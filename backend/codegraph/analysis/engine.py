@@ -137,13 +137,14 @@ _new_usage = new_usage
 
 class Engine:
     def __init__(self, store: GraphStore, data_dir: str, repo: str | None = None,
-                 docs_dir: str | None = None, settings_dir: str | None = None):
+                 docs_dir: str | None = None, settings_dir: str | None = None, repos: dict | None = None):
         self.store = store
         self.data_dir = data_dir
         # where settings.yaml lives (the workspace root); falls back to CODEGRAPH_DATA_DIR
         self.settings_dir = settings_dir
         self.ledger = UsageLedger(os.path.join(settings_dir or data_dir, "usage.db"))
         self.repo = repo
+        self.repos = repos or None          # system graph: {name: path}, files are "<name>/<path>"
         self.docs_dir = docs_dir
         self.runs = RunStore(data_dir)
         self.bus = EventBus()
@@ -347,9 +348,17 @@ class Engine:
             "change_type": None, "difficulty": None, "decision": None, "assignee": None,
             "comments": [], "found_at": _now(),
         }
-        self.emit(st, "candidate", {k: cands[node_id][k] for k in
+        if node is not None and node.props.get("tx_risks"):
+            # transaction risks found at index time travel with the candidate (list, inspector, report)
+            cands[node_id]["tx_risks"] = [{k: r.get(k) for k in ("code", "level", "message", "at", "root", "line")}
+                                          for r in node.props["tx_risks"][:12]]
+        if node is not None and isinstance(node.props.get("tx"), dict) and node.props["tx"].get("boundary"):
+            t = node.props["tx"]
+            cands[node_id]["tx"] = {k: t.get(k) for k in ("boundary", "source", "members", "tables", "remote")}
+        self.emit(st, "candidate", {k: cands[node_id].get(k) for k in
                                     ("node_id", "kind", "layer", "group", "name", "score", "origin", "parent",
-                                     "via_rel", "intent_ids", "seed_reason")})
+                                     "via_rel", "intent_ids", "seed_reason", "tx_risks", "tx")
+                                    if k in cands[node_id]})
         return True
 
     def _entity_for(self, intent) -> list:
@@ -516,25 +525,40 @@ class Engine:
         frontier = list(seeds)
         in_rels = list(self.prop_by_dir["in"])
         out_rels = list(self.prop_by_dir["out"])
-        for _ in range(depth):
+        # data flows (export SQL -> file -> transfer -> file watch -> import) are followed
+        # past the depth limit along `flow` rules only, so a hand-over between servers is
+        # not cut off halfway; `flow_depth` bounds those extra hops
+        flow_rels = {d: [r for r, rs in self.prop_by_dir[d].items() if any(x.get("flow") for x in rs)]
+                     for d in ("in", "out")}
+        flow_ids: set[str] = set()
+        extra = int(st["params"].get("flow_depth", 8))
+        flow_min = float(st["params"].get("flow_min_score", 0.1))
+        for level in range(depth + extra):
+            past = level >= depth
             ids = []
             for nid, score in frontier:
                 c = st["candidates"].get(nid)
                 if c and c.get("decision") and c["decision"]["status"] == "excluded":
+                    continue
+                if past and nid not in flow_ids:
                     continue
                 ids.append(nid)
             if not ids:
                 break
             nodes = self.store.get_many(ids)
             # sinks (documents, tests, SQL files...) end a path, except that whatever *runs*
-            # them (a job script running a SQL file) is still affected
+            # them (a job script running a SQL file) is still affected, and the files they
+            # write carry the data on
             sinks = [i for i in ids if i in nodes and nodes[i].kind in SINKS]
             ids = [i for i in ids if i in nodes and nodes[i].kind not in SINKS]
             score_of = dict(frontier)
-            ins = self.store.neighbors_many(ids, "in", in_rels)
-            outs = self.store.neighbors_many(ids, "out", out_rels)
-            if sinks and Rel.RUNS in self.prop_by_dir["in"]:
-                ins.update(self.store.neighbors_many(sinks, "in", [Rel.RUNS]))
+            ins = self.store.neighbors_many(ids, "in", flow_rels["in"] if past else in_rels)
+            outs = self.store.neighbors_many(ids, "out", flow_rels["out"] if past else out_rels)
+            if sinks:
+                if Rel.RUNS in self.prop_by_dir["in"] and not past:
+                    ins.update(self.store.neighbors_many(sinks, "in", [Rel.RUNS]))
+                if flow_rels["out"]:
+                    outs.update(self.store.neighbors_many(sinks, "out", flow_rels["out"]))
                 ids += sinks
             others = {e.src for es in ins.values() for e in es} | {e.dst for es in outs.values() for e in es}
             onodes = self.store.get_many(others)
@@ -554,6 +578,12 @@ class Engine:
                         for rule in self.prop_by_dir[direction].get(e.rel, []):
                             if rule.get("from_kinds") and node.kind not in rule["from_kinds"]:
                                 continue
+                            if rule.get("to_kinds") and on.kind not in rule["to_kinds"]:
+                                continue
+                            if (past or node.kind in SINKS and direction == "out") and not rule.get("flow"):
+                                continue
+                            if rule.get("only_in_flow") and nid not in flow_ids:
+                                continue        # e.g. a file-watch job hands on to the job after it
                             weight = rule["weight"]
                             if e.props.get("positional") and rule.get("positional_weight"):
                                 weight = rule["positional_weight"]
@@ -566,13 +596,20 @@ class Engine:
                                ("data" in boost and on.layer == "data"):
                                 weight = min(0.95, weight * 1.2)
                             s2 = score * weight * e.conf
-                            if s2 < min_score:
+                            if s2 < (flow_min if rule.get("flow") else min_score):
                                 continue
                             if self._add_candidate(st, other, s2, origin, iid, parent=nid, rel=e.rel):
                                 nxt.append((other, s2))
+                                if rule.get("flow"):
+                                    flow_ids.add(other)
+                                    st["candidates"][other]["data_flow"] = True
+                            elif rule.get("flow") and other not in flow_ids and other in st["candidates"]:
+                                # found earlier by another path: the data flow still continues through it
+                                flow_ids.add(other)
+                                nxt.append((other, max(s2, st["candidates"][other]["score"])))
                             break
                 # design documents usually describe the class, not each member
-                if node.kind in (Kind.METHOD, Kind.FIELD):
+                if node.kind in (Kind.METHOD, Kind.FIELD) and not past:
                     for ce in self.store.in_edges(nid, [Rel.CONTAINS]):
                         for de in self.store.in_edges(ce.src, [Rel.DESCRIBES]):
                             s2 = score * 0.6 * de.conf * (1.2 if "doc" in boost else 1.0)
@@ -585,7 +622,7 @@ class Engine:
     # ------------------------------------------------------------ phase 4
     def _snippet(self, node_id: str, max_lines: int = 25) -> str:
         n = self.store.get(node_id)
-        if not n or not n.file or not self.repo:
+        if not n or not n.file or not (self.repo or self.repos):
             return (n.text[:600] if n else "")
         if _is_office(n.file):
             return _office_summary(n)[:600]       # never send binary file content to the AI
@@ -730,7 +767,8 @@ class Engine:
                 continue
             iid = (c["intent_ids"] or ["I1"])[0]
             item = {"id": nid, "kind": c["kind"], "name": c["name"], "score": c["score"],
-                    "path_reason": self.path_reason(st, nid), "change_type": c["change_type"]}
+                    "path_reason": self.path_reason(st, nid), "change_type": c["change_type"],
+                    "data_flow": bool(c.get("data_flow"))}
             if not self.llm.available:
                 rule_items[iid].append((item, "rule"))
             elif c["score"] < budget.min_score:
@@ -810,7 +848,7 @@ class Engine:
     def _grep(self, st):
         from ..sources.codesearch import make_search
         terms = self._grep_terms(st)
-        searcher = make_search(self.repo)
+        searcher = make_search(self.repo, self.repos)
         if searcher is None or not terms:
             st["grep"] = {"terms": terms, "hits": [], "backend": None}
             return
@@ -1221,6 +1259,9 @@ class Engine:
             return None
         if rel.startswith("design:"):
             return safe_join(self.docs_dir, rel[len("design:"):]) if self.docs_dir else None
+        if self.repos:
+            name, _, rest = rel.partition("/")
+            return safe_join(self.repos[name], rest) if name in self.repos and rest else None
         return safe_join(self.repo, rel) if self.repo else None
 
     def _read_lines(self, rel: str, a: int, b: int) -> list[dict]:
@@ -1268,6 +1309,19 @@ class Engine:
         for c in sorted(st["candidates"].values(), key=lambda c: (c["layer"], c["name"])):
             if c.get("decision") and c["decision"]["status"] == "confirmed":
                 out.append(f"- {c['name']}（{c['kind']}） {c.get('file') or ''}:{c.get('line') or ''} — {c.get('reason') or ''}")
+        risky = [c for c in st["candidates"].values() if c.get("tx_risks") and
+                 (c.get("verdict") == "impacted" or (c.get("decision") or {}).get("status") == "confirmed")]
+        if risky:
+            out += ["", "## トランザクション・連携上の注意", "",
+                    "| 対象 | 水準 | 種別 | 内容 |", "|---|---|---|---|"]
+            seen = set()
+            for c in sorted(risky, key=lambda c: c["name"]):
+                for r in c["tx_risks"]:
+                    k = (r["code"], r["at"])
+                    if k in seen:
+                        continue
+                    seen.add(k)
+                    out.append(f"| {c['name']} | {r['level']} | {r['code']} | {r['message']} |")
         out += ["", "## 除外", ""]
         for c in st["candidates"].values():
             if c.get("decision") and c["decision"]["status"] == "excluded":

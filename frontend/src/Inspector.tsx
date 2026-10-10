@@ -1,3 +1,4 @@
+import { TX_LABEL } from "./ListView";
 import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
 import { statusOf } from "./Graph";
@@ -136,6 +137,22 @@ function Single({ run, c, onSelect, onChanged, busy }: {
       <div className="row conf"><div className="bar"><div style={{ width: `${conf * 100}%` }} className={`fill s-${st}`} /></div>
         <span className="mono small">確度 {conf.toFixed(2)}</span></div>
       <p className="reason">{c.reason || c.seed_reason}</p>
+      {(c.tx || (c.tx_risks?.length || 0) > 0) && (
+        <section className="txbox" aria-label="トランザクション・連携上の注意">
+          <div className="k">トランザクション・連携{c.tx ? ` — 境界 ${c.tx.boundary}（${c.tx.source}、${c.tx.members}要素）` : ""}</div>
+          {c.tx && c.tx.tables.length > 0 && <div className="small dim">更新・参照テーブル: <span className="mono">{c.tx.tables.join(", ")}</span></div>}
+          <ul>
+            {(c.tx_risks || []).map((r, i) => (
+              <li key={i} className={`tx-${r.level}`}>
+                <span className="txcode">{TX_LABEL[r.code] || r.code}</span> {r.message}
+                {r.at !== c.node_id && (run.candidates[r.at]
+                  ? <> — <button className="link" onClick={() => onSelect([r.at], true)}>{run.candidates[r.at].name}</button></>
+                  : <span className="mono dim small"> — {r.at.replace(/^[a-z]+:/, "").split(/[.#]/).slice(-2).join(".")}</span>)}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="tabs" role="tablist">
         {([["why", "根拠"], ["code", "コード"], ["doc", `設計書${d?.docs.length ? ` ${d.docs.length}` : ""}`],

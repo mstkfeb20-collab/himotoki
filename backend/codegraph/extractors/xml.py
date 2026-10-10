@@ -160,6 +160,14 @@ def _value(el: El, root: El, path: str, expr: str):
             v = re.sub(r"\s+", " ", "".join(el.itertext())).strip()
         elif alt == "basename":
             v = path.rsplit("/", 1)[-1]
+        elif alt.startswith(">") or alt.startswith("..>"):
+            # text of a child element: {>ejb-name}, {>method/method-name}; {..>x} starts at the parent
+            base = el.parent if alt.startswith("..>") else el
+            cur = base
+            for seg in alt.split(">", 1)[1].split("/"):
+                cur = next((c for c in (cur.children if cur is not None else []) if c.tag == seg), None)
+            if cur is not None:
+                v = re.sub(r"\s+", " ", "".join(cur.itertext())).strip()
         if v:
             return v
     return None
@@ -259,6 +267,10 @@ def extract(path: str, data: bytes, rules) -> FileFacts:
                     props = {"tag": el.tag, "rule": r["name"], "pack": r["pack"], "attrs": dict(list(el.attrs.items())[:12])}
                     if nd.get("layer"):
                         props["layer"] = nd["layer"]
+                    for k, v in (nd.get("props") or {}).items():     # extra node attributes from the rule
+                        rv = render(str(v), el, root, path, pvars)
+                        if rv:
+                            props[k] = rv
                     if nd.get("sql") == "body":
                         props["sql"] = body[:4000]
                     f.node(nid, nd.get("kind", Kind.XML_ELEMENT), name, el.line, el.end_line, text, keys=keys, **props)
@@ -271,8 +283,9 @@ def extract(path: str, data: bytes, rules) -> FileFacts:
                 key = render(rf["key"], el, root, path, pvars)
                 src = render(rf.get("from"), el, root, path, pvars) if rf.get("from") else (nid or fid)
                 if key and src:
+                    extra = {k: render(str(v), el, root, path, pvars) for k, v in (rf.get("props") or {}).items()}
                     f.ref(src, key, rf.get("rel", Rel.REFERENCES), float(rf.get("conf", 0.9)), el.line, via=r["name"],
-                          optional=bool(rf.get("optional", False)))
+                          optional=bool(rf.get("optional", False)), **{k: v for k, v in extra.items() if v})
             for lk in r.get("links", []):
                 a, b = render(lk["from"], el, root, path, pvars), render(lk["to"], el, root, path, pvars)
                 if a and b:

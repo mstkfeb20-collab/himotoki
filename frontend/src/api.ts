@@ -24,11 +24,14 @@ export const api = {
   index: (repo: string, docs_dir?: string, ref?: string, graph?: string) =>
     req<{ status: string; graph: string }>("POST", "/api/index",
       { repo, docs_dir: docs_dir || null, ref: ref || null, graph: graph || null }),
+  indexSystem: (repos: Record<string, string>, graph: string, docs_dir?: string) =>
+    req<{ status: string; graph: string }>("POST", "/api/index", { repos, graph, docs_dir: docs_dir || null }),
   indexStatus: (graph?: string | null) => req<any>("GET", `/api/index${graph ? `?graph=${encodeURIComponent(graph)}` : ""}`),
   indexReport: (graph?: string | null) =>
     req<IndexReport>("GET", `/api/index/report${graph ? `?graph=${encodeURIComponent(graph)}` : ""}`),
-  diffRun: (base: string, head: string, graph?: string | null, title?: string) =>
-    req<{ id: string; changed_elements: number; added_files: string[] }>("POST", "/api/runs/diff", { base, head, graph, title }),
+  diffRun: (base: string, head: string, graph?: string | null, title?: string, repo?: string | null) =>
+    req<{ id: string; changed_elements: number; added_files: string[] }>("POST", "/api/runs/diff",
+      { base, head, graph, title, repo: repo || null }),
   llmSettings: () => req<{ effective: { min_score: number; max_items: number | "unlimited" }; settings_file: string; llm: string | null }>(
     "GET", "/api/settings/llm"),
   usage: () => req<WorkspaceUsage>("GET", "/api/usage"),

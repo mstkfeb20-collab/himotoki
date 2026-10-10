@@ -119,7 +119,9 @@ NAME = 200
 
 
 class IndexReq(BaseModel):
-    repo: str = Field(max_length=4096)
+    repo: str | None = Field(None, max_length=4096)
+    # a system made of several repositories: {name: path}; indexed as one graph named `graph`
+    repos: dict[str, str] | None = Field(None, max_length=50)
     docs_dir: str | None = Field(None, max_length=4096)
     ref: str | None = Field(None, max_length=NAME)
     graph: str | None = Field(None, max_length=NAME)
@@ -141,6 +143,7 @@ class DiffReq(BaseModel):
     base: str = Field(max_length=NAME)
     head: str = Field(max_length=NAME)
     graph: str | None = Field(None, max_length=NAME)
+    repo: str | None = Field(None, max_length=NAME)        # which repository of a system graph changed
     title: str | None = Field(None, max_length=NAME)
     depth: int = Field(3, ge=1, le=8)
 
@@ -215,6 +218,7 @@ def status(graph: str | None = None):
     e = ws_root.engine(name) if name else None
     st = ws_root.stats(name) if name else {}
     return {"graph": name, "graphs": ws_root.meta["graphs"], "repo": e.repo if e else None,
+            "repos": e.repos if e else None,
             "docs_dir": e.docs_dir if e else None, "llm": e.llm.name if e else None,
             "store": type(e.store).__name__ if e else None,
             "index": {"status": ws_root.index_state.get(name, {}).get("status", "done" if st else "idle"),
@@ -229,6 +233,10 @@ def graphs():
 
 @app.post("/api/index")
 def index(req: IndexReq):
+    if req.repos:
+        return _index_system(req)
+    if not req.repo:
+        raise HTTPException(400, "repo or repos is required")
     check_input_path(req.repo, "repository")
     check_input_path(req.docs_dir, "documents folder")
     try:
@@ -262,6 +270,43 @@ def index(req: IndexReq):
     return {"status": "started", "graph": name}
 
 
+def _index_system(req: IndexReq):
+    from .pipeline.run import check_repo_names
+    if req.ref:
+        raise HTTPException(400, "ref is not supported for a system of several repositories")
+    if not req.graph:
+        raise HTTPException(400, "graph (the system name) is required with repos")
+    try:
+        check_repo_names(req.repos)
+        ws_root.graph_dir(req.graph)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    for n, p in req.repos.items():
+        check_input_path(p, "repository")
+        if not os.path.isdir(p):
+            raise HTTPException(400, f"repository not found: {n}")
+    check_input_path(req.docs_dir, "documents folder")
+    if req.docs_dir and not os.path.isdir(req.docs_dir):
+        raise HTTPException(400, "documents folder not found")
+    name = req.graph
+    if ws_root.index_state.get(name, {}).get("status") == "running":
+        raise HTTPException(409, "indexing already running")
+    state = ws_root.index_state.setdefault(name, {})
+    state.update(status="running", events=[])
+
+    def work():
+        try:
+            stats = ws_root.index_system(name, req.repos, req.docs_dir,
+                                         progress=lambda e, d: state["events"].append({"type": e, "data": d}))
+            state.update(status="done", stats={k: stats.get(k) for k in ("nodes", "edges", "files", "seconds")})
+        except Exception as e:
+            log.exception("indexing %s failed", name)
+            state.update(status="error", error=redact(str(e))[:500])
+
+    threading.Thread(target=work, daemon=True).start()
+    return {"status": "started", "graph": name, "repos": list(req.repos)}
+
+
 @app.get("/api/index")
 def index_status(graph: str | None = None):
     name = graph or ws_root.default()
@@ -277,7 +322,7 @@ def index_report(graph: str | None = None):
     if not st:
         raise HTTPException(404, "no index")
     keys = ("nodes", "edges", "by_kind", "files", "by_extractor", "parsed", "cached", "seconds", "seconds_extract",
-            "seconds_link", "unresolved", "unresolved_samples", "external", "runtime", "drift", "errors",
+            "seconds_link", "unresolved", "unresolved_samples", "external", "runtime", "drift", "transactions", "errors",
             "error_samples", "rules", "commit")
     return {k: st.get(k) for k in keys}
 
@@ -424,10 +469,8 @@ def create_diff_run(req: DiffReq):
     from .sources.git import GitRepo
     name = req.graph or ws_root.default()
     e = eng(name)
-    g = ws_root.meta["graphs"].get(name, {})
-    repo = GitRepo(g.get("repo") or e.repo, ws_root.root)
     try:
-        hunks = repo.hunks(repo.resolve(check_ref(req.base, "base")), repo.resolve(check_ref(req.head, "head")))
+        hunks = ws_root.change_hunks(name, check_ref(req.base, "base"), check_ref(req.head, "head"), req.repo)
     except ValueError as ex:
         raise HTTPException(400, str(ex))
     except Exception:
@@ -566,7 +609,9 @@ async def git_hook(request: Request):
     g = ws_root.meta["graphs"].get(name or "", {})
     if not g:
         raise HTTPException(400, "no graph registered for this repository")
-    repo = g["repo"]
+    repo = g.get("repo")
+    if not repo:
+        raise HTTPException(400, "webhooks need a single-repository graph as the default")
 
     entry = {"at": time.time(), "event": {k: ev.get(k) for k in ("kind", "branch", "base", "head", "number")},
              "status": "running"}

@@ -1,0 +1,129 @@
+name: jee-remoting
+description: >
+  Java EE / Jakarta EE and WebLogic: EJB components and their transaction settings
+  (annotations, ejb-jar.xml, weblogic-ejb-jar.xml), JNDI resources (data sources,
+  JMS destinations), JAX-WS SOAP services and clients, WSDL, Spring @Transactional,
+  and SQL written as Java strings (JDBC). Remote calls are joined by name across
+  repositories: SOAP namespace + operation, JNDI name, URL path.
+java:
+  # SQL in Java string literals / constants becomes SqlStatement nodes with CRUD
+  sql_literals: true
+  # begin / commit / rollback calls on these types are recorded per method (with "inside a loop")
+  transaction_apis:
+    types: [UserTransaction, Connection, EntityTransaction, TransactionManager, PlatformTransactionManager]
+    begin: [begin, getTransaction]
+    commit: [commit]
+    rollback: [rollback, setRollbackOnly]
+  annotation_rules:
+    # ---------------- EJB components and container-managed transactions
+    - name: ejb-component
+      on: class
+      requires: [Stateless, Stateful, Singleton, MessageDriven]
+      keys: ["ejb:{@Stateless.name|@Stateful.name|@Singleton.name|@MessageDriven.name|class}"]
+      props:
+        ejb: "{@MessageDriven|@Stateful|@Singleton|@Stateless}"
+        tx_management: "{@TransactionManagement.value:last|'CONTAINER'}"
+        tx_attr_class: "{@TransactionAttribute.value:last}"
+    - name: ejb-method
+      on: method
+      requires_class: [Stateless, Stateful, Singleton, MessageDriven]
+      keys: ["ejbmethod:{class@Stateless.name|class@Stateful.name|class@Singleton.name|class@MessageDriven.name|class}#{method}"]
+      props:
+        tx_attr: "{@TransactionAttribute.value:last}"
+    - name: mdb-destination
+      on: class
+      requires: [MessageDriven]
+      keys: ["jndi:{@MessageDriven.mappedName|@MessageDriven.lookup}"]
+      props:
+        destination: "{@MessageDriven.mappedName|@MessageDriven.lookup}"
+    - name: jndi-resource
+      on: field
+      requires: [Resource]
+      refs:
+        - {key: "jndi:{@Resource.lookup|@Resource.mappedName|@Resource.name}", rel: REFERENCES, conf: 0.95}
+      props:
+        jndi: "{@Resource.lookup|@Resource.mappedName|@Resource.name}"
+    # ---------------- Spring declarative transactions
+    - name: spring-transactional-class
+      on: class
+      requires: [Transactional]
+      props:
+        tx_attr_class: "{@Transactional.propagation:last|'REQUIRED'}"
+    - name: spring-transactional-method
+      on: method
+      requires: [Transactional]
+      props:
+        tx_attr: "{@Transactional.propagation:last|'REQUIRED'}"
+    # ---------------- JAX-WS (SOAP)
+    - name: soap-provider-service
+      on: class
+      class_kind: class
+      requires: [WebService]
+      keys: ["soapsvc:{@WebService.targetNamespace}#{@WebService.serviceName|class}"]
+      props: {remote_role: "soap-provider"}
+    - name: soap-provider-operation
+      on: method
+      class_kind: class
+      requires_class: [WebService]
+      keys: ["soapop:{class@WebService.targetNamespace}#{@WebMethod.operationName|method}"]
+      props: {remote_role: "soap-provider"}
+    - name: soap-client-operation
+      on: method
+      class_kind: interface
+      requires_class: [WebService]
+      refs:
+        - {key: "soapop:{class@WebService.targetNamespace}#{@WebMethod.operationName|method}", rel: CALLS, conf: 0.95}
+      props: {remote_call: "soap"}
+    - name: soap-client-service
+      on: class
+      requires: [WebServiceClient]
+      refs:
+        - {key: "soapsvc:{@WebServiceClient.targetNamespace}#{@WebServiceClient.name|class}", rel: REFERENCES, conf: 0.9}
+
+xml:
+  # ---------------- ejb-jar.xml
+  - name: ejb-dd-bean
+    when: {root: ejb-jar}
+    select: "//session|//message-driven|//entity"
+    node: {kind: XmlElement, id: "ejbdd:{file}#{>ejb-name}", name: "EJB定義 {>ejb-name}",
+           keys: ["ejbdd:{>ejb-name}"], props: {transaction_type: "{>transaction-type}"}}
+    refs:
+      - {key: "class:{>ejb-class}", rel: CONFIGURES, conf: 0.95, props: {transaction_type: "{>transaction-type}"}}
+  - name: ejb-dd-transaction
+    when: {root: ejb-jar}
+    select: "//container-transaction/method"
+    node: {kind: XmlElement, id: "ejbtx:{file}#{>ejb-name}#{>method-name}",
+           name: "トランザクション属性 {>ejb-name}.{>method-name} = {..>trans-attribute}",
+           props: {tx_attr: "{..>trans-attribute}"}}
+    refs:
+      - {key: "ejbmethod:{>ejb-name}#{>method-name}", rel: CONFIGURES, conf: 0.95, props: {tx_attr: "{..>trans-attribute}"}}
+  # ---------------- weblogic-ejb-jar.xml
+  - name: weblogic-ejb
+    when: {root: weblogic-ejb-jar}
+    select: "//weblogic-enterprise-bean"
+    node: {kind: XmlElement, id: "wlsejb:{file}#{>ejb-name}", name: "WebLogic EJB {>ejb-name}",
+           keys: ["jndi:{>jndi-name}"],
+           props: {trans_timeout: "{>transaction-descriptor/trans-timeout-seconds}", jndi_name: "{>jndi-name}"}}
+    refs:
+      - {key: "ejb:{>ejb-name}", rel: CONFIGURES, conf: 0.95}
+  # ---------------- WebLogic JDBC module (data source)
+  - name: weblogic-datasource
+    when: {root: jdbc-data-source}
+    select: "//jdbc-data-source-params"
+    node: {kind: XmlElement, layer: data, id: "ds:{file}", name: "データソース {..>name}",
+           keys: ["jndi:{>jndi-name}", "datasource:{..>name}"],
+           props: {driver: "{..>jdbc-driver-params/driver-name}", url: "{..>jdbc-driver-params/url}",
+                   global_tx: "{>global-transactions-protocol}", datasource: "{..>name}"}}
+  # ---------------- WSDL
+  - name: wsdl-operation
+    when: {root: definitions}
+    select: "//portType/operation"
+    node: {kind: XmlElement, id: "wsdl:{/@targetNamespace}#{@name}", name: "WSDL {../@name}.{@name}",
+           keys: ["wsdl:{/@targetNamespace}#{@name}"]}
+    refs:
+      - {key: "soapop:{/@targetNamespace}#{@name}", rel: DESCRIBES, conf: 0.95, optional: true}
+  - name: wsdl-address
+    when: {root: definitions}
+    select: "//service/port/address"
+    node: {kind: XmlElement, id: "wsdladdr:{file}#{../@name}", name: "SOAP接続先 {@location}",
+           props: {location: "{@location}"}}

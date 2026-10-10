@@ -156,6 +156,7 @@ export default function ListView({ run, filters, selected, onSelect, onChanged, 
             <div className="nm">{c.name}</div>
             <div className="meta">
               <span>{KIND_JA[c.kind] || c.kind}</span>
+              <TxBadge c={c} />
               {where(c) && <span className="mono">{where(c)}</span>}
               {byLabel(c) && <span className="by">{byLabel(c)}</span>}
             </div>
@@ -294,3 +295,26 @@ function Effort({ run, c }: { run: RunState; c: Candidate }) {
     </div>
   );
 }
+
+const TX_LABEL: Record<string, string> = {
+  REMOTE_IN_TX: "TX内リモート呼出", INDEPENDENT_TX: "別TXで確定", PROC_COMMIT_IN_TX: "ストアド内COMMIT",
+  AUTONOMOUS: "自律型TX", DBLINK_WRITE: "DBリンク更新", COMMIT_IN_LOOP: "分割コミット", LOCK: "行ロック",
+  ASYNC_MESSAGE: "非同期メッセージ", FILE_OUTPUT_IN_TX: "TX内ファイル出力",
+};
+
+/** Transaction / integration risks as one compact badge (worst level first); details in the inspector. */
+export function TxBadge({ c }: { c: Candidate }) {
+  const rs = c.tx_risks || [];
+  if (!rs.length && !c.tx) return null;
+  const worst = rs.some((r) => r.level === "high") ? "high" : rs.some((r) => r.level === "medium") ? "medium" : "low";
+  const codes = Array.from(new Set(rs.map((r) => TX_LABEL[r.code] || r.code)));
+  const title = [c.tx ? `トランザクション境界: ${c.tx.boundary}（${c.tx.source}）` : "", ...rs.map((r) => `・${r.message}`)]
+    .filter(Boolean).join("\n");
+  return (
+    <span className={`txb tx-${rs.length ? worst : "none"}`} title={title}>
+      {c.tx ? `TX ${c.tx.boundary}` : "TX"}{codes.length ? ` · ${codes.slice(0, 2).join("・")}${codes.length > 2 ? ` 他${codes.length - 2}` : ""}` : ""}
+    </span>
+  );
+}
+
+export { TX_LABEL };

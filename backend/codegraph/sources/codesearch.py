@@ -121,7 +121,24 @@ class GitLabSearch:
         return hits[:limit]
 
 
-def make_search(root: str | None):
+class MultiSearch:
+    """Local search over the repositories of a system graph; paths come back as <name>/<path>."""
+    name = "local"
+
+    def __init__(self, repos: dict[str, str]):
+        self.parts = {n: LocalSearch(p) for n, p in repos.items()}
+
+    def search(self, terms, limit=5000):
+        hits = []
+        for n, s in self.parts.items():
+            for h in s.search(terms, limit - len(hits)):
+                hits.append(dict(h, file=f"{n}/{h['file']}"))
+            if len(hits) >= limit:
+                break
+        return hits
+
+
+def make_search(root: str | None, repos: dict | None = None):
     spec = os.environ.get("CODEGRAPH_CODESEARCH", "")
     if spec.startswith("zoekt:"):
         url, _, repo = spec[len("zoekt:"):].rpartition("@") if "@" in spec else (spec[len("zoekt:"):], "", None)
@@ -129,4 +146,6 @@ def make_search(root: str | None):
     if spec.startswith("gitlab:"):
         api, _, project = spec[len("gitlab:"):].rpartition(":")
         return GitLabSearch(api, project, os.environ.get("GITLAB_TOKEN"))
+    if repos:
+        return MultiSearch(repos)
     return LocalSearch(root) if root else None

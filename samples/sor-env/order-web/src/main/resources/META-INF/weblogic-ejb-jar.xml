@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<weblogic-ejb-jar xmlns="http://xmlns.oracle.com/weblogic/weblogic-ejb-jar">
+  <weblogic-enterprise-bean>
+    <ejb-name>OrderServiceBean</ejb-name>
+    <stateless-session-descriptor/>
+    <transaction-descriptor>
+      <trans-timeout-seconds>60</trans-timeout-seconds>
+    </transaction-descriptor>
+    <jndi-name>ejb/OrderService</jndi-name>
+  </weblogic-enterprise-bean>
+</weblogic-ejb-jar>

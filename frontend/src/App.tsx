@@ -67,7 +67,7 @@ export default function App() {
 
   const loadRuns = useCallback(() => api.runs().then(setRuns).catch(() => {}), []);
   useEffect(() => {
-    api.status().then((s) => { setStatus(s); if (!s.repo) setShowNew(true); }).catch(() => {});
+    api.status().then((s) => { setStatus(s); if (!s.repo && !s.repos) setShowNew(true); }).catch(() => {});
     loadRuns();
   }, [loadRuns]);
   useEffect(() => { if (!runId && runs.length) setRunId(runs[0].id); }, [runs, runId]);
@@ -358,11 +358,31 @@ function CommandBar({ run, selected, setBusy, onRun, onChanged, onSelect }: {
   );
 }
 
+/** Repository field: one path, or one line per repository of a system graph ("name=path"). */
+function repoText(x: any): string {
+  if (x?.repos) return Object.entries(x.repos as Record<string, string>).map(([n, p]) => `${n}=${p}`).join("\n");
+  return x?.repo || "";
+}
+
+function parseRepos(lines: string[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const l of lines) {
+    const i = l.indexOf("=");
+    const [n, p] = i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : [l.replace(/\/+$/, "").split("/").pop() || "repo", l];
+    out[n] = p;
+  }
+  return out;
+}
+
 function NewRun({ status, onClose, onCreated, onIndexed, initialReq }: { status: any; onClose: () => void; onCreated: (id: string) => void; onIndexed: () => void; initialReq?: string }) {
   const graphs: Record<string, any> = status?.graphs || {};
   const [graph, setGraph] = useState<string>(status?.graph || "");
   const g = graphs[graph] || {};
-  const [repo, setRepo] = useState(g.repo || status?.repo || "");
+  const [repo, setRepo] = useState(repoText(g) || status?.repo || "");
+  const [sysName, setSysName] = useState(g.repos ? graph : "system");
+  const [changedRepo, setChangedRepo] = useState("");
+  const repoLines = repo.split("\n").map((l: string) => l.trim()).filter(Boolean);
+  const isSystem = repoLines.length > 1 || !!g.repos;
   const [docs, setDocs] = useState(g.docs_dir || status?.docs_dir || "");
   const [ref, setRef] = useState(g.ref || "");
   const [mode, setMode] = useState<"req" | "diff">("req");
@@ -381,7 +401,8 @@ function NewRun({ status, onClose, onCreated, onIndexed, initialReq }: { status:
   const reindex = async () => {
     setErr(null);
     try {
-      const r = await api.index(repo, docs, ref);
+      const r = isSystem ? await api.indexSystem(parseRepos(repoLines), sysName.trim(), docs)
+        : await api.index(repo.trim(), docs, ref);
       setGraph(r.graph);
       const poll = async () => {
         const s = await api.indexStatus(r.graph);
@@ -395,7 +416,7 @@ function NewRun({ status, onClose, onCreated, onIndexed, initialReq }: { status:
     setErr(null);
     try {
       const r = mode === "diff"
-        ? await api.diffRun(base, head, graph || null, title || undefined)
+        ? await api.diffRun(base, head, graph || null, title || undefined, changedRepo || null)
         : await api.createRun(req, { title: title || undefined, depth, pace, graph: graph || null,
             ...(aiMax.trim() ? { llm_max_items: aiMax.trim() } : {}),
             ...(aiMin.trim() ? { llm_min_score: Number(aiMin) } : {}) });
@@ -413,12 +434,16 @@ function NewRun({ status, onClose, onCreated, onIndexed, initialReq }: { status:
             <label className="field"><span className="k">インデックス済みのグラフ</span>
               <select className="input mono graphsel" value={graph} onChange={(e) => {
                 const n = e.target.value; setGraph(n); const x = graphs[n] || {};
-                setRepo(x.repo || ""); setDocs(x.docs_dir || ""); setRef(x.ref || ""); setBase(x.ref || "main"); setIdx(null);
+                setRepo(repoText(x)); setSysName(x.repos ? n : "system"); setChangedRepo(""); setDocs(x.docs_dir || ""); setRef(x.ref || ""); setBase(x.ref || "main"); setIdx(null);
               }}>
                 {Object.entries(graphs).map(([n, x]) => <option key={n} value={n}>{n}（{x.nodes ?? "?"} ノード）</option>)}
               </select></label>
           )}
-          <label className="field"><span className="k">リポジトリのパス</span><input className="input mono" value={repo} onChange={(e) => setRepo(e.target.value)} placeholder="/path/to/repo" /></label>
+          <label className="field"><span className="k">リポジトリのパス（複数サーバで1つの業務を構成する場合は1行に1つ。<span className="mono">名前=パス</span> も可）</span>
+            <textarea className="input mono" rows={Math.min(5, Math.max(1, repoLines.length + (repo.endsWith("\n") ? 1 : 0)))} value={repo}
+              onChange={(e) => setRepo(e.target.value)} placeholder="/path/to/repo" /></label>
+          {isSystem && <label className="field"><span className="k">システム名（複数リポジトリを1つのグラフにまとめます）</span>
+            <input className="input mono" value={sysName} onChange={(e) => setSysName(e.target.value)} placeholder="sor" /></label>}
           <label className="field"><span className="k">設計書・運用資産フォルダ（任意・Excel/Word/Markdown、ジョブ定義、シェル）</span><input className="input mono" value={docs} onChange={(e) => setDocs(e.target.value)} placeholder="/path/to/design-docs" /></label>
           <label className="field"><span className="k">ブランチ・タグ（任意。指定するとその時点のスナップショットを別グラフとして作成）</span><input className="input mono" value={ref} onChange={(e) => setRef(e.target.value)} placeholder="main / release/1.2" /></label>
           <div className="row between">
@@ -441,6 +466,11 @@ function NewRun({ status, onClose, onCreated, onIndexed, initialReq }: { status:
           <div className="grid3">
             <label className="field"><span className="k">比較元（グラフの時点）</span><input className="input mono" value={base} onChange={(e) => setBase(e.target.value)} /></label>
             <label className="field"><span className="k">変更後（ブランチ・コミット）</span><input className="input mono" value={head} onChange={(e) => setHead(e.target.value)} placeholder="feature/xxx" /></label>
+            {g.repos && <label className="field"><span className="k">変更したリポジトリ</span>
+              <select className="input mono" value={changedRepo} onChange={(e) => setChangedRepo(e.target.value)}>
+                <option value="">選択してください</option>
+                {Object.keys(g.repos).map((n) => <option key={n} value={n}>{n}</option>)}
+              </select></label>}
             <p className="muted small">変更された行を含む要素を起点に、回帰確認の範囲（テスト・画面・ジョブ・設計書）を出します。</p>
           </div>
         )}

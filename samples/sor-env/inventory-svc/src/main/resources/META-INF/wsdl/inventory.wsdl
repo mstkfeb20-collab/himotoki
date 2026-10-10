@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:tns="http://example.com/inventory" targetNamespace="http://example.com/inventory" name="InventoryService">
+  <portType name="InventoryPortType">
+    <operation name="reserveStock"/>
+    <operation name="releaseStock"/>
+  </portType>
+  <binding name="InventoryBinding" type="tns:InventoryPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="reserveStock"><soap:operation soapAction=""/></operation>
+    <operation name="releaseStock"><soap:operation soapAction=""/></operation>
+  </binding>
+  <service name="InventoryService">
+    <port name="InventoryPort" binding="tns:InventoryBinding">
+      <soap:address location="http://inv-svc:7001/inventory/InventoryService"/>
+    </port>
+  </service>
+</definitions>

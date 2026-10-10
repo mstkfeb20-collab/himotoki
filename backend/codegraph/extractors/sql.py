@@ -117,12 +117,72 @@ def analyze(sql: str, dialect: str | None = None) -> dict:
     return res
 
 
+_DBLINK = re.compile(r"\b([A-Za-z_][\w$#]*(?:\.[A-Za-z_][\w$#]*)?)@([A-Za-z_][\w$#.]*)")
+_CALL = re.compile(r"(?:\{\s*(?:\?\s*=\s*)?call\s+|\bcall\s+|\bexec(?:ute)?\s+(?!immediate\b)|^\s*begin\s+)"
+                   r"([A-Za-z_][\w$#]*(?:\.[A-Za-z_][\w$#]*){0,2})\s*(?:\(|;|\})", re.I | re.M)
+
+
+_PLSQL_WORDS = {"end", "null", "commit", "rollback", "loop", "if", "for", "while", "declare", "begin", "select",
+                "insert", "update", "delete", "merge", "open", "close", "fetch", "exit", "return", "raise",
+                "dbms_output.put_line", "execute", "case", "with"}
+
+
+def proc_calls(sql: str) -> list[str]:
+    """Stored routines a statement calls: {call P(?)}, CALL P(), EXEC P, BEGIN P(...); END;"""
+    return sorted({m.group(1).lower() for m in _CALL.finditer(sql or "")
+                   if m.group(1).lower() not in _PLSQL_WORDS})
+
+
+_DML_START = re.compile(r"\b(select|insert|update|delete|merge)\b", re.I)
+
+
+def plsql_dml(body: str) -> list[tuple[int, str]]:
+    """The SQL statements inside a PL/SQL block, one by one (offset, text), so that the
+    procedural code around them is not mistaken for SQL."""
+    b = re.sub(r"--[^\n]*", lambda m: " " * len(m.group(0)), body)
+    out = []
+    for piece in re.finditer(r"[^;]+", b):
+        text, base = piece.group(0), piece.start()
+        starts = [m.start() for m in _DML_START.finditer(text)]
+        # nested SELECT inside INSERT ... SELECT / UPDATE ... (SELECT) belongs to the outer statement
+        keep = []
+        for s0 in starts:
+            head = text[s0:s0 + 6].lower()
+            if keep and head == "select" and text[keep[-1]:keep[-1] + 6].lower() in ("insert", "update", "delete", "merge"):
+                continue
+            keep.append(s0)
+        for k, s0 in enumerate(keep):
+            seg = text[s0: keep[k + 1] if k + 1 < len(keep) else len(text)]
+            seg = re.split(r"\)\s*loop\b|\bloop\b|\bthen\b", seg, flags=re.I)[0]
+            out.append((base + s0, seg.strip()))
+    return out
+
+
+def plsql_refs(f, src: str, body: str, line: int, dialect=None):
+    for off, stmt in plsql_dml(body):
+        crud_refs(f, src, stmt, line + body[:off].count("\n"), via="db-object", dialect=dialect, conf=0.9)
+    for p in proc_calls(body):
+        f.ref(src, f"proc:{p}", Rel.EXECUTES, 0.85, line, via="call", optional=True)
+
+
 def crud_refs(f: FileFacts, src: str, sql: str, line=None, via="sql", dialect=None, conf=0.95):
+    # table@dblink: the table lives in another database; analyse it under its own name
+    links = {}
+    for m in _DBLINK.finditer(sql or ""):
+        links[_norm_table(m.group(1))] = m.group(2).lower()
+    if links:
+        sql = _DBLINK.sub(lambda m: m.group(1), sql)
+        for link in sorted(set(links.values())):
+            f.ref(src, f"dblink:{link}", Rel.REFERENCES, 0.9, line, via="dblink", optional=True)
+    for p in proc_calls(sql):
+        f.ref(src, f"proc:{p}", Rel.EXECUTES, conf, line, via="call")
     a = analyze(sql, dialect)
     tables = sorted(a["tables"])
     for t, ops in a["tables"].items():
         rel = Rel.WRITES if ops & {"C", "U", "D"} else Rel.READS
-        f.ref(src, f"table:{t}", rel, conf if a["parsed"] else conf * 0.8, line, via=via, ops="".join(sorted(ops)))
+        extra = {"dblink": links[t]} if t in links else {}
+        f.ref(src, f"table:{t}", rel, conf if a["parsed"] else conf * 0.8, line, via="dblink" if t in links else via,
+              ops="".join(sorted(ops)), **extra)
     seen = set()
     for t, c, op in a["columns"]:
         k = (t, c, op)
@@ -184,13 +244,65 @@ def _split_statements(src: str) -> list[tuple[int, str]]:
     return out
 
 
+_SQLPLUS = re.compile(r"^\s*(set|spool|prompt|whenever|exit|quit|define|undefine|column|col|ttitle|btitle|break|"
+                      r"compute|pause|accept|host|show|connect|conn|var|variable|print|@@?\S+)\b(.*)$", re.I)
+_ROUTINE = re.compile(r"^\s*(procedure|function)\s+([A-Za-z_][\w$#]*)", re.I | re.M)
+_DBLINK_DDL = re.compile(r"create\s+(?:public\s+)?database\s+link\s+([\w.$#\"]+)(?:[\s\S]*?using\s+'([^']+)')?", re.I)
+
+
+def tx_traits(body: str) -> dict:
+    """Transaction behaviour of a PL/SQL block: commits, rollbacks, autonomous transaction,
+    row / table locks, commits inside a loop, dynamic SQL."""
+    b = re.sub(r"--[^\n]*", "", body)
+    t = {}
+    commits = len(re.findall(r"\bcommit\b", b, re.I))
+    if commits:
+        t["commits"] = commits
+    if re.search(r"\brollback\b", b, re.I):
+        t["rollbacks"] = True
+    if re.search(r"pragma\s+autonomous_transaction", b, re.I):
+        t["autonomous"] = True
+    if re.search(r"\bfor\s+update\b|\block\s+table\b", b, re.I):
+        t["locks"] = True
+    # COMMIT between LOOP ... END LOOP
+    depth, in_loop_commit = 0, False
+    for tok in re.finditer(r"\bend\s+loop\b|\bloop\b|\bcommit\b", b, re.I):
+        w = tok.group(0).lower()
+        if w.startswith("end"):
+            depth = max(0, depth - 1)
+        elif w == "loop":
+            depth += 1
+        elif depth > 0:
+            in_loop_commit = True
+    if in_loop_commit:
+        t["commit_in_loop"] = True
+    if re.search(r"execute\s+immediate|dbms_sql\.", b, re.I):
+        t["dynamic_sql"] = True
+    return t
+
+
 def extract(path: str, data: bytes, rules) -> FileFacts:
     f = FileFacts(path, NAME)
     src = data.decode("utf-8", "replace")
+    # SQL*Plus commands are not SQL: keep line numbers, remember where SPOOL writes
+    spools, kept = [], []
+    for i, ln in enumerate(src.split("\n"), 1):
+        m = _SQLPLUS.match(ln)
+        if m and not re.match(r"\s*set\s+\w+\s*=", ln, re.I):
+            if m.group(1).lower() == "spool":
+                target = m.group(2).strip().split()[0] if m.group(2).strip() else ""
+                if target and target.lower() not in ("off", "out"):
+                    spools.append((i, target))
+            kept.append("")
+        else:
+            kept.append(ln)
+    src = "\n".join(kept)
     dialect = _dialect(path, (rules.sql or {}).get("default_dialect"))
     fid = f"file:{path}"
     f.node(fid, Kind.SQL_FILE, path.split("/")[-1] + (f" ({dialect})" if dialect else ""), 1, src.count("\n") + 1,
            words(path), keys=[f"file:{path}"], dialect=dialect)
+    for i, target in spools:
+        f.ref(fid, f"datafile:{target}", Rel.WRITES, 0.9, i, via="spool")
     for line, stmt in _split_statements(src):
         body = re.sub(r"--[^\n]*", "", stmt)
         lead = " ".join(re.findall(r"--\s*([^\n]*)", stmt))[:200]       # "-- 出発地テーブル"
@@ -217,6 +329,15 @@ def extract(path: str, data: bytes, rules) -> FileFacts:
             f.edge(fid, cid, Rel.DEFINES, 1.0, "parser", line=line)
             f.edge(f"table:{t}", cid, Rel.CONTAINS)
             continue
+        m = _DBLINK_DDL.search(body)
+        if m:
+            link = m.group(1).strip('"').lower()
+            lid = f"dbobj:database link:{link}"
+            f.node(lid, Kind.DB_OBJECT, f"database link {link}", line, line + stmt.count("\n"),
+                   f"database link {words(link)} {m.group(2) or ''}", keys=[lid, f"dblink:{link}"],
+                   object_type="database link", target=(m.group(2) or "").lower())
+            f.edge(fid, lid, Rel.DEFINES, 1.0, "parser", line=line)
+            continue
         m = _OBJ_RX.search(body)
         if m:
             otype, name = re.sub(r"\s+", " ", m.group(1).lower()), _norm_table(m.group(2))
@@ -231,8 +352,37 @@ def extract(path: str, data: bytes, rules) -> FileFacts:
                 if on:
                     f.ref(oid, f"table:{_norm_table(on.group(1))}", Rel.READS, 0.95, line, via="trigger", ops="T")
             inner = body[m.end():]
-            if otype not in ("sequence", "synonym", "type"):
-                crud_refs(f, oid, inner, line, via="db-object", dialect=dialect, conf=0.9)
+            routines = list(_ROUTINE.finditer(inner)) if otype in ("package body",) else []
+            if routines:
+                # one node per procedure / function, so impact and transactions are per routine
+                f.nodes[-1]["props"]["routines"] = [r.group(2).lower() for r in routines]
+                names = {r.group(2).lower() for r in routines}
+                for k, r in enumerate(routines):
+                    rbody = inner[r.start(): routines[k + 1].start() if k + 1 < len(routines) else len(inner)]
+                    rname = r.group(2).lower()
+                    rline = line + inner[: r.start()].count("\n")
+                    rid = f"dbobj:{r.group(1).lower()}:{name}.{rname}"
+                    traits = tx_traits(rbody)
+                    f.node(rid, Kind.DB_OBJECT, f"{name}.{rname}", rline, rline + rbody.count("\n"),
+                           f"{r.group(1)} {words(name)} {words(rname)} {lead}", keys=[rid, f"proc:{name}.{rname}"],
+                           object_type=r.group(1).lower(), package=name, **({"tx": traits} if traits else {}))
+                    f.edge(oid, rid, Rel.CONTAINS)
+                    plsql_refs(f, rid, rbody, rline, dialect)
+                    # calls to sibling routines (unqualified) and to other packages (qualified)
+                    for c in re.finditer(r"(?<![\w.$#])([A-Za-z_][\w$#]*)(?:\.([A-Za-z_][\w$#]*))?\s*\(", rbody[r.end() - r.start():]):
+                        a, b = c.group(1).lower(), (c.group(2) or "").lower()
+                        if not b and a in names and a != rname:
+                            f.ref(rid, f"proc:{name}.{a}", Rel.CALLS, 0.95, rline, via="plsql-call")
+                        elif b and a != name and a not in ("dbms_output", "sql", "to_char", "to_date", "nvl"):
+                            f.ref(rid, f"proc:{a}.{b}", Rel.CALLS, 0.85, rline, via="plsql-call", optional=True)
+            elif otype not in ("sequence", "synonym", "type"):
+                traits = tx_traits(inner) if otype in ("procedure", "function", "trigger") else {}
+                if traits:
+                    f.nodes[-1]["props"]["tx"] = traits
+                if otype in ("view", "materialized view"):
+                    crud_refs(f, oid, inner, line, via="db-object", dialect=dialect, conf=0.9)
+                else:
+                    plsql_refs(f, oid, inner, line, dialect)
             continue
         if re.match(r"\s*(insert|update|delete|merge)\b", body, re.I):
             a = analyze(body, dialect)

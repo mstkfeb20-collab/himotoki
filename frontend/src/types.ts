@@ -24,6 +24,17 @@ export interface Candidate {
   judged_by?: string | null;
   assignee?: string | null;
   comments: { author: string; text: string; at: number }[];
+  tx_risks?: TxRisk[];
+  tx?: { boundary: string; source: string; members: number; tables: string[]; remote: string[] };
+}
+
+export interface TxRisk {
+  code: string;
+  level: "high" | "medium" | "low";
+  message: string;
+  at: string;
+  root?: string | null;
+  line?: number | null;
 }
 
 export interface Check {
@@ -87,7 +98,7 @@ export interface RunSummary {
   graph?: string;
 }
 
-export interface GraphInfo { repo: string; ref?: string | null; snapshot?: string; docs_dir?: string | null; commit?: string; nodes?: number; edges?: number }
+export interface GraphInfo { repo: string | null; repos?: Record<string, string>; ref?: string | null; snapshot?: string; docs_dir?: string | null; commit?: string; nodes?: number; edges?: number }
 
 export interface IndexReport {
   nodes: number; edges: number; files: number; parsed: number; cached: number; seconds: number;

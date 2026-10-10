@@ -18,6 +18,14 @@ propagation:
   - {rel: IMPLEMENTED_BY, dir: in, weight: 0.9}
   - {rel: IMPLEMENTED_BY, dir: out, weight: 0.7}
   - {rel: EXECUTES, dir: in, weight: 0.85}
+  # data flow between jobs and servers: whoever reads a changed data file, and the file
+  # a changed exporter / transfer writes. `flow` rules continue past the depth limit
+  # (up to the run parameter flow_depth, default 8 hops, kept while the score
+  # stays above flow_min_score, default 0.1) so a hand-over is followed to its end.
+  - {rel: READS, dir: in, weight: 0.95, from_kinds: [DataFile], flow: true}
+  - {rel: WRITES, dir: out, weight: 0.95, to_kinds: [DataFile], flow: true}
+  - {rel: PRECEDES, dir: out, weight: 0.8, from_kinds: [Job], flow: true, only_in_flow: true}
+  - {rel: RUNS, dir: out, weight: 0.85, from_kinds: [Job], flow: true, only_in_flow: true}
   - {rel: READS, dir: in, weight: 0.75}
   - {rel: WRITES, dir: in, weight: 0.8}
   - {rel: WRITES, dir: out, weight: 0.6}

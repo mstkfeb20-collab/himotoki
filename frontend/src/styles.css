@@ -241,3 +241,14 @@ fieldset { border: 1px solid var(--line2); border-radius: 12px; padding: 12px 14
 .tour-pop .actions { display: flex; gap: 8px; justify-content: flex-end; }
 .tour-dots { display: flex; gap: 4px; justify-content: center; margin-top: 10px; }
 .tour-dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--line3); } .tour-dots i.on { background: var(--cyan); width: 14px; }
+
+/* transaction / integration risks */
+.txb { border-radius: 4px; padding: 0 5px; font-size: 11px; border: 1px solid var(--line3); white-space: nowrap; color: var(--text2); }
+.txb.tx-high { color: var(--red); border-color: color-mix(in srgb, var(--red) 55%, transparent); background: color-mix(in srgb, var(--red) 10%, transparent); }
+.txb.tx-medium { color: var(--amber); border-color: color-mix(in srgb, var(--amber) 50%, transparent); background: color-mix(in srgb, var(--amber) 8%, transparent); }
+.txbox { border: 1px solid var(--line3); border-radius: 6px; padding: 8px 10px; margin: 8px 0; }
+.txbox ul { margin: 6px 0 0; padding-left: 0; list-style: none; display: grid; gap: 6px; font-size: 12.5px; color: var(--text2); }
+.txbox li { border-left: 3px solid var(--line3); padding-left: 8px; }
+.txbox li.tx-high { border-left-color: var(--red); }
+.txbox li.tx-medium { border-left-color: var(--amber); }
+.txcode { font-weight: 600; margin-right: 4px; color: var(--text); }

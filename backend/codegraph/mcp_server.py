@@ -105,15 +105,13 @@ def analyze_requirement(requirement: str, graph: str | None = None, top: int = 4
 
 
 @mcp.tool()
-def analyze_change(base: str, head: str, graph: str | None = None) -> dict:
+def analyze_change(base: str, head: str, graph: str | None = None, repo: str | None = None) -> dict:
     """Regression scope of a change set between two git refs: entry points, screens, jobs,
-    tables, tests to run and design documents to review."""
-    from .sources.git import GitRepo
+    tables, tests to run and design documents to review. For a system graph of several
+    repositories, `repo` names the repository that changed."""
     e = _engine(graph)
     name = graph or ws().default()
-    g = ws().meta["graphs"][name]
-    gr = GitRepo(g["repo"], ws().root)
-    nodes, added = e.diff_nodes(gr.hunks(gr.resolve(base), gr.resolve(head)))
+    nodes, added = e.diff_nodes(ws().change_hunks(name, base, head, repo))
     rid = e.start_run(f"変更差分 {base}..{head}", None, {"mode": "diff", "diff_nodes": nodes, "added_files": added},
                       background=False)
     st = e.state(rid)
@@ -126,7 +124,7 @@ def index_gaps(graph: str | None = None) -> dict:
     """Where the graph is known to be incomplete: unresolved references by namespace,
     DDL vs database drift, runtime SQL that no code explains."""
     st = ws().stats(graph)
-    return {k: st.get(k) for k in ("unresolved", "unresolved_samples", "external", "drift", "runtime", "errors")}
+    return {k: st.get(k) for k in ("unresolved", "unresolved_samples", "external", "drift", "runtime", "transactions", "errors")}
 
 
 def main():

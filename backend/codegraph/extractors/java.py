@@ -73,6 +73,30 @@ def _str(node):
     return None
 
 
+LOOP_TYPES = {"for_statement", "enhanced_for_statement", "while_statement", "do_statement"}
+SQLISH = re.compile(r"^\s*(select|insert|update|delete|merge|with|call|begin|\{\s*(\?\s*=\s*)?call)\b", re.I)
+
+
+def _const_str(node):
+    """Compile-time string of a constant initializer: a literal, a text block, or
+    literals joined with + (multi-line SQL is usually written this way)."""
+    if node is None:
+        return None
+    if node.type == "string_literal":
+        return _str(node)
+    if node.type == "text_block":
+        return _t(node).strip('"').strip()
+    if node.type == "parenthesized_expression" and node.named_children:
+        return _const_str(node.named_children[0])
+    if node.type == "binary_expression":
+        op = node.child_by_field_name("operator")
+        if op is not None and _t(op) == "+":
+            a, b = _const_str(node.child_by_field_name("left")), _const_str(node.child_by_field_name("right"))
+            if a is not None and b is not None:
+                return a + b
+    return None
+
+
 def _value(node) -> str:
     """Annotation value: string literal, array of literals, or raw text."""
     if node is None:
@@ -106,6 +130,87 @@ def _annotations(mods) -> list[dict]:
                     args["value"] = _value(a)
         out.append({"name": name, "args": args})
     return out
+
+
+# ----------------------------------------------------------- annotation rules
+def _ann_arg(anns, spec: str):
+    """'WebMethod.operationName' -> that argument; 'Stateless' -> '' when present (marker)."""
+    name, _, attr = spec.partition(".")
+    for a in anns:
+        if a["name"] == name:
+            if not attr:
+                return a["args"].get("value") or name
+            return a["args"].get(attr)
+    return None
+
+
+def _ann_tpl(tpl: str, el_anns, cls_anns, vars: dict):
+    """Template for annotation rules: {method} {class} {fqn} {package} {field} {type},
+    {@Ann.attr} on the element, {class@Ann.attr} on the class, alternatives with |,
+    'literal' defaults, filters :last :lower :upper."""
+    missing = False
+
+    def one(m):
+        nonlocal missing
+        v, flts = None, []
+        for alt in m.group(1).split("|"):          # each alternative carries its own filters
+            alt, *flts = alt.strip().split(":")
+            if alt.startswith("'") and alt.endswith("'"):
+                v = alt[1:-1]
+            elif alt.startswith("class@"):
+                v = _ann_arg(cls_anns, alt[6:])
+            elif alt.startswith("@"):
+                v = _ann_arg(el_anns, alt[1:])
+            else:
+                v = vars.get(alt)
+            if v:
+                break
+        if not v:
+            missing = True
+            return ""
+        for flt in flts:
+            v = v.split(".")[-1] if flt == "last" else v.lower() if flt == "lower" else v.upper() if flt == "upper" else v
+        return v
+    out = re.sub(r"\{([^{}]+)\}", one, tpl)
+    return None if missing else out
+
+
+def _ann_rules(ctx, on: str, el_anns, cls, vars: dict):
+    """Apply java.annotation_rules for one element (class / method / field).
+    Returns (keys, props, refs) — refs as (key, rel, conf, via)."""
+    keys, props, refs = [], {}, []
+    el_names = {a["name"] for a in el_anns}
+    cls_names = {a["name"] for a in cls["anns"]}
+    for r in ctx.rules.java.get("annotation_rules", []):
+        # YAML 1.1 reads a bare `on:` key as boolean true, so both spellings are accepted
+        if r.get("on", r.get(True, "method")) != on:
+            continue
+        if r.get("requires") and not el_names & set(r["requires"]):
+            continue
+        if r.get("requires_class") and not cls_names & set(r["requires_class"]):
+            continue
+        if r.get("class_kind") and cls["kind"] != r["class_kind"]:
+            continue
+        if r.get("unless") and el_names & set(r["unless"]):
+            continue
+        for k in r.get("keys", []):
+            v = _ann_tpl(k, el_anns, cls["anns"], vars)
+            if v:
+                keys.append(v)
+        for k, t in (r.get("props") or {}).items():
+            v = _ann_tpl(str(t), el_anns, cls["anns"], vars)
+            if v:
+                props[k] = v
+        for rf in r.get("refs", []):
+            v = _ann_tpl(rf["key"], el_anns, cls["anns"], vars)
+            if v:
+                refs.append((v, rf.get("rel", Rel.REFERENCES), float(rf.get("conf", 0.9)), r.get("name", "annotation-rule")))
+    return keys, props, refs
+
+
+def _emit_refs(f, src, refs, line):
+    for key, rel, conf, via in refs:
+        f.ref(src, key, rel, conf, line, via=via, optional=True)
 
 
 def _complexity(body) -> int:
@@ -158,9 +263,9 @@ def _method_body(body) -> dict:
            "locals": {}, "comments": []}
     if body is None:
         return out
-    stack = [body]
+    stack = [(body, False)]
     while stack:
-        cur = stack.pop()
+        cur, in_loop = stack.pop()
         t = cur.type
         line = cur.start_point[0] + 1
         if t == "local_variable_declaration":
@@ -183,11 +288,14 @@ def _method_body(body) -> dict:
             pass
         elif t == "method_invocation":
             args = cur.child_by_field_name("arguments")
-            out["calls"].append({"r": _desc(cur.child_by_field_name("object")), "n": _t(cur.child_by_field_name("name")),
-                                 "a": len(args.named_children) if args else 0, "l": line})
+            call = {"r": _desc(cur.child_by_field_name("object")), "n": _t(cur.child_by_field_name("name")),
+                    "a": len(args.named_children) if args else 0, "l": line}
+            if in_loop:
+                call["loop"] = True
+            out["calls"].append(call)
         elif t == "string_literal":
             sv = _str(cur)
-            if sv and len(sv) < 400:
+            if sv and len(sv) < 2000:
                 out["literals"].append([sv, line])
         elif t in ("decimal_integer_literal", "decimal_floating_point_literal"):
             out["numbers"].append(_t(cur))
@@ -206,7 +314,8 @@ def _method_body(body) -> dict:
             if p is not None and p.type not in ("method_invocation", "field_access", "method_declaration",
                                                 "formal_parameter", "variable_declarator"):
                 out["idents"].append([_t(cur), line])
-        stack.extend(cur.named_children)
+        loop = in_loop or t in LOOP_TYPES
+        stack.extend((c, loop) for c in cur.named_children)
     out["numbers"] = sorted(set(out["numbers"]))[:40]
     # dedupe identifiers to keep payloads small
     seen, ids = set(), []
@@ -290,8 +399,10 @@ def _type_decl(ctx: _Ctx, node, outer):
         keys += [f"bean:{_lower_camel(name)}"] + ([f"bean:{val}"] if val else [])
     kind = Kind.TEST_CLASS if is_test else Kind.CLASS
     comment = _leading_comment(node)
+    rk, rprops, rrefs = _ann_rules(ctx, "class", anns, cls, {"class": name, "fqn": fqn, "package": ctx.package})
     f.node(cid, kind, name, cls["line"], cls["end_line"], " ".join([words(name), comment] + [words(a) for a in ann_names]),
-           keys=keys, fqn=fqn, annotations=sorted(ann_names), type=cls["kind"], package=ctx.package)
+           keys=keys + rk, fqn=fqn, annotations=sorted(ann_names), type=cls["kind"], package=ctx.package, **rprops)
+    _emit_refs(f, cid, rrefs, cls["line"])
     if outer:
         f.edge(f"java:{outer['fqn']}", cid, Rel.CONTAINS)
     _messages(f, cid, anns, cls["line"])
@@ -347,7 +458,7 @@ def _field(ctx, cls, node):
         if d.type != "variable_declarator":
             continue
         fname = _t(d.child_by_field_name("name"))
-        const = _str(d.child_by_field_name("value")) if is_const else None
+        const = _const_str(d.child_by_field_name("value")) if is_const else None
         fd = {"name": fname, "type": ftype, "anns": anns, "line": node.start_point[0] + 1,
               "end_line": node.end_point[0] + 1, "constant": const, "static": "static" in mtxt}
         cls["fields"].append(fd)
@@ -356,9 +467,13 @@ def _field(ctx, cls, node):
                  "validations": [f"@{a['name']}({a['args']})" for a in anns if a["args"]]}
         if const is not None:
             props["constant"] = const
+        rk, rprops, rrefs = _ann_rules(ctx, "field", anns, cls, {"class": cls["name"], "fqn": cls["fqn"],
+                                                                 "field": fname, "type": simple(ftype),
+                                                                 "package": ctx.package})
         f.node(fid, Kind.FIELD, f"{cls['name']}.{fname}", fd["line"], fd["end_line"],
-               " ".join([words(fname), words(simple(ftype)), comment, const or ""]),
-               keys=[f"field:{cls['fqn']}.{fname}"], **props)
+               " ".join([words(fname), words(simple(ftype)), comment, (const or "")[:300]]),
+               keys=[f"field:{cls['fqn']}.{fname}"] + rk, **props, **rprops)
+        _emit_refs(f, fid, rrefs, fd["line"])
         f.edge(f"java:{cls['fqn']}", fid, Rel.CONTAINS)
         _messages(f, fid, anns, fd["line"])
 
@@ -395,13 +510,19 @@ def _method(ctx, cls, node, prefix):
     lits = [l for l, _ in md["literals"]]
     text = " ".join([words(name), comment, " ".join(words(a) for a in ann_names), " ".join(words(n) for n in md["locals"]),
                      " ".join(md["comments"])[:600], " ".join(l for l in lits if len(l) < 80)[:600], " ".join(md["numbers"])])
+    rk, rprops, rrefs = _ann_rules(ctx, "method", anns, cls, {"class": cls["name"], "fqn": cls["fqn"], "method": name,
+                                                              "package": ctx.package})
+    txc = _tx_calls(rules, cls, md)
+    if txc:
+        rprops["tx_calls"] = txc
     f.node(mid, kind, f"{cls['name']}.{name}()" if not is_ctor else f"{cls['name']}()", md["line"], md["end_line"],
-           text, keys=[f"method:{cls['fqn']}#{name}"], complexity=_complexity(body),
+           text, keys=[f"method:{cls['fqn']}#{name}"] + rk, complexity=_complexity(body), **rprops,
            loc=md["end_line"] - md["line"] + 1, signature=sig, annotations=sorted(ann_names), ctor=is_ctor,
            literals=lits[:40], numbers=md["numbers"],
            is_test=bool(ann_names & set(rules.ann("test") or [])))
     f.edge(f"java:{cls['fqn']}", mid, Rel.CONTAINS)
     _messages(f, mid, anns, md["line"])
+    _emit_refs(f, mid, rrefs, md["line"])
 
     # endpoints
     ep = rules.ann("endpoint") or {}
@@ -469,6 +590,11 @@ def _method(ctx, cls, node, prefix):
     nss = set(rules.java.get("literal_namespaces", []))
     consts = {fd["name"]: fd["constant"] for fd in cls["fields"] if fd.get("constant")}
     probes = list(md["literals"]) + [[consts[n], l] for n, l in md["idents"] if n in consts]
+    if rules.java.get("sql_literals"):
+        _sql_literals(ctx, cls, mid, probes)
+    # a file name used by a method that writes files is an output, otherwise an input
+    writes_files = any(c["n"] in _FILE_WRITE_CALLS for c in md["calls"]) or \
+        any((t or "").split("<")[0] in _FILE_WRITE_TYPES for t, _ in md["news"])
     for lit, line in probes:
         if "view" in nss and re.fullmatch(r"[\w\-]+(/[\w\-]+)+", lit) and not lit.startswith("redirect"):
             f.ref(mid, f"view:{lit}", Rel.TESTS if is_test_m else Rel.RENDERS, 0.9, line, via="literal", optional=True)
@@ -481,8 +607,10 @@ def _method(ctx, cls, node, prefix):
             f.ref(mid, f"batchjob:{lit}", Rel.RUNS, 0.7, line, via="literal", optional=True)
         if "config" in nss and re.fullmatch(r"[a-z][\w\-]*(\.[\w\-]+){1,}", lit):
             f.ref(mid, f"config:{lit}", Rel.REFERENCES, 0.7, line, via="literal", optional=True)
-        if re.fullmatch(r"[\w\-./]+\.(dat|csv|tsv|fix)", lit):
-            f.ref(mid, f"datafile:{lit}", Rel.READS, 0.6, line, via="literal", optional=True)
+        if re.fullmatch(r"[\w\-./]+\.(dat|csv|tsv|fix|txt)", lit) and "/" in lit or \
+                re.fullmatch(r"[\w\-.]+\.(dat|csv|tsv|fix)", lit):
+            f.ref(mid, f"datafile:{lit}", Rel.WRITES if writes_files else Rel.READS, 0.6, line,
+                  via="literal", optional=True)
         for ns in nss - {"view", "url", "msg", "batchjob", "config"}:
             if re.fullmatch(r"[A-Za-z][\w\-.]{2,}", lit):
                 f.ref(mid, f"{ns}:{lit}", Rel.REFERENCES, 0.75, line, via="literal", optional=True)
@@ -490,3 +618,47 @@ def _method(ctx, cls, node, prefix):
 
 def _has_path(a, ep):
     return any(a["args"].get(x) for x in ep.get("path_attrs", ["value"]))
+
+
+def _tx_calls(rules, cls, md) -> list[dict]:
+    """begin / commit / rollback on transaction APIs (UserTransaction, Connection, ...),
+    with whether the call sits inside a loop (sequential commits)."""
+    api = rules.java.get("transaction_apis") or {}
+    types = set(api.get("types", []))
+    if not types:
+        return []
+    ops = {n: op for op in ("begin", "commit", "rollback") for n in api.get(op, [])}
+    known = {fd["name"]: simple(fd["type"]) for fd in cls["fields"]}
+    known.update({n: simple(t) for t, n in md["params"]})
+    known.update({n: simple(t) for n, t in md["locals"].items()})
+    out = []
+    for c in md["calls"]:
+        r = c.get("r") or {}
+        if c["n"] in ops and r.get("k") == "id" and known.get(r.get("n")) in types:
+            out.append({"op": ops[c["n"]], "line": c["l"], "loop": bool(c.get("loop")), "api": known[r["n"]]})
+    return sorted(out, key=lambda x: x["line"])
+
+
+_FILE_WRITE_CALLS = {"write", "writeString", "newBufferedWriter", "newOutputStream", "println", "transferTo"}
+_FILE_WRITE_TYPES = {"FileWriter", "FileOutputStream", "PrintWriter", "BufferedWriter", "OutputStreamWriter",
+                     "PrintStream", "RandomAccessFile"}
+
+
+def _sql_literals(ctx, cls, mid, probes):
+    """SQL written as Java strings (JDBC): one SqlStatement per distinct text in the
+    class, executed by the methods that use it, with its tables / columns / routine calls."""
+    import hashlib
+    from .sql import crud_refs
+    seen = ctx.__dict__.setdefault("sql_nodes", set())
+    for lit, line in probes:
+        if not SQLISH.match(lit) or len(lit) < 12 or " " not in lit.strip():
+            continue
+        h = hashlib.sha1(lit.encode()).hexdigest()[:10]
+        sid = f"sql:{cls['fqn']}#{h}"
+        if sid not in seen:
+            seen.add(sid)
+            head = re.sub(r"\s+", " ", lit.strip())
+            ctx.f.node(sid, Kind.SQL_STATEMENT, f"SQL {head[:48]}", line, line, head[:600], keys=[sid], sql=head[:4000])
+            ctx.f.edge(f"java:{cls['fqn']}", sid, Rel.CONTAINS)
+            crud_refs(ctx.f, sid, lit, line, via="jdbc", conf=0.9)
+        ctx.f.edge(mid, sid, Rel.EXECUTES, 0.95, "parser", line=line)

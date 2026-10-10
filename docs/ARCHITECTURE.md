@@ -166,12 +166,15 @@ sequenceDiagram
   end
   P->>P: 外部ソース（sources/*.json）の FileFacts を追加、パス順に整列
   P->>LK: link(all facts)
+  LK->>LK: トランザクション解析（境界・範囲・注意点）
   LK-->>P: nodes, edges, report
   P->>ST: replace(nodes, edges)
   P->>WS: index_stats.json（件数・時間・未解決・ずれ・実行時対応・エラー）
 ```
 
-設計書フォルダ（`--docs`）のファイルはパスに `design:` を付けてリポジトリのファイルと区別し、同じパイプラインに流します。ジョブ定義・運用シェルを「設計書フォルダ」側に置いても、同じグラフに入ります。
+設計書フォルダ（`--docs`）のファイルはパスに `design:` を付けてリポジトリのファイルと区別し、同じパイプラインに流します。
+
+**システム単位のグラフ**（`index --system NAME --repo A --repo B …`、API の `repos`）では、各リポジトリのファイルに `<リポジトリ名>/` を付けて 1 つの計画にまとめます。リンクはキーで行うため、サーバをまたぐ関係（SOAP のオペレーション、REST のパス、JNDI 名、データファイル名、テーブル、ストアド、DB リンク）も 1 リポジトリ内と同じ仕組みでつながります。エンジンはパスの先頭の名前から読み出し先のリポジトリを決め（`Engine._source_path`）、横断検索は各リポジトリを順に検索します（`MultiSearch`）。差分モードでは変更したリポジトリを指定します（`Workspace.change_hunks`）。ジョブ定義・運用シェルを「設計書フォルダ」側に置いても、同じグラフに入ります。
 
 ### 4.2 中間形式 FileFacts
 
@@ -191,10 +194,10 @@ sequenceDiagram
 
 | 抽出器 | 形式の処理（コード） | ルールで与える意味（YAML） |
 |---|---|---|
-| java | tree-sitter で構文解析。クラス・メソッド・フィールド、呼び出し・型・フィールドアクセスの記述子、文字列リテラル（同一クラスの定数経由を含む） | エンドポイント・DI・テスト・エンティティ・SQL のアノテーション、リテラルを照合する名前空間、インターフェースと外部定義 SQL の結び付け、派生クエリ |
+| java | tree-sitter で構文解析。クラス・メソッド・フィールド、呼び出し・型・フィールドアクセスの記述子（ループ内か）、文字列リテラル（同一クラスの定数・`+` 連結・テキストブロックを含む） | エンドポイント・DI・テスト・エンティティ・SQL のアノテーション、リテラルを照合する名前空間、インターフェースと外部定義 SQL の結び付け、派生クエリ、`annotation_rules`（アノテーションからキー・属性・参照を作る汎用ルール）、`sql_literals`（SQL らしい文字列を SqlStatement にする）、`transaction_apis` |
 | xml | expat で行番号つきの木を作り、ルールを適用 | `xml:` ルール（対象ファイルの条件、選択パス、ノード・参照・リンクのテンプレート、SQL 本文） |
 | text | ファイルの glob に合うルールを適用 | `text:` ルール（正規表現、キーのテンプレート、文脈の保持、SQL として解析する捕捉） |
-| sql | sqlglot で CRUD・列を解析（失敗時は正規表現）。文の分割、PL/SQL・PL/pgSQL のブロック、DDL・コメント、DB オブジェクト | 方言 |
+| sql | sqlglot で CRUD・列を解析（失敗時は正規表現）。文の分割、PL/SQL・PL/pgSQL のブロック（パッケージ本体は手続き単位、文ごとの CRUD、手続き呼び出し、COMMIT・自律型トランザクション・行ロック・ループ内コミット）、`T@LINK` と DB リンクの定義、SQL*Plus のコマンド行と SPOOL、DDL・コメント、DB オブジェクト | 方言 |
 | props | properties・YAML のキー。メッセージバンドルの判定 | （なし） |
 | jobs | JP1/AJS（ajsprint 形式）のユニット・先行関係・起動コマンド、crontab | （なし。起動されるスクリプトの中身は text ルールが扱う） |
 | docs | xlsx・docx・md の表と見出し。表の見出し行の検出、CRUD 表の検出 | `office:` の見出し語彙・CRUD 記号・最低一致数 |
@@ -211,10 +214,10 @@ XML ルールの記述要素:
 |---|---|
 | `when` | 対象ファイルの条件（ルート要素名・ルートの属性・パスの glob） |
 | `select` | `/a/b`（ルートから）、`//x`（任意の深さ）、`\|` で複数 |
-| `node` | 種別・id・名前・keys・親・層・`sql: body`・`sql_skip` |
-| `refs` / `links` | 要素からキーへの参照、キー同士の関係 |
+| `node` | 種別・id・名前・keys・props・親・層・`sql: body`・`sql_skip` |
+| `refs` / `links` | 要素からキーへの参照（`props` は関係の属性になる）、キー同士の関係 |
 | `where` / `vars` | 属性の条件、ファイルパスから正規表現で取り出す変数 |
-| テンプレート | `{@a}` `{/@a}` `{../@a}` `{ancestor::tag@a}` `{ancestor-node}` `{text}` `{file}` `{line}`、代替 `a\|b`、フィルタ `:snake :lower :upper :basename :nocomponent` |
+| テンプレート | `{@a}` `{/@a}` `{../@a}` `{ancestor::tag@a}` `{>child/path}` `{..>child}` `{ancestor-node}` `{text}` `{file}` `{line}`、代替 `a\|b`、フィルタ `:snake :lower :upper :basename :nocomponent` |
 
 ### 4.4 ノードと関係
 
@@ -285,7 +288,8 @@ XML ルールの記述要素:
 | view | ビュー名の揺れ（接頭辞・拡張子・テンプレートルート） |
 | file | パスの接尾辞・ベース名 |
 | column / colany | テーブル付き列、別名や候補テーブルからの列 |
-| datafile | パスのベース名で同一視。無ければ DataFile ノードを作る（ジョブ間の受け渡しを表現） |
+| datafile | パスのベース名で同一視。無ければ DataFile ノードを作る（ジョブ間・サーバ間の受け渡しを表現。送信元の `/data/out/orders.csv` と受信先の `/recv/orders.csv` は同じノード） |
+| ejbmethod | `ejb-jar.xml` の `<method-name>*</method-name>` をその EJB の全メソッドに展開 |
 | mention | 設計書中の語。一意に定まれば確度 0.95、2〜3 件なら確度を分配、それ以上は曖昧として扱わない |
 | job / bean / screen / function | 名前の索引 |
 
@@ -297,6 +301,28 @@ Java の解決（`resolve_java.py`）は、抽出時に記録した記述子か�
 - 定数フィールドへのリテラル参照
 
 型推論の範囲は javac の簡易版で、ジェネリクスの推論やラムダの型は追いません（§12）。
+
+ルールや抽出器が参照に付けた属性（`tx_attr`、`dblink`、`via` など。`tables` を除く）は、そのまま関係の属性になります。
+
+### 5.5 トランザクション解析
+
+リンクの最後に `pipeline/transactions.py` がグラフ全体を走査します。フレームワークの知識は持たず、ルールパックと抽出器が付けた属性だけを読みます。
+
+| 入力の属性 | 付ける所 |
+|---|---|
+| `tx_attr`（メソッド）、`tx_attr_class`・`tx_management`・`ejb`（クラス） | `jee-remoting` のアノテーションルール |
+| CONFIGURES 関係の `tx_attr`・`transaction_type` | ejb-jar.xml の XML ルール |
+| `tx_calls`（begin / commit / rollback と、ループ内か） | Java 抽出器（`java.transaction_apis` の型への呼び出し） |
+| `tx`（commits / rollbacks / autonomous / locks / commit_in_loop / dynamic_sql） | SQL 抽出器（PL/SQL の手続きごと） |
+| `remote_call`・`remote_role`、エンドポイントへの参照 | SOAP のアノテーションルール、REST のパスのリテラル |
+| WRITES の `dblink`、JNDI 参照の先が MDB | SQL 抽出器、`jndi-resource` ルール |
+
+1. **境界の決定**（`attr`）: ejb-jar.xml → メソッドのアノテーション → Bean 管理（`tx_management: BEAN`）→ クラスのアノテーション → EJB 既定の REQUIRED。REQUIRED / REQUIRES_NEW / NESTED、Bean 管理で begin / commit を呼ぶメソッド、commit を呼ぶメソッド、自分で COMMIT するストアドを境界にします。
+2. **範囲の探索**（`scope`）: CALLS / IMPLEMENTED_BY / EXECUTES をたどります。REQUIRES_NEW・NOT_SUPPORTED・NEVER・Bean 管理の呼び出し先は「別トランザクション」として止め、SOAP / REST の呼び出しは「サーバ外」として止めます。テーブルとデータファイルへの READS / WRITES は記録して止めます。
+3. **注意点**: 範囲の中で `REMOTE_IN_TX`・`INDEPENDENT_TX`・`PROC_COMMIT_IN_TX`・`DBLINK_WRITE`・`ASYNC_MESSAGE`・`FILE_OUTPUT_IN_TX` を、要素自体の性質として `AUTONOMOUS`・`COMMIT_IN_LOOP`・`LOCK` を記録します。水準（high / medium / low）と日本語の説明を付けます。
+4. **書き戻し**: 境界に `tx`（種類・根拠・範囲の要素数・テーブル・リモート呼び出し）と `tx_risks`、注意点が起きた要素にも同じ注意点（`root` 付き）、範囲の要素に `tx_in` を付けます。どの境界にも入らない要素も、自身の性質（行ロックなど）は残します。要約は取込状況の `transactions` です。
+
+エンジンは候補を作るときにこの属性を写し（`tx_risks`・`tx`）、リスト・詳細パネル・レポートに出します。静的な呼び出し関係による近似であり、XA の参加範囲、例外によるロールバック条件、`@Remote` 越しの伝播は判定しません（§12）。
 
 ### 5.2 SQL の扱い
 
@@ -379,6 +405,7 @@ flowchart LR
 - **ハブの抑制**: 被参照が多い要素（ユーティリティ等）からの CALLS / REFERENCES は減衰させます。
 - **終端**: 設計書・テスト・SQL ファイル・設定などは終端とし、そこから先へは広げません。ただし SQL ファイルやスクリプトを**起動している**もの（RUNS の逆向き）へは伝えます。列の変更 → 夜間 SQL → シェル → JP1 ジョブ、という経路のためです。
 - **ブースト**: 再調査の指示（「設計書と照合して」「DB まで追って」）で、特定の層の重みを上げます。
+- **データ連携**: `flow: true` の規則（データファイルの読み手、データファイルを書く要素から書き出し先、`only_in_flow` のファイル監視ジョブから後続ジョブ・起動スクリプト）は、終端の SQL ファイルからも適用し、深さの上限を超えて `flow_depth`（既定 8 段）までたどります。打ち切りは `flow_min_score`（既定 0.1）です。別の経路で先に見つかっていた要素も、データ連携の経路上ならそこから先をたどります。こうして見つかった候補には `data_flow` が付き、ルール判定では「影響低」にせず「要確認」に留めます。出力 SQL → CSV → 送信 → 受信側のファイル監視 → 取り込み、のように 1 つの値がサーバをまたいで運ばれる経路を途中で切らないためです。
 
 ### 6.2.1 AI判定の予算
 
@@ -473,7 +500,7 @@ sequenceDiagram
 
 ```
 <CODEGRAPH_DATA_DIR>/
-  workspace.json          グラフの一覧（repo・ref・snapshot・docs_dir・commit・件数）
+  workspace.json          グラフの一覧（repo・ref・snapshot・docs_dir・commit・件数。システム単位は repos・commits）
   facts.db                抽出キャッシュ（全グラフで共有）
   sources/*.json          DB辞書・実行時SQL
   worktrees/<ref>/        ref ごとの git worktree
@@ -549,6 +576,7 @@ MCP サーバは、エージェントがファイルを丸ごと読まずに「�
 |---|---|---|
 | 実機未検証 | Neo4j ストア、Docker 構成、Oracle への直接接続、Zoekt / GitLab のコード検索、MR/PR へのコメント投稿、Claude 判定 | 導入時に実機で確認する。インターフェースはローカル実装と共通 |
 | 型解決の精度 | ジェネリクスの推論・ラムダ・リフレクションは追わない | 横断検索・独立再探索で補う。将来は LSP / javac を差し替え点として併用 |
+| トランザクション解析の精度 | 静的な呼び出し関係による近似。XA の参加範囲、例外によるロールバック条件、`@Remote` 越しの伝播、接続先 URL を設定から組み立てる REST は判定しない | 注意点は「確認すべき場所」の提示に留め、判断はレビューで行う |
 | 設計書の形式 | 見出し行を語彙で探す方式のため、結合セルの多い帳票型・図からは取り出せない | `office:` の語彙を現場の書式に合わせて追加する |
 | ルールベース判定の絞り込み | 網羅は高いが、「影響あり」の適合率は低い | Claude 判定、またはビュワーでのレビューを前提にする |
 | リンクが全体実行 | 変更が 1 ファイルでもリンクは全体 | §8 の増分リンク |
@@ -594,6 +622,7 @@ MCP サーバは、エージェントがファイルを丸ごと読まずに「�
 |---|---|
 | ルールパックによる社内フレームワーク対応 | `tests/test_mechanism.py::test_rule_pack_links_java_to_xml_sql_to_tables`、OFBiz の取込 |
 | ジョブ・スクリプト・データファイルの連鎖 | `test_jobs_scripts_and_data_files_chain`、ツアー予約の JP1 定義 |
+| サーバ間連携・システム単位のグラフ・トランザクション解析・データ連携の伝播 | `tests/test_sor_system.py`（`samples/sor-env` の 3 リポジトリ） |
 | Office の見出し検出・CRUD 表 | `test_office_header_detection_and_crud_matrix` |
 | DB 辞書のずれ・実行時 SQL の対応 | `test_catalog_drift_and_runtime_matching`、PostgreSQL 16 実機、Oracle 辞書の CSV |
 | 抽出キャッシュの増分 | `test_fact_cache_reextracts_only_changed_files`、OFBiz の 1 ファイル変更 |

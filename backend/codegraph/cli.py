@@ -24,8 +24,10 @@ def main(argv=None):
     ap = argparse.ArgumentParser(prog="codegraph")
     ap.add_argument("--data", default=os.environ.get("CODEGRAPH_DATA_DIR", "./data"))
     sub = ap.add_subparsers(dest="cmd", required=True)
-    p = sub.add_parser("index"); p.add_argument("--repo", required=True); p.add_argument("--docs")
-    p.add_argument("--ref"); p.add_argument("--graph")
+    p = sub.add_parser("index"); p.add_argument("--repo", required=True, action="append",
+                                                help="repository; repeat with --system for several (name=path or path)")
+    p.add_argument("--docs"); p.add_argument("--ref"); p.add_argument("--graph")
+    p.add_argument("--system", help="index the --repo repositories together as one graph with this name")
     p = sub.add_parser("catalog"); p.add_argument("kind", choices=["postgres", "oracle"]); p.add_argument("--dsn")
     p.add_argument("--csv-dir"); p.add_argument("--user"); p.add_argument("--password"); p.add_argument("--owner")
     p.add_argument("--name", default="db")
@@ -37,7 +39,7 @@ def main(argv=None):
     p.add_argument("--llm-min-score", type=float, help="candidates below this score are judged by rules")
     p.add_argument("--json", action="store_true")
     p = sub.add_parser("diff"); p.add_argument("--base", required=True); p.add_argument("--head", required=True)
-    p.add_argument("--graph")
+    p.add_argument("--graph"); p.add_argument("--repo", help="repository of a system graph that changed")
     p = sub.add_parser("serve"); p.add_argument("--port", type=int, default=8765); p.add_argument("--host", default="127.0.0.1")
     sub.add_parser("mcp")
     a = ap.parse_args(argv)
@@ -63,10 +65,22 @@ def main(argv=None):
     from .workspace import Workspace
     ws = Workspace(a.data)
     if a.cmd == "index":
-        st = ws.index(a.repo, a.docs and os.path.abspath(a.docs), a.ref, a.graph,
-                      progress=lambda e, d: print(f"  {e} {d}", file=sys.stderr))
+        progress = lambda e, d: print(f"  {e} {d}", file=sys.stderr)
+        if a.system or len(a.repo) > 1:
+            if a.ref:
+                sys.exit("--ref cannot be combined with several repositories")
+            repos = {}
+            for r in a.repo:
+                n, _, pth = r.partition("=") if "=" in r else (os.path.basename(os.path.abspath(r)), "", r)
+                if n in repos:
+                    sys.exit(f"two repositories named {n}: use name=path")
+                repos[n] = pth
+            st = ws.index_system(a.system or a.graph or "system", repos, a.docs and os.path.abspath(a.docs),
+                                 progress=progress)
+        else:
+            st = ws.index(a.repo[0], a.docs and os.path.abspath(a.docs), a.ref, a.graph, progress=progress)
         print(json.dumps({k: st[k] for k in ("nodes", "edges", "files", "parsed", "cached", "seconds", "unresolved",
-                                            "runtime", "drift") if k in st}, ensure_ascii=False, indent=1, default=str))
+                                            "runtime", "drift", "transactions", "repos") if k in st}, ensure_ascii=False, indent=1, default=str))
         return
     if a.cmd == "catalog":
         from .sources.catalog import import_oracle, import_postgres, save_source
@@ -83,17 +97,18 @@ def main(argv=None):
     if a.cmd == "report":
         st = ws.stats(a.graph)
         print(json.dumps({k: st.get(k) for k in ("nodes", "edges", "by_kind", "unresolved", "unresolved_samples",
-                                                 "external", "runtime", "drift", "errors", "error_samples")},
+                                                 "external", "runtime", "drift", "transactions", "errors", "error_samples")},
                          ensure_ascii=False, indent=1))
         return
     e = ws.engine(a.graph)
     if e is None:
         sys.exit("index a repository first")
     if a.cmd == "diff":
-        from .sources.git import GitRepo
-        g = ws.meta["graphs"][a.graph or ws.default()]
-        gr = GitRepo(g["repo"], ws.root)
-        nodes, added = e.diff_nodes(gr.hunks(gr.resolve(a.base), gr.resolve(a.head)))
+        try:
+            hunks = ws.change_hunks(a.graph or ws.default(), a.base, a.head, a.repo)
+        except ValueError as ex:
+            sys.exit(str(ex))
+        nodes, added = e.diff_nodes(hunks)
         rid = e.start_run(f"変更差分 {a.base}..{a.head}", None, {"mode": "diff", "diff_nodes": nodes,
                                                               "added_files": added}, background=False)
         print(e.scope_markdown(e.state(rid), f"{a.base}..{a.head}"))

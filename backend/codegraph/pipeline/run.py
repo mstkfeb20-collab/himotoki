@@ -35,7 +35,7 @@ def classify(path: str, rules, head: str | None = None) -> str | None:
     low = path.lower()
     if low.endswith(".java"):
         return "java"
-    if low.endswith((".xml", ".xhtml")) and not low.endswith(("pom.xml",)):
+    if low.endswith((".xml", ".xhtml", ".wsdl", ".xsd")) and not low.endswith(("pom.xml",)):
         return "xml"
     if low.endswith(SQL_EXT):
         return "sql"
@@ -219,11 +219,18 @@ class Pipeline:
         emit("extract.done", {"parsed": len(misses), "seconds": round(time.time() - t0, 2)})
         return facts, len(misses)
 
-    def index(self, repo: str, store, docs_dir: str | None = None, extra_facts: list | None = None,
+    def index(self, repo: str | dict, store, docs_dir: str | None = None, extra_facts: list | None = None,
               progress: Callable | None = None, stats_dir: str | None = None) -> dict:
+        """`repo` is one repository, or {name: path} for a system made of several
+        repositories: their files are indexed into one graph under `<name>/`, so
+        calls, files, tables and queues that cross servers link like any other."""
         emit = progress or (lambda *_: None)
         t0 = time.time()
-        plan = self.plan(repo)
+        repos = check_repo_names(repo) if isinstance(repo, dict) else None
+        if repos:
+            plan = [p for name, path in repos.items() for p in self.plan(path, prefix=f"{name}/")]
+        else:
+            plan = self.plan(repo)
         if docs_dir and os.path.isdir(docs_dir):
             plan += self.plan(docs_dir, prefix="design:")
         facts, parsed = self.extract_all(plan, progress)
@@ -249,15 +256,33 @@ class Pipeline:
             "cached": len(plan) - parsed, "seconds": round(time.time() - t0, 2),
             "seconds_extract": round(t1 - t0, 2), "seconds_link": round(t2 - t1, 2),
             "unresolved": report["unresolved"], "unresolved_samples": report["unresolved_samples"],
-            "external": report["external"], "runtime": report["runtime"], "drift": report["drift"],
+            "external": report["external"], "runtime": report["runtime"], "drift": report["drift"], "transactions": report.get("transactions"),
             "resolved_by": report["resolved_by"], "errors": len(errors), "error_samples": errors[:20],
             "rules": self.rules.names(), "rules_digest": self.rules.digest,
-            "commit": _git_head(repo),
+            "commit": None if repos else _git_head(repo),
         })
+        if repos:
+            stats.update({"repo": None, "repos": repos, "commits": {n: _git_head(p) for n, p in repos.items()},
+                          "files_by_repo": {n: sum(1 for x in plan if x[2].startswith(n + "/")) for n in repos}})
         json.dump(stats, open(os.path.join(stats_dir or self.data_dir, "index_stats.json"), "w", encoding="utf-8"),
                   ensure_ascii=False, indent=1)
         emit("index.done", {k: stats[k] for k in ("nodes", "edges", "files", "parsed", "seconds")})
         return stats
+
+
+REPO_NAME = re.compile(r"[A-Za-z0-9][\w.\-]{0,99}")
+
+
+def check_repo_names(repos: dict) -> dict:
+    """Repository names become path prefixes inside the graph: plain names only."""
+    if not repos:
+        raise ValueError("no repositories given")
+    out = {}
+    for name, path in repos.items():
+        if not REPO_NAME.fullmatch(str(name)) or name in ("design",):
+            raise ValueError(f"invalid repository name: {str(name)[:60]!r}")
+        out[str(name)] = path
+    return out
 
 
 def _git_head(repo):

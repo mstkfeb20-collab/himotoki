@@ -18,3 +18,21 @@ text:
       - {regex: '\b(?:psql|sqlplus)\b[^\n]*?\s-c\s+"([^"]+)"', key: "{1}", sql: true, conf: 0.85}
       - {regex: '<<\s*-?\s*[''"]?(?:EOF|EOS|SQL|END)[''"]?\n([\s\S]*?)\n\s*(?:EOF|EOS|SQL|END)\b', key: "{1}", sql: true, conf: 0.8}
       - {regex: '(?:OUT_FILE=|OUTPUT=|-o\s|--output[= ])\s*"?([\w./${}\-]+\.(?:dat|csv|tsv|txt|fix))\b', key: "datafile:{1}", rel: WRITES, conf: 0.75}
+      # copy / move: the second path is written
+      - {regex: '\b(?:cp|mv)\s+(?:-\w+\s+)*\S+\s+"?([\w./${}\-]+\.(?:dat|csv|tsv|txt|fix|gz|zip))\b', key: "datafile:{1}", rel: WRITES, conf: 0.8}
+      # file transfer: sftp / ftp batch lines (put local remote, get remote local) and scp
+      - {regex: '(?m)^\s*m?put\s+"?([\w./${}\-]+\.(?:dat|csv|tsv|txt|fix|gz|zip))"?(?:\s|$)', key: "datafile:{1}", rel: READS, conf: 0.85}
+      - {regex: '(?m)^\s*m?put\s+\S+\s+"?([\w./${}\-]+\.(?:dat|csv|tsv|txt|fix|gz|zip))', key: "datafile:{1}", rel: WRITES, conf: 0.85}
+      - {regex: '(?m)^\s*m?get\s+"?([\w./${}\-]+\.(?:dat|csv|tsv|txt|fix|gz|zip))"?(?:\s|$)', key: "datafile:{1}", rel: READS, conf: 0.85}
+      - {regex: '(?m)^\s*m?get\s+\S+\s+"?([\w./${}\-]+\.(?:dat|csv|tsv|txt|fix|gz|zip))', key: "datafile:{1}", rel: WRITES, conf: 0.85}
+      - {regex: '\bscp\b[^\n]*?\s([\w./${}\-]+\.(?:dat|csv|tsv|txt|fix|gz|zip))\s+\S+:([\w./${}\-]+)', key: "datafile:{1}", rel: READS, conf: 0.85}
+      - {regex: '\bscp\b[^\n]*?\s\S+\s+\S+:([\w./${}\-]+\.(?:dat|csv|tsv|txt|fix|gz|zip))', key: "datafile:{1}", rel: WRITES, conf: 0.85}
+      # SQL*Loader: control file and data file
+      - {regex: '\bsqlldr\b[^\n]*\bcontrol=([\w./${}\-]+)', key: "file:{1}", rel: RUNS, conf: 0.9}
+      - {regex: '\bsqlldr\b[^\n]*\bdata=([\w./${}\-]+)', key: "datafile:{1}", rel: READS, conf: 0.9}
+  - name: sqlldr-control
+    files: ["**/*.ctl"]
+    node: {kind: Script, keys: ["file:{path}"]}
+    patterns:
+      - {regex: '(?i)\binto\s+table\s+([\w$#."]+)', key: "table:{1}", rel: WRITES, conf: 0.95}
+      - {regex: '(?i)\binfile\s+''([^'']+)''', key: "datafile:{1}", rel: READS, conf: 0.9}

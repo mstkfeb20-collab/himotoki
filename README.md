@@ -78,7 +78,8 @@
 | `spring-xml` | Bean 定義・プロパティ参照、Spring Batch の job/step/tasklet/chunk |
 | `struts1` | action・form-bean・forward |
 | `web-templates` | JSP / Thymeleaf / FreeMarker の項目バインド・メッセージ・リンク |
-| `scripts-jobs` | シェルから起動される Java メインクラス・バッチジョブ・SQL（sqlplus/psql）・他スクリプト、読み書きするデータファイル、埋め込みSQL |
+| `jee-remoting` | EJB（コンテナ管理／Bean管理トランザクション、MDB）・ejb-jar.xml・weblogic-ejb-jar.xml・WebLogic の JDBC データソース・JNDI、JAX-WS（SOAP）のサービスとクライアント・WSDL、Spring `@Transactional`、Java 文字列に直接書いた SQL（JDBC）とストアド呼び出し |
+| `scripts-jobs` | シェルから起動される Java メインクラス・バッチジョブ・SQL（sqlplus/psql）・他スクリプト、読み書きするデータファイル（cp・sftp/ftp の put/get・scp・SQL*Loader の制御ファイルとデータ）、埋め込みSQL |
 | `office` | 設計書の見出しの語彙（テーブル名・項目名(物理)・画面ID・ジョブ名…）と CRUD 記号 |
 | `propagation` | 影響が伝わる関係・向き・重み（エンジンはこの表だけを見る） |
 
@@ -104,7 +105,9 @@ xml:
       sql: body                    # 本文を SQL として解析し、テーブル・列の READS/WRITES を作る
 ```
 
-XML ルールのテンプレートには `{@attr}`（自要素の属性）・`{/@attr}`（ルート）・`{../@attr}`（親）・`{ancestor::tag@attr}`・`{text}`・`{file}` を使えます。`|` で代替（最初に値があるもの）、`:snake` `:lower` `:basename` などのフィルタも指定できます。ほかに `where`（属性条件）・`vars`（ファイルパスから正規表現で取り出す変数）・`links`（キー同士の関係）・`sql_skip`（SQL に含めない子要素）があります。テキストルールは正規表現と `{1}` などのグループ参照、`sql: true`（捕まえた文字列を SQL として解析）で書きます。
+XML ルールのテンプレートには `{@attr}`（自要素の属性）・`{/@attr}`（ルート）・`{../@attr}`（親）・`{ancestor::tag@attr}`・`{>child/path}`（子要素の本文）・`{..>child}`（親の子要素）・`{text}`・`{file}` を使えます。`|` で代替（最初に値があるもの）、`:snake` `:lower` `:basename` などのフィルタも指定できます。ほかに `where`（属性条件）・`vars`（ファイルパスから正規表現で取り出す変数）・`links`（キー同士の関係）・`sql_skip`（SQL に含めない子要素）があります。テキストルールは正規表現と `{1}` などのグループ参照、`sql: true`（捕まえた文字列を SQL として解析）で書きます。
+
+Java のアノテーションは `java.annotation_rules` で意味を与えます（`on: class|method|field`、`requires`・`requires_class`・`class_kind`、`keys`・`props`・`refs`）。テンプレートには `{method}` `{class}` `{fqn}` `{field}` `{type}`、要素の `{@Ann.attr}`、クラスの `{class@Ann.attr}`、代替 `|`・既定値 `'REQUIRED'`・フィルタ `:last` などが使えます。たとえば SOAP は、サーバ側の `@WebService` 実装に `soapop:{名前空間}#{オペレーション}` というキーを持たせ、クライアント側のインタフェースのメソッドから同じキーを参照するだけで、リポジトリをまたいでつながります。
 
 ### 2. リンク: 根拠と確度つきの関係
 
@@ -113,7 +116,8 @@ XML ルールのテンプレートには `{@attr}`（自要素の属性）・`{/
 - Java の型解決（入れ子・明示 import・同一パッケージ・ワイルドカード・一意な単純名）
 - 受け手の型からのメソッド解決、インターフェース／抽象メソッドから実装への `IMPLEMENTED_BY`
 - URL テンプレート、ビュー名の揺れ、`output.reserve.remarks` のようなプロパティパス
-- テーブル・列（別名・候補テーブル）、ジョブ名、Bean 名、データファイル
+- テーブル・列（別名・候補テーブル）、ジョブ名、Bean 名、データファイル（ファイル名で照合するので、送信側の `/data/out/orders.csv` と受信側の `/recv/orders.csv` が同じ連携ファイルになる）
+- ejb-jar.xml の `<method-name>*</method-name>`（その EJB の全メソッド）
 
 すべての関係には次の 2 つが付きます。
 
@@ -128,6 +132,45 @@ XML ルールのテンプレートには `{@attr}`（自要素の属性）・`{/
 - DB辞書とリポジトリの DDL のずれ（DB にだけある列、DDL にだけある列、辞書に無いテーブル）
 - 実行時SQLのうち、コード中のどの SQL とも対応しないもの（動的SQL・他システム・運用ツールといった静的解析の死角）
 
+### 2.1 サーバ間連携とトランザクション
+
+SoR では 1 つの業務が複数のサーバにまたがります。次の連携を、リポジトリをまたいで関係にします。
+
+| 連携 | つなぎ方 |
+|---|---|
+| SOAP | クライアントのインタフェース（`@WebService`）→ サーバの実装。名前空間＋オペレーション名で照合。WSDL の operation も同じキーで結ぶ |
+| REST | クライアントのパスのリテラル → `@Path` / `@RequestMapping` のエンドポイント |
+| JMS | `@Resource(lookup=…)` のキュー → `@MessageDriven(mappedName=…)` |
+| JNDI | `@Resource` のデータソース → WebLogic の JDBC モジュール（ドライバ・URL・2相コミットの設定）。weblogic-ejb-jar.xml の jndi-name |
+| DB リンク | `INSERT INTO T@LINK` → テーブル T（`dblink` 属性付き）と `CREATE DATABASE LINK` の定義 |
+| ストアド | JDBC の `{call PKG.PROC(?)}`・PL/SQL 内の呼び出し → パッケージ内の手続き単位のノード |
+| ファイル連携 | SQL*Plus の SPOOL、cp、sftp/ftp の put/get、scp、SQL*Loader、JP1 のファイル監視（`flwf`）、Java のファイル読み書き → 同じ名前のデータファイル |
+
+インデックスの最後に**トランザクション解析**を行います（`pipeline/transactions.py`）。境界（EJB のコンテナ管理トランザクション。ejb-jar.xml の指定 → メソッドのアノテーション → クラスのアノテーション → EJB 既定の REQUIRED の順。Bean 管理の `UserTransaction`、Spring `@Transactional`、自分で COMMIT するストアド）から、呼び出し・実装・SQL 実行・ストアド呼び出しをたどって範囲を求めます。REQUIRES_NEW / NOT_SUPPORTED の呼び出し先とサーバ外への呼び出しで止めます。範囲の中で次を注意点として記録します。
+
+| コード | 内容 |
+|---|---|
+| `REMOTE_IN_TX` | トランザクション内の SOAP / REST 呼び出し（ロールバックしても相手の更新は戻らない） |
+| `INDEPENDENT_TX` | REQUIRES_NEW などで別トランザクションとして先に確定する呼び出し |
+| `PROC_COMMIT_IN_TX` | コンテナ管理トランザクションから呼ぶストアドが内部で COMMIT / ROLLBACK する |
+| `AUTONOMOUS` | PRAGMA AUTONOMOUS_TRANSACTION |
+| `DBLINK_WRITE` | DB リンク越しの更新（分散トランザクション） |
+| `COMMIT_IN_LOOP` | ループ内の分割コミット（ストアド・Bean 管理トランザクション） |
+| `LOCK` | SELECT … FOR UPDATE などの行ロック |
+| `ASYNC_MESSAGE` | トランザクション内の JMS 送信 |
+| `FILE_OUTPUT_IN_TX` | トランザクション内のファイル出力 |
+
+結果は要素の属性（境界の種類・範囲の要素数・更新テーブル・リモート呼び出し、注意点）になり、取込状況（`transactions`）、ビュワーのリスト行のバッジと詳細パネル、レポートの「トランザクション・連携上の注意」に出ます。
+
+**システム単位のグラフ**: 複数のリポジトリを 1 つのグラフにまとめます。ファイルは `<リポジトリ名>/<パス>` として入り、上の連携がサーバをまたいでつながります。
+
+```bash
+codegraph index --system sor --repo order-web=/src/order-web --repo /src/inventory-svc --repo /src/shipping-svc
+codegraph diff --graph sor --repo order-web --base main --head feature/x   # 変更したリポジトリを指定
+```
+
+自作のサンプル `samples/sor-env`（受注・在庫・出荷の 3 サーバ）で、受注の NOTE 列の拡張が、出力 SQL → CSV → sftp 送信 → ファイル監視ジョブ → 取り込み → 出荷側の SHIPMENT_REQ.NOTE まで届くことを確認しています。
+
 ### 3. 増分・スナップショット・規模
 
 - **抽出キャッシュ**: `facts.db`（SQLite）に (パス, git の blob SHA, 抽出器, 抽出器のコード, ルールのダイジェスト) をキーとして保存します。変更の無いファイルは再抽出しません。ルールや抽出器を直すと、影響する分だけ再抽出されます。
@@ -140,7 +183,7 @@ XML ルールのテンプレートには `{@attr}`（自要素の属性）・`{/
 |---|---|
 | 要求の構造化 | Claude（APIキーがあるとき）またはルールベースで変更意図に分ける（追加／変更／削除、値の変更、新しい語） |
 | 起点 | 識別子の一致、用語集、変更前の値（「80文字」→ 80 を持つ要素）、類似度 |
-| 伝播 | `propagation.yaml` の関係・向き・重みで閉包を計算。設計書・テスト・SQLファイルなどは終端（SQLファイルはそれを起動するジョブへは伝わる） |
+| 伝播 | `propagation.yaml` の関係・向き・重みで閉包を計算。設計書・テスト・SQLファイルなどは終端（SQLファイルはそれを起動するジョブと、書き出すデータファイルへは伝わる）。データ連携（ファイルの書き出し → 読み手 → ファイル監視ジョブ → 後続ジョブ）は `flow` 指定の関係だけで深さの上限を超えてたどる（`flow_depth` 既定 8 段） |
 | 判定 | 確度・理由・変更種別 |
 | 横断検索 | 起点の語でリポジトリ全体を検索（既定は git grep。`CODEGRAPH_CODESEARCH` で Zoekt・GitLab のコード検索に切り替え、ソース管理サーバ側の全ブランチ・全リポジトリを対象にできる） |
 | 独立再探索 | 依存グラフを使わない別戦略で探し、本探索と突き合わせる |
@@ -174,6 +217,8 @@ export CODEGRAPH_DATA_DIR=./data
 
 # インデックス（設計書・ジョブ定義・運用シェルのフォルダは --docs）
 codegraph index --repo /path/to/repo --docs /path/to/ops-and-docs [--ref release/1.2]
+# 複数サーバのリポジトリを1つのシステムとして（名前=パス、または パスのフォルダ名が名前）
+codegraph index --system sor --repo /src/order-web --repo /src/inventory-svc --repo /src/shipping-svc
 
 # DB辞書と実行時SQL（任意。取り込んだら index をやり直すとリンクされる）
 codegraph catalog postgres --dsn "postgresql://user@host/db" --name proddb
@@ -311,11 +356,11 @@ AI（Claude）を使うのは「要求の構造化」と「候補の判定」と
 | GET | /api/usage | AIの使用量と費用（今日・今月・日別、円換算） |
 | POST | /api/requirements/preview | 要求の書き方の確認（読み取り・起点・注意点。AIは使わない） |
 | GET | /api/requirements/example | チュートリアル用の練習の要求（リポジトリの項目から作成） |
-| POST | /api/index | インデックス（repo, docs_dir, ref, graph） |
+| POST | /api/index | インデックス（repo, docs_dir, ref, graph）。システム単位は `repos: {名前: パス}` と `graph` |
 | GET | /api/index/report | 取込状況（未解決参照・ずれ・実行時SQLの対応・エラー） |
 | POST | /api/sources/catalog・/api/sources/runtime | DB辞書・実行時SQLの取込 |
 | POST | /api/runs | 要求から解析（`llm_max_items`・`llm_min_score` で今回だけAIの上限・閾値を変更） |
-| POST | /api/runs/diff | 差分から解析（base, head） |
+| POST | /api/runs/diff | 差分から解析（base, head。システム単位のグラフでは repo も） |
 | GET | /api/runs/{id}・/api/runs/{id}/scope | 状態・回帰確認の範囲（Markdown 付き） |
 | WS | /ws/runs/{id} | イベントストリーム |
 | POST | /api/runs/{id}/decisions(/bulk)・candidates・reinvestigate・approve・ask・comments | 人の操作 |
@@ -397,10 +442,11 @@ v1 からの回帰確認です。正解リストは `eval/ground_truth.json`、�
 
 ### テスト
 
-`backend/tests`（38 件、すべてオフライン）:
+`backend/tests`（44 件、すべてオフライン）:
 
 - 小さな固定リポジトリでの一連の操作
 - 一時リポジトリでの仕組みの検証: 社内フレームワークのルールパック、JP1→シェル→データファイル→後続ジョブ、Excel の見出し検出と CRUD 表、DB辞書のずれと実行時SQLの対応、キャッシュの増分、差分モード、Webhook の解釈、SQL の端のケース
+- サーバ間連携とトランザクション（`test_sor_system.py`）: 3 リポジトリのシステム単位のインデックス、SOAP・REST・JMS・JNDI・DB リンク・ファイル連携のつながり、トランザクション境界と注意点、NOTE 拡張が出荷サーバまで届くこと、API
 - AI判定の予算（`test_llm_budget.py`）: 再調査での再利用、閾値、上限、上限なし、設定ファイル・環境変数・解析ごとの指定の優先順位
 - 攻撃が失敗することの確認（`test_security.py`）: ファイル読み取りの迂回、CORS・Host 偽装・クロスサイト WebSocket、認証、パス制限、Webhook 偽装、シンボリックリンク、XXE、zip 爆弾
 
@@ -411,7 +457,8 @@ Oracle 辞書の CSV 取込（`samples/tour-env/db/oracle_catalog`）は、パ�
 - **実機未検証のもの**: Neo4j ストアと Docker 構成、Oracle への直接接続、Zoekt・GitLab のコード検索、MR/PR へのコメント投稿、Claude 判定。作成環境から Docker Hub・Maven Central・外部サービスに接続できなかったためです。ローカルストアと同じインターフェースのテストは通っていますが、初回は実機での確認が必要です。
 - **評価の独立性**: 周辺資産（ジョブ・設計書・DB にだけある改修）と正解リストは同じ作り手（Claude）が用意したもので、独立した評価ではありません。社内の実案件で、有識者が作った正解と突き合わせる評価が次の段階です。
 - **ルールベース判定の絞り込みは弱い**: 候補の網羅は高い一方、「影響あり」の適合率・履歴評価の再現率は低めです。Claude 判定かレビューが前提です。
-- **言語の範囲**: Java の型解決は javac 相当の簡易版（ジェネリクスの推論・ラムダの型は追わない）。COBOL・C#・PL/SQL の手続き内部の制御フローは対象外です。PL/SQL・PL/pgSQL は CRUD とオブジェクト単位で扱います。
+- **言語の範囲**: Java の型解決は javac 相当の簡易版（ジェネリクスの推論・ラムダの型は追わない）。COBOL・C#・PL/SQL の手続き内部の制御フローは対象外です。PL/SQL はパッケージ内の手続き単位で CRUD・呼び出し・COMMIT/自律型トランザクション/行ロック/ループ内コミットを取り出しますが、分岐ごとの実行経路は追いません。
+- **トランザクション解析の範囲**: 静的な呼び出し関係による近似です。実行時の XA 構成（どのデータソースが同じグローバルトランザクションに入るか）、タイムアウト、例外によるロールバック条件（`rollbackFor` など）、EJB の `@Remote` 越しの伝播は判定しません。REST の接続先 URL を設定ファイルから組み立てる場合は、パスのリテラルでつなぎます。
 - **設計書**: 表の見出し行を語彙で探す方式です。結合セルが多い帳票型や図だけの設計書からは取り出せません。`.xls` / `.doc` には LibreOffice が必要です。
 - **静的解析の限界**: リフレクション・動的SQL・外部システム連携は依存グラフでは追えません。横断検索・独立再探索・実行時SQLとの突き合わせで補う形です。
 - **規模の係数は初期値**です。実績の登録による補正が前提です。

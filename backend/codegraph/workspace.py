@@ -84,7 +84,7 @@ class Workspace:
                 d = self.graph_dir(name)
                 store = open_store(d, graph=name)
                 self.engines[name] = Engine(store, d, g.get("snapshot") or g.get("repo"), g.get("docs_dir"),
-                                            settings_dir=self.root)
+                                            settings_dir=self.root, repos=g.get("repos"))
             return self.engines[name]
 
     def index(self, repo: str, docs_dir: str | None = None, ref: str | None = None, name: str | None = None,
@@ -101,21 +101,54 @@ class Workspace:
             stats = self.pipeline.index(snapshot, store, docs_dir, progress=progress, stats_dir=d)
         return self._register(name, repo, ref, snapshot, docs_dir, store, stats)
 
-    def _register(self, name, repo, ref, snapshot, docs_dir, store, stats) -> dict:
+    def index_system(self, name: str, repos: dict[str, str], docs_dir: str | None = None, progress=None) -> dict:
+        """Several repositories (the servers of one business system) as one graph."""
+        from .pipeline.run import check_repo_names
+        repos = {n: os.path.abspath(p) for n, p in check_repo_names(repos).items()}
+        d = self.graph_dir(name)
+        with self.lock:
+            glock = self._graph_locks.setdefault(name, threading.Lock())
+        with glock:
+            store = open_store(d, graph=name)
+            stats = self.pipeline.index(repos, store, docs_dir, progress=progress, stats_dir=d)
+        return self._register(name, None, None, None, docs_dir, store, stats, repos=repos)
+
+    def _register(self, name, repo, ref, snapshot, docs_dir, store, stats, repos=None) -> dict:
         with self.lock:
             self.meta["graphs"][name] = {"repo": repo, "ref": ref, "snapshot": snapshot, "docs_dir": docs_dir,
                                          "commit": stats.get("commit"), "nodes": stats["nodes"], "edges": stats["edges"]}
+            if repos:
+                self.meta["graphs"][name].update(repos=repos, commits=stats.get("commits"))
             if not self.meta.get("default"):
                 self.meta["default"] = name
             self.save()
             if name in self.engines:
                 e = self.engines[name]
                 e.store = store
-                e.repo, e.docs_dir = snapshot, docs_dir
+                e.repo, e.docs_dir, e.repos = snapshot, docs_dir, repos
                 e.reload()
             else:
                 self.engines.pop(name, None)
         return stats
+
+    def change_hunks(self, name: str, base: str, head: str, repo_name: str | None = None) -> dict:
+        """Changed line ranges between two refs, in graph paths. In a system graph the
+        change belongs to one of its repositories (`repo_name`; optional when it has one)."""
+        from .sources.git import GitRepo
+        g = self.meta["graphs"][name]
+        repos = g.get("repos")
+        if not repos:
+            gr = GitRepo(g["repo"], self.root)
+            return gr.hunks(gr.resolve(base), gr.resolve(head))
+        if repo_name is None and len(repos) == 1:
+            repo_name = next(iter(repos))
+        if repo_name not in repos:
+            raise ValueError(f"name the repository of this system graph: {', '.join(repos)}")
+        gr = GitRepo(repos[repo_name], self.root)
+        out = {}
+        for f, rs in gr.hunks(gr.resolve(base), gr.resolve(head)).items():
+            out[("+" + repo_name + "/" + f[1:]) if f.startswith("+") else f"{repo_name}/{f}"] = rs
+        return out
 
     def stats(self, name: str | None = None) -> dict:
         name = name or self.default()

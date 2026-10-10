@@ -20,7 +20,7 @@ from ..model import Edge, Kind, Node, Rel
 from ..text import words
 from .resolve_java import JavaResolver
 
-CASE_INSENSITIVE = {"table", "column", "colany", "datafile", "proc", "dbobj", "screen", "function"}
+CASE_INSENSITIVE = {"table", "column", "colany", "datafile", "proc", "dbobj", "screen", "function", "dblink"}
 
 
 def norm_key(key: str) -> str:
@@ -107,6 +107,8 @@ class Linker:
         drift = self._drift()
         valid = [e for e in self.edges.values() if e.src in self.nodes and e.dst in self.nodes and e.src != e.dst]
         self._groups()
+        from .transactions import analyze as analyze_transactions
+        transactions = analyze_transactions(self.nodes, valid)
         report = {
             "nodes": len(self.nodes), "edges": len(valid),
             "unresolved": dict(self.unresolved.most_common()),
@@ -115,6 +117,7 @@ class Linker:
             "external": dict(self.external),
             "runtime": runtime,
             "drift": drift,
+            "transactions": transactions,
             "dropped_edges": len(self.edges) - len(valid),
         }
         return list(self.nodes.values()), valid, report
@@ -148,9 +151,9 @@ class Linker:
         for t, c in targets:
             props = {"conf": round(float(r.get("conf", 1.0)) * c, 3), "src": _src_kind(r.get("via", "")),
                      "via": r.get("via"), "line": r.get("line")}
-            for k in ("ops", "positional"):
-                if (r.get("props") or {}).get(k) is not None:
-                    props[k] = r["props"][k]
+            for k, v in (r.get("props") or {}).items():       # rule / extractor attributes travel with the edge
+                if k != "tables" and v is not None:
+                    props[k] = v
             self.add_edge(r["src"], t, r["rel"], props)
 
     # ------------------------------------------------------------ indexes
@@ -206,6 +209,14 @@ class Linker:
         if out:
             self.resolved_by[f"{ns}:fallback"] += 1
         return out
+
+    def _ns_ejbmethod(self, v, props):
+        """ejb-jar.xml <method-name>*</method-name>: every business method of that EJB."""
+        bean, _, m = v.partition("#")
+        if m != "*":
+            return []
+        pre = f"ejbmethod:{bean}#"
+        return [(i, 1.0) for k, ids in self.keys.items() if k.startswith(pre) for i in ids]
 
     def _ns_class(self, v, props):
         v = v.replace("$", ".")

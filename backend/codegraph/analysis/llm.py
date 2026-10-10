@@ -101,6 +101,10 @@ class RuleBasedLLM:
             # derived tests and documents need stronger evidence than code to be called impacted
             hi = 0.6 if it["kind"] in (Kind.TEST_CLASS, Kind.TEST_METHOD, Kind.DOC) else 0.5
             verdict = "impacted" if s >= hi else "uncertain" if s >= 0.3 else "not_impacted"
+            if verdict == "not_impacted" and it.get("data_flow"):
+                # on the path a changed value takes to another job or server (file export,
+                # transfer, file watch, import): layouts and lengths there need a look
+                verdict = "uncertain"
             out.append({"id": it["id"], "verdict": verdict, "confidence": round(min(0.95, s), 2),
                         "reason": it["path_reason"], "change_type": it.get("change_type", "modify"), "_by": "rule"})
         return out

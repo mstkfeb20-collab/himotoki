@@ -82,6 +82,11 @@ def extract_jp1(path: str, src: str, f: FileFacts):
                keys=[nid, f"job:{u['name']}"], unit_type=ty, script=sc or None, params=prm or None, comment=cm or None)
         if parent_id:
             f.edge(parent_id, nid, Rel.CONTAINS, 1.0, "parser")
+        # file-watch jobs (JP1 flwj / flwtj): the watched file starts the following jobs
+        for flwf in u["attrs"].get("flwf", []):
+            watched = flwf.strip().strip('"')
+            if watched:
+                f.ref(nid, f"datafile:{watched}", Rel.READS, 0.95, u["line"], via="jp1-file-watch", watch="true")
         if sc:
             script = sc.split()[0]
             f.ref(nid, f"file:{script}", Rel.RUNS, 0.95, u["line"], via="jp1-sc")

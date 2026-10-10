@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jdbc-data-source xmlns="http://xmlns.oracle.com/weblogic/jdbc-data-source">
+  <name>OrderDS</name>
+  <jdbc-driver-params>
+    <url>jdbc:oracle:thin:@orderdb-host:1521/ORDERDB</url>
+    <driver-name>oracle.jdbc.xa.client.OracleXADataSource</driver-name>
+  </jdbc-driver-params>
+  <jdbc-data-source-params>
+    <jndi-name>jdbc/OrderDS</jndi-name>
+    <global-transactions-protocol>TwoPhaseCommit</global-transactions-protocol>
+  </jdbc-data-source-params>
+</jdbc-data-source>
