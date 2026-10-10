@@ -372,6 +372,24 @@ def create_run(req: RunReq):
     return {"id": rid}
 
 
+class PreviewReq(BaseModel):
+    requirement: str = Field("", max_length=TEXT)
+    graph: str | None = Field(None, max_length=NAME)
+
+
+@app.post("/api/requirements/preview")
+def preview_requirement(req: PreviewReq):
+    """Check a requirement while it is being written: how it is read and what it would
+    start from. Rule-based only — no AI tokens are used."""
+    return eng(req.graph).preview_requirement(req.requirement)
+
+
+@app.get("/api/requirements/example")
+def example_requirement(graph: str | None = None):
+    """A practice requirement built from this repository (for the tutorial)."""
+    return eng(graph).example_requirement() or {"requirement": None}
+
+
 @app.get("/api/usage")
 def usage():
     """AI usage of the whole workspace: today, this month, the last 31 days by day,

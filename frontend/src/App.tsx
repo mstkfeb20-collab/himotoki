@@ -3,6 +3,8 @@ import { api, openRunSocket } from "./api";
 import Graph, { AGGREGATE_ABOVE, Filters } from "./Graph";
 import Inspector from "./Inspector";
 import ListView from "./ListView";
+import ReqAid from "./ReqAid";
+import Tour from "./Tour";
 import { isFiltered, sizeOf, visibleCandidates } from "./sizing";
 import { ChecksPanel, DiffPanel, EstimatePanel, IndexPanel, LogPanel } from "./Panels";
 import type { Candidate, RunEvent, RunState, RunSummary, WorkspaceUsage } from "./types";
@@ -24,6 +26,23 @@ export default function App() {
   const [grouping, setGrouping] = useState(true);
   // null = automatic: the graph while a run is in progress (to watch it grow), the list once it is done
   const [view, setView] = useState<"list" | "graph" | null>(null);
+  const TOUR_KEY = "codegraph.tour.v1";
+  const [tour, setTour] = useState(false);
+  const [practice, setPractice] = useState<string | null>(null);
+  useEffect(() => {
+    // first visit: offer the walkthrough (browser storage may be unavailable; then it simply shows once per load)
+    let seen = false;
+    try { seen = localStorage.getItem(TOUR_KEY) === "1"; } catch { /* storage blocked */ }
+    if (!seen) setTour(true);
+  }, []);
+  const closeTour = () => { setTour(false); try { localStorage.setItem(TOUR_KEY, "1"); } catch { /* ignore */ } };
+  const startPractice = async () => {
+    closeTour();
+    let text = "";
+    try { text = (await api.exampleRequirement(status?.graph)).requirement || ""; } catch { /* no graph yet */ }
+    setPractice(text || "予約入力画面の備考の入力文字数の上限を80文字から200文字に変更する。");
+    setShowNew(true);
+  };
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [filters, setFilters] = useState<Filters>({
     layers: { feature: true, code: true, data: true, test: true, doc: true }, onlyOpen: false, minConf: 0, query: "",
@@ -146,6 +165,7 @@ export default function App() {
           <AiCost run={run} ws={wsUsage} />
         </div>
         <button className="btn small" disabled={!run} onClick={openReport}>レポート</button>
+        <button className="btn small ghost" onClick={() => setTour(true)} title="画面の使い方を順に案内します">使い方</button>
       </header>
 
       <main className="main">
@@ -226,7 +246,19 @@ export default function App() {
       </main>
 
       {run && <CommandBar run={run} selected={selected} setBusy={setBusy} onRun={(id) => { loadRuns(); setRunId(id); }} onChanged={changed} onSelect={select} />}
-      {showNew && <NewRun status={status} onClose={() => setShowNew(false)}
+      {tour && <Tour onClose={closeTour} onPractice={startPractice} steps={[
+        { title: "codegraph へようこそ", body: "要求（仕様書の一文やチャットの内容）から、影響するソースコード・SQL・画面・ジョブ・設計書を洗い出し、修正の規模を見積もるツールです。コードは書き換えません。画面の各部分を順に紹介します。" },
+        { sel: ".brand .btn", title: "1. 新しい解析", body: "ここから要求を入力して解析を始めます。テンプレートと書き方の確認があるので、どう書けばよいか迷ったら使ってください。" },
+        { sel: ".runsel", title: "2. 解析の切り替え", body: "これまでの解析と再調査の結果を選べます。「↳」は再調査（前回の判断を引き継いだやり直し）です。" },
+        { sel: ".viewtabs", title: "3. リストとグラフ", before: () => setView("list"), body: "リストは確認作業用、グラフは全体像や説明用です。解析中はグラフ、終わるとリストに自動で切り替わります。" },
+        { sel: ".lv-rows", before: () => setView("list"), title: "4. 上から順に確認する", body: "「影響ありの可能性が高い」から順に並んでいます。行を選ぶと右に根拠・コード・設計書が出ます。確定（c キー）・除外（x キー、理由を記録）で判断すると、次の行に進みます。" },
+        { sel: ".chips", title: "5. 絞り込み", body: "機能・コード・データ・テスト・設計書の層や、未判定だけ・確度で絞り込めます。絞り込むと、その範囲の件数と規模（人日）も出ます。" },
+        { sel: ".side .tabs", title: "6. 全数判定・規模・取込状況", body: "全数判定タブの条件がすべて満たされると、影響範囲として承認できます。規模タブには層ごとの内訳、取込状況タブには解析の死角（読めなかった参照など）が出ます。" },
+        { sel: ".cmd", title: "7. 再調査・質問・漏れの追加", body: "「設計書と照合して」「DBまで追って」などの指示で再調査したり、漏れている要素を追加したりできます。" },
+        { sel: ".stats", title: "8. 進み具合と費用", body: "確定・未判定・除外の件数、規模（人日）、AIの費用がここに出ます。AIを使うたびに費用が更新されます。" },
+        { title: "練習してみましょう", body: "このリポジトリから作った例文で解析を始めます。結果をリストで上から確認し、確定・除外を何件か試してみてください（練習の解析はあとから無視して構いません）。" },
+      ]} />}
+      {showNew && <NewRun status={status} initialReq={practice ?? undefined} onClose={() => { setShowNew(false); setPractice(null); }}
         onIndexed={() => api.status().then(setStatus)}
         onCreated={(id) => { setShowNew(false); loadRuns(); setRunId(id); }} />}
       {!run && !showNew && <div className="empty">解析がありません。「新しい解析」から要求を投入してください。</div>}
@@ -326,7 +358,7 @@ function CommandBar({ run, selected, setBusy, onRun, onChanged, onSelect }: {
   );
 }
 
-function NewRun({ status, onClose, onCreated, onIndexed }: { status: any; onClose: () => void; onCreated: (id: string) => void; onIndexed: () => void }) {
+function NewRun({ status, onClose, onCreated, onIndexed, initialReq }: { status: any; onClose: () => void; onCreated: (id: string) => void; onIndexed: () => void; initialReq?: string }) {
   const graphs: Record<string, any> = status?.graphs || {};
   const [graph, setGraph] = useState<string>(status?.graph || "");
   const g = graphs[graph] || {};
@@ -336,7 +368,7 @@ function NewRun({ status, onClose, onCreated, onIndexed }: { status: any; onClos
   const [mode, setMode] = useState<"req" | "diff">("req");
   const [base, setBase] = useState(g.ref || "main");
   const [head, setHead] = useState("");
-  const [req, setReq] = useState("");
+  const [req, setReq] = useState(initialReq || "");
   const [title, setTitle] = useState("");
   const [depth, setDepth] = useState(3);
   const [pace, setPace] = useState(0.03);
@@ -399,11 +431,13 @@ function NewRun({ status, onClose, onCreated, onIndexed }: { status: any; onClos
             <button type="button" key={k} role="radio" aria-checked={mode === k} className={mode === k ? "mode on" : "mode"} onClick={() => setMode(k)}>{l}</button>
           ))}
         </div>
-        {mode === "req" ? (
+        {mode === "req" ? (<>
           <label className="field"><span className="k">要求（仕様書の該当箇所やチャットの内容を貼り付け）</span>
+            {initialReq && <p className="practice-note">練習用の例文です（このリポジトリの実際の項目から作成）。そのまま「解析を開始」を押してください。</p>}
             <textarea className="input" rows={5} value={req} onChange={(e) => setReq(e.target.value)}
               placeholder="例: 予約の備考欄の文字数上限を80文字から200文字に変更する。" /></label>
-        ) : (
+          <ReqAid text={req} setText={setReq} graph={graph || status?.graph} />
+        </>) : (
           <div className="grid3">
             <label className="field"><span className="k">比較元（グラフの時点）</span><input className="input mono" value={base} onChange={(e) => setBase(e.target.value)} /></label>
             <label className="field"><span className="k">変更後（ブランチ・コミット）</span><input className="input mono" value={head} onChange={(e) => setHead(e.target.value)} placeholder="feature/xxx" /></label>

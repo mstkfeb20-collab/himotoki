@@ -32,6 +32,10 @@ export const api = {
   llmSettings: () => req<{ effective: { min_score: number; max_items: number | "unlimited" }; settings_file: string; llm: string | null }>(
     "GET", "/api/settings/llm"),
   usage: () => req<WorkspaceUsage>("GET", "/api/usage"),
+  previewRequirement: (requirement: string, graph?: string | null) =>
+    req<any>("POST", "/api/requirements/preview", { requirement, graph: graph || null }),
+  exampleRequirement: (graph?: string | null) =>
+    req<{ requirement: string | null; based_on?: string }>("GET", `/api/requirements/example${graph ? `?graph=${encodeURIComponent(graph)}` : ""}`),
   scope: (id: string) => req<{ groups: any; markdown: string }>("GET", `/api/runs/${id}/scope`),
   runs: () => req<RunSummary[]>("GET", "/api/runs"),
   run: (id: string) => req<RunState>("GET", `/api/runs/${id}`),

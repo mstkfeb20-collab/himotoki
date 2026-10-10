@@ -208,6 +208,8 @@ class Engine:
         self.runs.save(st)
 
     def emit(self, st: dict, etype: str, data: dict, pace: bool = True) -> None:
+        if st.get("_preview"):
+            return          # dry runs (requirement preview) leave no trace
         st["seq"] = st.get("seq", -1) + 1
         ev = self.runs.append_event(st["id"], st["seq"], etype, data)
         self.bus.publish(st["id"], ev)
@@ -629,6 +631,78 @@ class Engine:
                            on_update=lambda d, st=st: self.emit(st, "llm.usage", d, pace=False))
             st["llm_usage"] = u
         return u
+
+    # ------------------------------------------------------- requirement aid
+    VAGUE = ("適切に", "いい感じ", "良い感じ", "うまく", "改善", "見直し", "など", "等", "なるべく", "できるだけ", "柔軟に")
+
+    def preview_requirement(self, text: str, limit: int = 12) -> dict:
+        """What a run would start from, without running it: the rule-based reading of the
+        requirement (never the AI, so it costs nothing) and the starting points it finds.
+        Used while the requirement is being written."""
+        text = (text or "").strip()
+        st = {"id": "preview", "_preview": True, "requirement": text, "instruction": None, "parent_id": None,
+              "focus": [], "intents": [], "candidates": {}, "params": {"seed_k": 10, "boost": []}}
+        intents = RuleBasedLLM.structure_requirement(self.llm, text) if text else []
+        for i, it in enumerate(intents, 1):
+            it["id"], it["instruction"], it["pattern"] = f"I{i}", False, None
+        st["intents"] = intents
+        seeds = self._seed(st) if text else []
+        cands = st["candidates"]
+        top = sorted(cands.values(), key=lambda c: -c["score"])[:limit]
+        strong = [c for c in cands.values() if c["origin"] in ("seed", "pattern") and
+                  (c.get("seed_reason") or "").startswith(("要求の語", "変更前の値", "新しい項目"))]
+        warns, tips = [], []
+        if re.search(r"〇〇|△△|□□", text):
+            warns.append("テンプレートの「〇〇」「△△」が残っています。実際の画面名・項目名・値に書き換えてください。")
+        if len(text) < 12:
+            warns.append("短すぎます。どの画面・帳票・バッチの、どの項目を、どう変えるかを書いてください。")
+        if text and not cands:
+            warns.append("対象が見つかりませんでした。画面名・項目名・テーブル名など、システム上の名前を入れてください（例: 予約入力画面の備考）。")
+        elif text and not strong:
+            warns.append("名前が一致する要素がなく、文章の似ている箇所だけが手がかりです。画面や項目の正式な名前を入れると精度が上がります。")
+        for it in intents:
+            v = it.get("values") or {}
+            if it["change_type"] == "modify" and v.get("new") and not v.get("old"):
+                tips.append(f"「{it['summary'][:20]}…」: 変更前の値も書くと（例: 80文字から200文字に）、今の値を使っている箇所を探せます。")
+            if it["change_type"] == "add" and it.get("new_terms"):
+                tips.append(f"新しく追加する語として認識: {'・'.join(it['new_terms'][:4])}（追加先の画面やテーブルも書くと確実です）")
+        if len(intents) > 3:
+            warns.append(f"{len(intents)} 個の変更が含まれています。別々の要求に分けると、判断と見積もりがしやすくなります。")
+        vague = [w for w in self.VAGUE if w in text]
+        if vague:
+            tips.append(f"「{'」「'.join(vague)}」はあいまいです。具体的な値や対象に言い換えてください。")
+        return {
+            "intents": [{k: it.get(k) for k in ("id", "summary", "change_type", "keywords", "new_terms", "values")}
+                        for it in intents],
+            "seeds": [{"node_id": c["node_id"], "name": c["name"], "kind": c["kind"], "score": c["score"],
+                       "reason": c.get("seed_reason")} for c in top],
+            "seed_count": len(cands), "strong_seeds": len(strong), "warnings": warns, "tips": tips,
+            "ai_used": False,
+        }
+
+    def example_requirement(self) -> dict | None:
+        """A realistic practice requirement for this repository: an input field with a
+        length limit, phrased the way a business user would write it."""
+        best = None
+        for n in self.store.nodes([Kind.FIELD]):
+            if n.file and "/test/" in n.file:
+                continue
+            for v in n.props.get("validations", []):
+                m = re.search(r"max\D{0,6}(\d+)", v)
+                if m and 5 <= int(m.group(1)) <= 1000:
+                    labels = [k for k, ids in self.llm.vocab.items() if n.name.split(".")[-1] in ids and len(k) <= 12]
+                    ja = [k for k in labels if re.search(r"[\u3040-\u30ff\u4e00-\u9fff]", k)]
+                    label = (ja or labels or [None])[0]
+                    score = (4 if ja else 2 if label else 0) + min(10, len(self.store.in_edges(n.id)))
+                    if not best or score > best[0]:
+                        best = (score, n, int(m.group(1)), label)
+        if not best:
+            return None
+        _, n, mx, label = best
+        name = label or n.name.split(".")[-1]
+        return {"requirement": f"{n.name.split('.')[0]}の「{name}」（{n.name.split('.')[-1]}）の入力文字数の上限を"
+                               f"{mx}文字から{mx * 2}文字に変更する。",
+                "based_on": n.id}
 
     def _budget(self, st) -> LLMBudget:
         return LLMBudget().with_run_params(st["params"])
