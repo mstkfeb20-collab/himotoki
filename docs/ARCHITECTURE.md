@@ -23,6 +23,7 @@
   - → 連携ファイル
   - → 後続ジョブ
   - → Excel のテーブル定義書・画面項目定義書
+- **1 つの業務が複数のサーバにまたがる。** 画面のサーバから SOAP / REST で別サーバを呼び、夜間に CSV を sftp で送り、受信側のファイル監視ジョブが取り込む。DB リンク越しの更新、ストアド内のコミット、EJB のトランザクション属性の違い（REQUIRES_NEW 等）で、どこまでが一緒にロールバックされるかもコードを読まないと分かりません。
 - **リポジトリの外に真実がある。** 本番 DB にだけ当てた列・ビュー・ストアド、ジョブスケジューラの定義、Office の設計書、実行時にしか現れない動的 SQL などです。
 - **フレームワークが多様で、社内製も多い。** 有名フレームワーク（Spring・MyBatis・Struts・マキネッタ等）に加えて、各社独自の基盤があります。
 
@@ -38,12 +39,14 @@
 | R6 | ソース管理サーバ（git）と連携する。ブランチ単位で扱い、MR/PR で影響を返す | ワークスペース・差分モード・Webhook（§9） |
 | R7 | 人が確認・訂正・承認でき、エージェントも同じグラフを使える | ビュワー（REST + WebSocket）・MCP サーバ（§10） |
 | R8 | コードを書き換えない（影響範囲と規模の確定までが責務） | 出力はグラフ・判断・レポートのみ |
+| R9 | 複数サーバにまたがる業務（SOAP・REST・JMS・DB リンク・ファイル連携）を 1 つの影響範囲として扱い、トランザクション上の注意点を示す | システム単位のグラフ（§4.1）、連携のルール（§4.3）、トランザクション解析（§5.5）、データ連携の伝播（§6.2） |
 
 ### 1.3 スコープ外
 
 - コードの修整・テストの実行（修整工程は Claude Code 等に委ねる。MCP で影響一覧を渡す）
 - SVN の直接サポート（git 前提。git-svn によるミラーを想定）
-- 手続き内部の制御フロー・データフロー解析（PL/SQL・COBOL の手続き内部など）
+- 手続き内部の制御フロー・データフロー解析（PL/SQL・COBOL の手続き内部など）。PL/SQL は手続き単位の CRUD・呼び出しと、COMMIT・自律型トランザクション・行ロック・ループ内コミットの有無までを扱う
+- 実行時のトランザクション構成の判定（XA の参加範囲、例外によるロールバック条件、`@Remote` 越しの伝播）。静的な呼び出し関係からの近似に留める
 
 ---
 
@@ -63,7 +66,7 @@
 ```mermaid
 flowchart TB
   subgraph Inputs["入力"]
-    R[git リポジトリ<br/>ブランチ・タグ]
+    R[git リポジトリ<br/>ブランチ・タグ／システム単位で複数]
     D[設計書・運用資産<br/>xlsx / docx / md / JP1 / cron / shell]
     C[DB辞書<br/>Oracle / PostgreSQL]
     RT[実行時SQL<br/>pg_stat_statements / V$SQL CSV]
@@ -76,6 +79,7 @@ flowchart TB
     RP[(ルールパック<br/>codegraph/rules/*.yaml<br/>+ CODEGRAPH_RULES)]
     FC[(抽出キャッシュ<br/>facts.db)]
     K[リンカ<br/>linker / resolve_java]
+    TX[トランザクション解析<br/>transactions]
     S[外部ソース取込<br/>codegraph.sources]
   end
 
@@ -93,7 +97,7 @@ flowchart TB
 
   subgraph Front["利用者インターフェース"]
     API[REST + WebSocket<br/>codegraph.api]
-    V[ビュワー<br/>React + Cytoscape.js]
+    V[ビュワー<br/>リスト / グラフ（React + Cytoscape.js）]
     CLI[CLI<br/>codegraph.cli]
     MCP[MCP サーバ<br/>codegraph.mcp_server]
     WH[Webhook<br/>/api/hooks/git]
@@ -109,8 +113,9 @@ flowchart TB
   S --> K
   X --> K
   RP --> K
-  K --> G
-  K --> REP
+  K --> TX
+  TX --> G
+  TX --> REP
   Q --> API
   Q --> WH
   G --> E
@@ -130,14 +135,15 @@ flowchart TB
 |---|---|---|
 | `codegraph.model` | ノード種別・関係種別・層の定義 | `model.py` |
 | `codegraph.extractors` | 形式ごとの抽出（フレームワーク非依存） | `java.py` `xml.py` `text.py` `sql.py` `props.py` `jobs.py` `docs.py` |
-| `codegraph.rules` | ルールパックの読み込み・統合 | `__init__.py`、`*.yaml` |
-| `codegraph.pipeline` | 列挙・分類・抽出の実行・キャッシュ・リンク | `run.py` `facts.py` `cache.py` `linker.py` `resolve_java.py` |
+| `codegraph.rules` | ルールパックの読み込み・統合 | `__init__.py`、`*.yaml`（`java-common` `jpa` `mybatis` `spring-xml` `struts1` `web-templates` `jee-remoting` `scripts-jobs` `office` `propagation`） |
+| `codegraph.pipeline` | 列挙・分類・抽出の実行・キャッシュ・リンク・トランザクション解析 | `run.py` `facts.py` `cache.py` `linker.py` `resolve_java.py` `transactions.py` |
 | `codegraph.sources` | DB 辞書・実行時 SQL・git・コード検索 | `catalog.py` `runtime.py` `git.py` `codesearch.py` |
 | `codegraph.store` | グラフストアの抽象と実装 | `base.py` `local.py` `neo4j_store.py` |
-| `codegraph.workspace` | 複数グラフ（ref ごと）の管理 | `workspace.py` |
+| `codegraph.workspace` | 複数グラフ（ref ごと、システム単位）の管理、差分の取得 | `workspace.py` |
 | `codegraph.analysis` | 解析エンジン・判定器・規模・Run 保存 | `engine.py` `llm.py` `estimate.py` `search.py` `runstore.py` |
+| `codegraph.settings` / `usage` | AI判定の予算・単価の設定、使用量の台帳 | `settings.py` `usage.py` |
 | `codegraph.api` / `cli` / `mcp_server` | 外部インターフェース | |
-| `frontend` | ビュワー | `App.tsx` `Graph.tsx` `Inspector.tsx` `Panels.tsx` |
+| `frontend` | ビュワー | `App.tsx` `ListView.tsx` `Graph.tsx` `Inspector.tsx` `Panels.tsx` `ReqAid.tsx` `Tour.tsx` `sizing.ts` |
 
 ---
 
@@ -487,7 +493,7 @@ sequenceDiagram
 
 これを超える規模（数万ファイル・複数リポジトリ）で想定している方針は次のとおりです（未実装を含みます）。
 
-1. **リポジトリ単位でグラフを分ける。** リポジトリ間の関係はテーブル・URL・ジョブ・データファイルといった正準キーで結びます。
+1. **グラフの単位を選ぶ。** 現在は、1 つの業務を構成するリポジトリ群を 1 つのグラフ（システム単位、§4.1）にまとめ、リポジトリ間の関係をテーブル・URL・SOAP オペレーション・JNDI 名・データファイルといった正準キーで結んでいます（実装済み）。それを超える規模では、システムごとにグラフを分け、システム間を同じ正準キーで結ぶ方針です（未実装）。
 2. **リンクを増分化する。** 変更ファイルの参照と、そのキーを提供するノードだけを再解決します。
 3. **ストアを Neo4j にする。** グラフ全体をメモリに載せないためです。
 4. **抽出キャッシュを共有サーバに置く。** CI とローカルで共用します。
@@ -544,10 +550,10 @@ sequenceDiagram
 
 | インターフェース | 想定利用者 | 内容 |
 |---|---|---|
-| ビュワー | 業務分析・開発管理の担当者 | 同心円のグラフ（150 件超ではモジュール単位に集約）、根拠と確度の表示、確定・除外・再調査・質問、全数判定、規模、取込状況、差分からの解析 |
+| ビュワー | 業務分析・開発管理の担当者 | リスト表示（既定。判定の状態ごとの一覧、要素ごとと絞り込み範囲の規模、トランザクション・連携の注意バッジ、キー操作での確定・除外）とグラフ表示（同心円。150 件超ではモジュール単位に集約）の切り替え、根拠と確度・トランザクション境界と注意点の表示、確定・除外・再調査・質問、全数判定、規模、取込状況、差分からの解析、要求の書き方補助（AI不使用）、初回のチュートリアル、AI 使用量と費用（円換算）の即時表示、システム単位のインデックス |
 | REST + WebSocket | ビュワー・他システム | 一覧は README の API 節 |
-| CLI | 開発者・CI | index / catalog / runtime / report / analyze / diff / serve / mcp |
-| MCP サーバ | Claude Code 等のエージェント | list_graphs, search_elements, get_element, neighbors, analyze_requirement, analyze_change, index_gaps |
+| CLI | 開発者・CI | index（`--system` で複数リポジトリ）/ catalog / runtime / report / analyze / diff（システム単位では `--repo`）/ serve / mcp |
+| MCP サーバ | Claude Code 等のエージェント | list_graphs, search_elements, get_element, neighbors, analyze_requirement, analyze_change（システム単位では repo）, index_gaps（トランザクション解析の要約を含む） |
 | Webhook | ソース管理サーバ | §9.2 |
 
 MCP サーバは、エージェントがファイルを丸ごと読まずに「何がこの列を読むか」「この変更はどのジョブに届くか」を構造で問い合わせるための口です。リポジトリの近くで動かせば、コードそのものをネットワークの外に出さずに済みます。
@@ -567,6 +573,9 @@ MCP サーバは、エージェントがファイルを丸ごと読まずに「�
 | D7 | 差分は merge-base 基準、グラフは base 側 | MR が見せる差分と一致させる。変更行の位置を base 側のグラフと合わせる | base の先端との単純な差分（他の人の変更が混ざる） |
 | D8 | 判定器・ストア・コード検索をインターフェースの裏に置く | API キー無し・Neo4j 無しでも全工程が動く。導入環境に合わせて差し替えられる | |
 | D9 | 既定で閉じる（同一オリジン・ローカルのホスト名のみ、公開時はトークン必須、Webhook は署名必須） | ソースコードを返すサーバであり、開発者の手元で動かしたときにブラウザ経由で読まれる経路（CSRF・DNS リバインディング）を塞ぐ必要がある | 全オリジン許可・認証なし（v2 初版。ファイル読み取りの迂回と合わせて実際に悪用できたため改めた） |
+| D10 | 複数サーバの業務を 1 つのグラフにする（ファイルに `<リポジトリ名>/` を付ける） | リンクがキーで行われるため、SOAP・REST・JMS・DB リンク・連携ファイルがサーバをまたいでも追加の仕組み無しでつながる。影響分析と全数判定を業務単位で行える | リポジトリごとのグラフをあとから突き合わせる（伝播が境界で切れる） |
+| D11 | トランザクション解析は、ルールと抽出器が付けた属性だけを読む汎用処理にする | EJB・Spring・Bean 管理・PL/SQL を同じ規則で扱え、別の基盤もルールの追加で対応できる。結果は判定ではなく「確認すべき場所」として示す | フレームワークごとの専用解析、実行時トレースによる確定 |
+| D12 | データ連携だけは探索の深さの上限を超えてたどる（`flow` 指定の関係のみ） | 出力 SQL → ファイル → 送信 → 受信 → 取り込みは段数が多く、深さ 3 では途中で切れる。対象を連携の関係に限ることで候補の膨張を抑える（ツアー予約の例で +1 件） | 深さ全体を上げる（候補が一律に増える） |
 
 ---
 
