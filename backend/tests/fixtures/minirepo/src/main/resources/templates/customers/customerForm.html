@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org">
+<body>
+<form th:object="${customer}" method="post">
+  <label th:text="#{name}">Name</label>
+  <input th:field="*{name}" />
+  <label th:text="#{zip}">Zip</label>
+  <input th:field="*{zip}" />
+</form>
+</body>
+</html>

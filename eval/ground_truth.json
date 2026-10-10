@@ -1,0 +1,79 @@
+{
+  "_note": "Spring PetClinic (commit 500158f) に対する正解リスト。ツールの出力を見る前にコードを読んで作成した。must=修正必須、should=修正または確認を推奨。各要素は候補ノードIDのいずれかが含まれれば該当とみなす（any_of）。",
+  "cases": [
+    {
+      "id": "R1",
+      "title": "オーナーにメールアドレスを追加",
+      "requirement": "オーナーに電話番号に加えてメールアドレスを登録できるようにする。メールアドレスはオーナー詳細画面に表示する。",
+      "must": [
+        {"label": "Owner エンティティ（項目・getter/setter追加）", "any_of": ["java:org.springframework.samples.petclinic.owner.Owner"]},
+        {"label": "owners テーブル", "any_of": ["table:owners"]},
+        {"label": "schema.sql (h2)", "any_of": ["file:src/main/resources/db/h2/schema.sql"]},
+        {"label": "schema.sql (mysql)", "any_of": ["file:src/main/resources/db/mysql/schema.sql"]},
+        {"label": "schema.sql (postgres)", "any_of": ["file:src/main/resources/db/postgres/schema.sql"]},
+        {"label": "data.sql (h2) 列順依存INSERT", "any_of": ["file:src/main/resources/db/h2/data.sql"]},
+        {"label": "data.sql (mysql) 列順依存INSERT", "any_of": ["file:src/main/resources/db/mysql/data.sql"]},
+        {"label": "登録・更新画面テンプレート", "any_of": ["tpl:owners/createOrUpdateOwnerForm"]},
+        {"label": "詳細画面テンプレート", "any_of": ["tpl:owners/ownerDetails"]},
+        {"label": "messages.properties", "any_of": ["file:src/main/resources/messages/messages.properties"]},
+        {"label": "messages_de.properties", "any_of": ["file:src/main/resources/messages/messages_de.properties"]},
+        {"label": "messages_en.properties", "any_of": ["file:src/main/resources/messages/messages_en.properties"]},
+        {"label": "messages_es.properties", "any_of": ["file:src/main/resources/messages/messages_es.properties"]},
+        {"label": "messages_fa.properties", "any_of": ["file:src/main/resources/messages/messages_fa.properties"]},
+        {"label": "messages_hi.properties", "any_of": ["file:src/main/resources/messages/messages_hi.properties"]},
+        {"label": "messages_ja.properties", "any_of": ["file:src/main/resources/messages/messages_ja.properties"]},
+        {"label": "messages_ko.properties", "any_of": ["file:src/main/resources/messages/messages_ko.properties"]},
+        {"label": "messages_pt.properties", "any_of": ["file:src/main/resources/messages/messages_pt.properties"]},
+        {"label": "messages_ru.properties", "any_of": ["file:src/main/resources/messages/messages_ru.properties"]},
+        {"label": "messages_tr.properties", "any_of": ["file:src/main/resources/messages/messages_tr.properties"]},
+        {"label": "設計書 SC-01 入力項目", "any_of": ["doc:design:画面設計_オーナー登録.md#2"]},
+        {"label": "設計書 SC-02 表示項目", "any_of": ["doc:design:画面設計_オーナー詳細.md#2"]},
+        {"label": "設計書 TB-02 owners 列定義", "any_of": ["doc:design:テーブル定義_owners.md#0"]}
+      ],
+      "should": [
+        {"label": "Owner.toString()", "any_of": ["java:org.springframework.samples.petclinic.owner.Owner#toString()"]},
+        {"label": "テストのオーナー生成（george）", "any_of": ["java:org.springframework.samples.petclinic.owner.OwnerControllerTests#george()"]},
+        {"label": "登録成功テスト", "any_of": ["java:org.springframework.samples.petclinic.owner.OwnerControllerTests#processCreationFormSuccess()"]},
+        {"label": "詳細表示テスト", "any_of": ["java:org.springframework.samples.petclinic.owner.OwnerControllerTests#showOwner()"]},
+        {"label": "更新成功テスト", "any_of": ["java:org.springframework.samples.petclinic.owner.OwnerControllerTests#processUpdateOwnerFormSuccess()"]},
+        {"label": "DB登録テスト", "any_of": ["java:org.springframework.samples.petclinic.service.ClinicServiceTests#shouldInsertOwner()"]},
+        {"label": "data.sql (postgres) 列指定INSERT", "any_of": ["file:src/main/resources/db/postgres/data.sql"]},
+        {"label": "設計書 TB-02 注意", "any_of": ["doc:design:テーブル定義_owners.md#1"]},
+        {"label": "Owner.getTelephone 類似項目の参考", "any_of": ["java:org.springframework.samples.petclinic.owner.Owner#getTelephone()"]},
+        {"label": "Owner.setTelephone 類似項目の参考", "any_of": ["java:org.springframework.samples.petclinic.owner.Owner#setTelephone(String)"]},
+        {"label": "Owner.telephone 類似項目の参考", "any_of": ["java:org.springframework.samples.petclinic.owner.Owner.telephone"]}
+      ]
+    },
+    {
+      "id": "R2",
+      "title": "電話番号の桁数チェック変更",
+      "requirement": "電話番号の入力チェックを、数字10桁固定からハイフンなしの10〜11桁を許容するように変更する。",
+      "must": [
+        {"label": "Owner.telephone の @Pattern", "any_of": ["java:org.springframework.samples.petclinic.owner.Owner.telephone"]},
+        {"label": "エラーメッセージ telephone.invalid（全ロケール）", "any_of": ["msg:telephone.invalid"]},
+        {"label": "電話番号検証のテスト", "any_of": ["java:org.springframework.samples.petclinic.owner.OwnerControllerTests#processCreationFormHasErrors()", "java:org.springframework.samples.petclinic.owner.OwnerControllerTests#processUpdateOwnerFormHasErrors()", "java:org.springframework.samples.petclinic.owner.OwnerControllerTests"]},
+        {"label": "設計書 SC-01 入力チェック", "any_of": ["doc:design:画面設計_オーナー登録.md#3"]},
+        {"label": "設計書 SC-01 入力項目（桁数）", "any_of": ["doc:design:画面設計_オーナー登録.md#2"]}
+      ],
+      "should": [
+        {"label": "登録成功テスト（11桁ケース追加）", "any_of": ["java:org.springframework.samples.petclinic.owner.OwnerControllerTests#processCreationFormSuccess()"]},
+        {"label": "更新成功テスト", "any_of": ["java:org.springframework.samples.petclinic.owner.OwnerControllerTests#processUpdateOwnerFormSuccess()"]},
+        {"label": "messages_ja.properties など各ロケールのファイル", "any_of": ["file:src/main/resources/messages/messages_ja.properties", "file:src/main/resources/messages/messages.properties"]}
+      ]
+    },
+    {
+      "id": "R3",
+      "title": "獣医一覧のページサイズ変更",
+      "requirement": "獣医一覧の1ページあたりの表示件数を5件から10件に変更する。",
+      "must": [
+        {"label": "VetController.findPaginated の pageSize", "any_of": ["java:org.springframework.samples.petclinic.vet.VetController#findPaginated(int)"]},
+        {"label": "設計書 SC-05 ページング", "any_of": ["doc:design:画面設計_獣医一覧.md#2"]}
+      ],
+      "should": [
+        {"label": "VetController.showVetList", "any_of": ["java:org.springframework.samples.petclinic.vet.VetController#showVetList(int,Model,RedirectAttributes)"]},
+        {"label": "獣医一覧テンプレート（ページ表示）", "any_of": ["tpl:vets/vetList"]},
+        {"label": "獣医一覧のテスト", "any_of": ["java:org.springframework.samples.petclinic.vet.VetControllerTests#showVetListHtml()", "java:org.springframework.samples.petclinic.vet.VetControllerTests"]}
+      ]
+    }
+  ]
+}
