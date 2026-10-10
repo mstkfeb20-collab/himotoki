@@ -3,7 +3,7 @@ import { api, openRunSocket } from "./api";
 import Graph, { AGGREGATE_ABOVE, Filters } from "./Graph";
 import Inspector from "./Inspector";
 import { ChecksPanel, DiffPanel, EstimatePanel, IndexPanel, LogPanel } from "./Panels";
-import type { Candidate, RunEvent, RunState, RunSummary } from "./types";
+import type { Candidate, RunEvent, RunState, RunSummary, WorkspaceUsage } from "./types";
 
 const LAYERS: [string, string][] = [["feature", "機能"], ["code", "コード"], ["data", "データ"], ["test", "テスト"], ["doc", "設計書"]];
 type Side = "checks" | "estimate" | "log" | "diff" | "index";
@@ -25,6 +25,21 @@ export default function App() {
     layers: { feature: true, code: true, data: true, test: true, doc: true }, onlyOpen: false, minConf: 0, query: "",
   });
   const refetchTimer = useRef<number | null>(null);
+  const [wsUsage, setWsUsage] = useState<WorkspaceUsage | null>(null);
+  const usageTimer = useRef<number | null>(null);
+  const loadUsage = useCallback(() => {
+    // throttled: many AI calls in a row cause one refresh
+    if (usageTimer.current) return;
+    usageTimer.current = window.setTimeout(() => {
+      usageTimer.current = null;
+      api.usage().then(setWsUsage).catch(() => {});
+    }, 1500);
+  }, []);
+  useEffect(() => {
+    api.usage().then(setWsUsage).catch(() => {});
+    const t = window.setInterval(() => api.usage().then(setWsUsage).catch(() => {}), 60_000);
+    return () => window.clearInterval(t);
+  }, []);
   const lastSeq = useRef(-1);
 
   const loadRuns = useCallback(() => api.runs().then(setRuns).catch(() => {}), []);
@@ -65,9 +80,11 @@ export default function App() {
           return { ...r, candidates: { ...r.candidates, [c.node_id]: { ...c, ...ev.data } } };
         }
         if (ev.type === "phase") return { ...r, phase: ev.data.phase, progress: ev.data.progress };
+        if (ev.type === "llm.usage") return { ...r, llm_usage: ev.data };
         if (ev.type === "intent") return r.intents.some((i) => i.id === ev.data.id) ? r : { ...r, intents: [...r.intents, ev.data] };
         return r;
       });
+      if (ev.type === "llm.usage") loadUsage();
       if (["checks", "decision", "run.done", "comment", "approved", "expand.done", "error", "inherited", "grep.done", "crud.done"].includes(ev.type)) {
         refetch(runId);
         if (ev.type === "run.done") loadRuns();
@@ -120,6 +137,7 @@ export default function App() {
           <Stat k="確定" v={stats.ok} cls="cyan-t" /><Stat k="未判定" v={stats.open} cls="amber-t" />
           <Stat k="除外" v={stats.ex} cls="dim" />
           <Stat k="規模" v={run?.estimate?.days ?? "—"} unit="人日" />
+          <AiCost run={run} ws={wsUsage} />
         </div>
         <button className="btn small" disabled={!run} onClick={openReport}>レポート</button>
       </header>
@@ -199,6 +217,29 @@ export default function App() {
 function phaseLabel(p: string) {
   return ({ queued: "待機", structure: "要求を構造化", seed: "起点を探索", expand: "依存を追跡", judge: "影響を判定",
     grep: "横断検索", shadow: "独立再探索", crud: "CRUD確認", estimate: "規模算出", done: "完了" } as Record<string, string>)[p] || p;
+}
+
+const yen = (v?: number | null) => v == null ? "—" : `¥${v < 10 ? v.toFixed(1) : Math.round(v).toLocaleString("ja-JP")}`;
+const ktok = (n?: number) => n == null ? "—" : n >= 1_000_000 ? `${(n / 1_000_000).toFixed(2)}M` : n >= 1000 ? `${(n / 1000).toFixed(1)}k` : `${n}`;
+
+/** Live AI cost: this run (updated on every API call) and this month for the workspace. */
+function AiCost({ run, ws }: { run: RunState | null; ws: WorkspaceUsage | null }) {
+  const u = run?.llm_usage;
+  const tokens = u ? u.input_tokens + u.output_tokens : undefined;
+  const title = u ? `この解析: 入力 ${u.input_tokens.toLocaleString("ja-JP")}・出力 ${u.output_tokens.toLocaleString("ja-JP")} トークン、` +
+    `API ${u.calls} 回、${u.model ?? "モデル未使用"}、$${(u.cost_usd ?? 0).toFixed(4)} × ${u.jpy_per_usd ?? ws?.jpy_per_usd ?? "—"}円` +
+    (u.unpriced_calls ? `（単価未設定のモデルの呼び出し ${u.unpriced_calls} 回は含まず）` : "") +
+    (ws ? `\n今日: ${yen(ws.today.cost_jpy)}（${ktok(ws.today.input_tokens + ws.today.output_tokens)} トークン）` +
+      `\n今月: ${yen(ws.month.cost_jpy)}（${ktok(ws.month.input_tokens + ws.month.output_tokens)} トークン）\n単価: ${ws.pricing_source}` : "")
+    : "";
+  return (
+    <div className="stat ai-cost" title={title} aria-label={title}>
+      <span className="k">AI</span>
+      <span className={`mono val${run?.status === "running" && u?.calls ? " live" : ""}`}>{yen(u?.cost_jpy)}
+        <small> {ktok(tokens)}tok</small></span>
+      {ws && <span className="mono sub">今月 {yen(ws.month.cost_jpy)}</span>}
+    </div>
+  );
 }
 
 function Stat({ k, v, cls = "", unit }: { k: string; v: number | string; cls?: string; unit?: string }) {

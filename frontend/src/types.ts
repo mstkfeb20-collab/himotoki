@@ -67,7 +67,8 @@ export interface RunState {
   shadow: { node_ids?: string[]; only?: string[] };
   approved: { actor: string; at: number; estimate_days: number } | null;
   llm_usage?: { ai_items: number; reused: number; rule_low_score: number; rule_cap: number; rule: number;
-    fallback: number; calls: number; input_tokens: number; output_tokens: number };
+    fallback: number; calls: number; input_tokens: number; output_tokens: number;
+    cost_usd?: number; cost_jpy?: number; unpriced_calls?: number; model?: string | null; jpy_per_usd?: number | null };
   params?: { llm?: { min_score: number; max_items: number | "unlimited"; reuse_verdicts: boolean } } & Record<string, any>;
   error?: string;
   created_at: number;
@@ -97,6 +98,11 @@ export interface IndexReport {
   drift?: { columns_only_in_db?: string[]; columns_only_in_ddl?: string[]; tables_not_in_catalog?: string[]; counts?: Record<string, number>; note?: string };
   errors: number; error_samples?: { file: string; error: string }[];
 }
+
+export interface UsageTotals { calls: number; input_tokens: number; output_tokens: number; cost_usd: number;
+  cost_jpy: number; unpriced_calls?: number }
+export interface WorkspaceUsage { today: UsageTotals; month: UsageTotals; by_day: (UsageTotals & { date: string })[];
+  jpy_per_usd: number; pricing_source: string }
 
 export interface RunEvent {
   seq: number;

@@ -23,11 +23,11 @@ class FakeClaude(L.ClaudeLLM):
         L.RuleBasedLLM.__init__(self, vocabulary, identifiers)
         self.sent_ids = []
 
-    def _ask(self, system, user, max_tokens=4000, meter=None):
+    model = "claude-sonnet-5-5"
+
+    def _ask(self, system, user, max_tokens=4000, meter=None, purpose=""):
         if meter is not None:
-            meter["calls"] = meter.get("calls", 0) + 1
-            meter["input_tokens"] = meter.get("input_tokens", 0) + len(user) // 4
-            meter["output_tokens"] = meter.get("output_tokens", 0) + 10
+            meter.on_call(self.model, len(user) // 4, 10, purpose)
         if "judge whether" in system:
             ids = re.findall(r'"id": "([^"]+)"', user)
             self.sent_ids += ids
@@ -150,3 +150,30 @@ def test_api_accepts_and_validates_budget(tmp_path, monkeypatch):
     assert st["params"]["llm"] == {"min_score": 0.4, "max_items": "unlimited", "reuse_verdicts": True,
                                    "rescore_delta": 0.1, "batch_size": 15}
     assert c.get("/api/settings/llm").json()["effective"]["max_items"] == 300
+
+
+def test_usage_is_priced_live_and_recorded(eng, monkeypatch):
+    e, tmp = eng
+    (tmp / "settings.yaml").write_text("pricing:\n  jpy_per_usd: 100\n  models:\n    claude-sonnet-5-5: {input: 3, output: 15}\n")
+    events = []
+    orig = e.emit
+    e.emit = lambda st, t, d, pace=True: (events.append((t, d)) if t == "llm.usage" else None, orig(st, t, d, pace))[1]
+    st = run(e, llm_max_items="unlimited", llm_min_score=0)
+    u = st["llm_usage"]
+    want = (u["input_tokens"] * 3 + u["output_tokens"] * 15) / 1e6
+    assert abs(u["cost_usd"] - want) < 1e-6 and abs(u["cost_jpy"] - round(want * 100, 2)) < 0.01
+    assert u["model"] == "claude-sonnet-5-5" and u["jpy_per_usd"] == 100
+    live = [d for t, d in events]
+    assert len(live) == u["calls"] and live[-1]["input_tokens"] == u["input_tokens"]   # one event per API call
+    assert e.ledger.summary(0)["calls"] == u["calls"]
+    # saved state is plain JSON
+    assert json.loads(json.dumps(e.state(st["id"])["llm_usage"]))["calls"] == u["calls"]
+
+
+def test_pricing_settings():
+    from codegraph.settings import Pricing, DEFAULT_PRICES
+    p = Pricing(DEFAULT_PRICES, 150)
+    assert p.cost_usd("claude-opus-5-5", 1_000_000, 1_000_000) == 24.0
+    assert p.cost_usd("claude-haiku-5-5", 200_000, 0) == 0.1          # long-prompt tier
+    assert p.cost_usd("claude-sonnet-5-5-20261001", 1_000_000, 0) == 2.0
+    assert p.cost_usd("unknown-model", 10, 10) is None

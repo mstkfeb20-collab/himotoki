@@ -118,3 +118,80 @@ def load_llm_budget(data_dir: str | None = None) -> LLMBudget:
         if v is not None and v.strip() != "":
             env[k] = v
     return b.with_overrides(env)
+
+
+# ------------------------------------------------------------------ pricing
+# USD per million tokens. Defaults are the published API prices as of 2026-10-10
+# (https://platform.claude.com/docs/en/about-claude/pricing); override them in
+# settings.yaml when prices change or a contract price applies.
+DEFAULT_PRICES = {
+    "claude-fable-5-1": {"input": 10.0, "output": 50.0},
+    "claude-opus-5-5": {"input": 4.0, "output": 20.0},
+    "claude-sonnet-5-5": {"input": 2.0, "output": 10.0},
+    # Haiku 5.5 is priced by prompt length: a request over the threshold pays the higher prices
+    "claude-haiku-5-5": {"input": 0.10, "output": 0.50, "long_prompt_tokens": 100_000,
+                         "long_input": 0.50, "long_output": 2.50},
+}
+DEFAULT_JPY_PER_USD = 158.0          # USD/JPY around 2026-10-09; set your own rate in settings.yaml
+
+
+@dataclass(frozen=True)
+class Pricing:
+    models: dict
+    jpy_per_usd: float = DEFAULT_JPY_PER_USD
+    source: str = "defaults (2026-10-10)"
+
+    def price(self, model: str | None) -> dict | None:
+        if not model:
+            return None
+        if model in self.models:
+            return self.models[model]
+        # dated / suffixed model ids (claude-sonnet-5-5-20260901) use their family's price
+        for k in sorted(self.models, key=len, reverse=True):
+            if model.startswith(k):
+                return self.models[k]
+        return None
+
+    def cost_usd(self, model: str | None, input_tokens: int, output_tokens: int) -> float | None:
+        p = self.price(model)
+        if not p:
+            return None
+        pin, pout = float(p["input"]), float(p["output"])
+        if p.get("long_prompt_tokens") and input_tokens > int(p["long_prompt_tokens"]):
+            pin, pout = float(p.get("long_input", pin)), float(p.get("long_output", pout))
+        return (input_tokens * pin + output_tokens * pout) / 1_000_000
+
+    def to_dict(self) -> dict:
+        return {"models": self.models, "jpy_per_usd": self.jpy_per_usd, "source": self.source}
+
+
+def load_pricing(data_dir: str | None = None) -> Pricing:
+    """pricing section of settings.yaml:
+         pricing:
+           jpy_per_usd: 150
+           models:
+             claude-sonnet-5-5: {input: 2.0, output: 10.0}   # USD / million tokens
+       Environment: CODEGRAPH_JPY_PER_USD, CODEGRAPH_PRICE_INPUT / CODEGRAPH_PRICE_OUTPUT
+       (the latter two apply to the model in CODEGRAPH_LLM_MODEL)."""
+    models = {k: dict(v) for k, v in DEFAULT_PRICES.items()}
+    rate, source = DEFAULT_JPY_PER_USD, "defaults (2026-10-10)"
+    p = settings_path(data_dir)
+    if p and os.path.exists(p):
+        with open(p, encoding="utf-8") as f:
+            data = (yaml.safe_load(f) or {}).get("pricing") or {}
+        for name, v in (data.get("models") or {}).items():
+            models[str(name)] = {**models.get(str(name), {}), **{k: float(x) for k, x in (v or {}).items()}}
+        if data.get("jpy_per_usd") is not None:
+            rate = float(data["jpy_per_usd"])
+        if data:
+            source = f"settings file ({p})"
+    if os.environ.get("CODEGRAPH_JPY_PER_USD", "").strip():
+        rate, source = float(os.environ["CODEGRAPH_JPY_PER_USD"]), source + " + environment"
+    model = os.environ.get("CODEGRAPH_LLM_MODEL", "claude-sonnet-5-5")
+    for side in ("input", "output"):
+        v = os.environ.get(f"CODEGRAPH_PRICE_{side.upper()}", "").strip()
+        if v:
+            models.setdefault(model, {"input": 0.0, "output": 0.0})[side] = float(v)
+    if rate <= 0:
+        raise ValueError("jpy_per_usd must be positive")
+    return Pricing(models, rate, source)

@@ -153,3 +153,5 @@ fieldset { border: 1px solid var(--line2); border-radius: 12px; padding: 12px 14
 .graphsel { max-width: 220px; }
 .dot.agg { border: 3px double #6B7A92; background: #141B27; }
 .ai-usage { margin-top: 12px; }
+.ai-cost .sub { font-size: 10px; color: #7A869A; display: block; }
+.ai-cost .val.live { color: #6FE3E8; transition: color .3s; }

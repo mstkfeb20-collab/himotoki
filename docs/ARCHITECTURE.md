@@ -389,7 +389,7 @@ flowchart LR
 3. **上限**: その解析でAIに送った件数が `max_items` に達したら、残りはルール判定（`unlimited` で上限なし）。
 4. 残りを `batch_size` 件ずつまとめてAIに送る。
 
-候補ごとに `judged_by`（ai / reused / rule:low_score / rule:cap / rule / rule:fallback）を記録します。解析ごとの内訳と、API が返した実際の入出力トークン数は `llm_usage` に記録します。横断検索・独立再探索・CRUD確認で見つかった候補は、工程ごとにまとめて判定します。
+候補ごとに `judged_by`（ai / reused / rule:low_score / rule:cap / rule / rule:fallback）を記録します。API 呼び出しごとに、実際の入出力トークン数を `pricing`（settings.yaml）の単価で費用に換算します。結果は解析の `llm_usage` に加算し、`llm.usage` イベントでビュワーに即時に通知し、ワークスペース共通の台帳（`usage.db`）に記録します（`codegraph/usage.py`）。解析ごとの内訳と、API が返した実際の入出力トークン数は `llm_usage` に記録します。横断検索・独立再探索・CRUD確認で見つかった候補は、工程ごとにまとめて判定します。
 
 ### 6.3 全数判定の条件
 
@@ -583,6 +583,7 @@ MCP サーバは、エージェントがファイルを丸ごと読まずに「�
 | `GITLAB_API` / `GITLAB_TOKEN`、`GITHUB_API` / `GITHUB_TOKEN` | MR / PR へのコメント、GitLab コード検索 |
 | `CODEGRAPH_FRONTEND` | 配信するビュワーのビルド先 |
 | `CODEGRAPH_SETTINGS`、`CODEGRAPH_LLM_MIN_SCORE` / `MAX_ITEMS` / `REUSE_VERDICTS` / `RESCORE_DELTA` / `BATCH_SIZE` | 設定ファイルの場所と、AI判定の予算（§6.2.1） |
+| `CODEGRAPH_JPY_PER_USD`、`CODEGRAPH_PRICE_INPUT` / `CODEGRAPH_PRICE_OUTPUT` | 費用表示の為替レートと単価（既定は settings.yaml の `pricing`） |
 | `CODEGRAPH_API_TOKEN`、`CODEGRAPH_ALLOWED_HOSTS`、`CODEGRAPH_CORS_ORIGINS` | API の認証・許可するホスト名・CORS（[SECURITY](SECURITY.md)） |
 | `CODEGRAPH_ALLOWED_ROOTS`、`CODEGRAPH_ALLOW_DB_FROM_API` | API で指定できるパスの範囲、API からの DB 接続の許可 |
 | `CODEGRAPH_MAX_FILE_MB`、`CODEGRAPH_MAX_OFFICE_MB`、`CODEGRAPH_GIT_TIMEOUT`、`CODEGRAPH_LLM_TIMEOUT` | 資源の上限・タイムアウト |

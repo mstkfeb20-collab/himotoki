@@ -15,3 +15,17 @@ llm:
   rescore_delta: 0.1
   # Candidates per AI request.
   batch_size: 15
+
+# Pricing used for the cost shown in the viewer (USD per million tokens) and the yen rate.
+# Defaults: published API prices as of 2026-10-10 (https://platform.claude.com/docs/en/about-claude/pricing)
+# and 158 JPY/USD (around 2026-10-09). Keep these current, or set your contract prices.
+# Environment overrides: CODEGRAPH_JPY_PER_USD, CODEGRAPH_PRICE_INPUT / CODEGRAPH_PRICE_OUTPUT
+# (the latter two for the model in CODEGRAPH_LLM_MODEL).
+pricing:
+  jpy_per_usd: 158
+  models:
+    claude-sonnet-5-5: {input: 2.0, output: 10.0}
+    claude-opus-5-5: {input: 4.0, output: 20.0}
+    claude-fable-5-1: {input: 10.0, output: 50.0}
+    # Haiku 5.5: prompts over 100,000 tokens are billed at the long-prompt prices
+    claude-haiku-5-5: {input: 0.10, output: 0.50, long_prompt_tokens: 100000, long_input: 0.50, long_output: 2.50}

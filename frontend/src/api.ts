@@ -1,4 +1,4 @@
-import type { GraphInfo, IndexReport, NodeDetail, RunEvent, RunState, RunSummary } from "./types";
+import type { GraphInfo, IndexReport, NodeDetail, RunEvent, RunState, RunSummary, WorkspaceUsage } from "./types";
 
 async function req<T>(method: string, url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
@@ -31,6 +31,7 @@ export const api = {
     req<{ id: string; changed_elements: number; added_files: string[] }>("POST", "/api/runs/diff", { base, head, graph, title }),
   llmSettings: () => req<{ effective: { min_score: number; max_items: number | "unlimited" }; settings_file: string; llm: string | null }>(
     "GET", "/api/settings/llm"),
+  usage: () => req<WorkspaceUsage>("GET", "/api/usage"),
   scope: (id: string) => req<{ groups: any; markdown: string }>("GET", `/api/runs/${id}/scope`),
   runs: () => req<RunSummary[]>("GET", "/api/runs"),
   run: (id: string) => req<RunState>("GET", `/api/runs/${id}`),

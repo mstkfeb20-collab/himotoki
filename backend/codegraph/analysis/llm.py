@@ -122,15 +122,20 @@ class ClaudeLLM(RuleBasedLLM):
         self.client = anthropic.Anthropic(timeout=float(os.environ.get("CODEGRAPH_LLM_TIMEOUT", "90")), max_retries=2)
         self.model = os.environ.get("CODEGRAPH_LLM_MODEL", "claude-sonnet-5-5")
 
-    def _ask(self, system: str, user: str, max_tokens: int = 4000, meter: dict | None = None) -> str:
+    def _ask(self, system: str, user: str, max_tokens: int = 4000, meter: dict | None = None,
+             purpose: str = "") -> str:
         msg = self.client.messages.create(model=self.model, max_tokens=max_tokens, system=system,
                                           messages=[{"role": "user", "content": user}])
         if meter is not None:
-            # actual usage reported by the API (not an estimate)
+            # actual usage reported by the API (not an estimate), priced per call
             u = getattr(msg, "usage", None)
-            meter["calls"] = meter.get("calls", 0) + 1
-            meter["input_tokens"] = meter.get("input_tokens", 0) + int(getattr(u, "input_tokens", 0) or 0)
-            meter["output_tokens"] = meter.get("output_tokens", 0) + int(getattr(u, "output_tokens", 0) or 0)
+            i, o = int(getattr(u, "input_tokens", 0) or 0), int(getattr(u, "output_tokens", 0) or 0)
+            if hasattr(meter, "on_call"):
+                meter.on_call(getattr(msg, "model", None) or self.model, i, o, purpose)
+            else:
+                meter["calls"] = meter.get("calls", 0) + 1
+                meter["input_tokens"] = meter.get("input_tokens", 0) + i
+                meter["output_tokens"] = meter.get("output_tokens", 0) + o
         return "".join(b.text for b in msg.content if getattr(b, "type", "") == "text")
 
     def structure_requirement(self, text: str, meter: dict | None = None) -> list[dict]:
@@ -143,7 +148,8 @@ class ClaudeLLM(RuleBasedLLM):
         try:
             data = _extract_json(self._ask(system, f"Requirement:\n{text}\n\nKnown vocabulary (UI label -> "
                                                     f"identifier): {vocab_sample}\n\nRule-based draft: "
-                                                    f"{json.dumps(hint, ensure_ascii=False)}", meter=meter))
+                                                    f"{json.dumps(hint, ensure_ascii=False)}", meter=meter,
+                                           purpose="structure"))
             intents = data.get("intents") or hint
             for i in intents:
                 i.setdefault("keywords", []); i.setdefault("new_terms", []); i.setdefault("change_type", "modify")
@@ -167,7 +173,7 @@ class ClaudeLLM(RuleBasedLLM):
             try:
                 data = _extract_json(self._ask(system, f"Intent: {intent['summary']} "
                                                         f"(change type: {intent['change_type']})\nItems:\n{body}",
-                                               meter=meter))
+                                               meter=meter, purpose="judge"))
                 for r in data.get("results", []):
                     if r.get("id") in base:
                         results.append({**base[r["id"]], **r, "_by": "ai"})
@@ -181,7 +187,7 @@ class ClaudeLLM(RuleBasedLLM):
         try:
             return self._ask("You are an impact-analysis assistant. Answer in Japanese, concisely, citing the "
                              "given context (file:line).", f"Context:\n{context}\n\nQuestion: {question}", 1500,
-                             meter=meter)
+                             meter=meter, purpose="ask")
         except Exception:
             log.warning("Claude API call failed; answering without it", exc_info=True)
             return "Claude API に接続できなかったため回答できません。関連する根拠情報:\n" + context[:1500]

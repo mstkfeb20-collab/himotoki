@@ -29,7 +29,8 @@ from collections import defaultdict
 
 from ..model import EDITABLE, Kind, LAYER, Rel
 from ..security import max_file_bytes, safe_join
-from ..settings import LLMBudget, load_llm_budget
+from ..settings import LLMBudget, load_llm_budget, load_pricing
+from ..usage import UsageLedger, UsageMeter, new_usage
 from ..store.base import GraphStore
 from .estimate import Estimator
 from .llm import RuleBasedLLM, make_llm
@@ -131,10 +132,7 @@ def _xlsx_rows(path: str, mtime: float, sheet: str) -> list[str]:
         return []
 
 
-def _new_usage() -> dict:
-    """Per-run AI usage: how candidates were judged and the tokens the API reported."""
-    return {"ai_items": 0, "reused": 0, "rule_low_score": 0, "rule_cap": 0, "rule": 0, "fallback": 0,
-            "calls": 0, "input_tokens": 0, "output_tokens": 0}
+_new_usage = new_usage
 
 
 class Engine:
@@ -144,6 +142,7 @@ class Engine:
         self.data_dir = data_dir
         # where settings.yaml lives (the workspace root); falls back to CODEGRAPH_DATA_DIR
         self.settings_dir = settings_dir
+        self.ledger = UsageLedger(os.path.join(settings_dir or data_dir, "usage.db"))
         self.repo = repo
         self.docs_dir = docs_dir
         self.runs = RunStore(data_dir)
@@ -289,7 +288,7 @@ class Engine:
         text = st["requirement"]
         if st.get("instruction"):
             text = st["instruction"] if st["parent_id"] else text + "\n" + st["instruction"]
-        intents = self.llm.structure_requirement(text, meter=st.setdefault("llm_usage", _new_usage()))
+        intents = self.llm.structure_requirement(text, meter=self._usage(st))
         offset = len(st["intents"])
         for i, it in enumerate(intents, offset + 1):
             it["id"] = f"I{i}"
@@ -612,6 +611,17 @@ class Engine:
             return "delete"
         return "modify"
 
+    def _usage(self, st) -> UsageMeter:
+        """The run's live usage meter: every AI call is priced, written to the ledger and
+        pushed to the viewer as an `llm.usage` event."""
+        u = st.get("llm_usage")
+        if not isinstance(u, UsageMeter):
+            graph = os.path.basename(os.path.normpath(self.data_dir))
+            u = UsageMeter(u or {}, load_pricing(self.settings_dir), self.ledger, graph, st["id"],
+                           on_update=lambda d, st=st: self.emit(st, "llm.usage", d, pace=False))
+            st["llm_usage"] = u
+        return u
+
     def _budget(self, st) -> LLMBudget:
         return LLMBudget().with_run_params(st["params"])
 
@@ -624,7 +634,7 @@ class Engine:
           - max_items: at most this many candidates per run go to the AI (highest
             score first); the rest are judged by rules. None = no cap."""
         budget = self._budget(st)
-        usage = st.setdefault("llm_usage", _new_usage())
+        usage = self._usage(st)
         cands = st["candidates"]
         ai_items, rule_items = defaultdict(list), defaultdict(list)
         for nid in sorted(set(node_ids), key=lambda n: -cands[n]["score"]):
@@ -1151,7 +1161,7 @@ class Engine:
             parts.append(f"## {d['node']['name']} ({d['node'].get('file')}:{d['node'].get('line')})\n"
                          f"判定: {c.get('verdict')} {c.get('reason') or ''}\n" +
                          "\n".join(f"{l['n']}: {l['text']}" for l in d["code"][:30]))
-        meter = st.setdefault("llm_usage", _new_usage()) if st else None
+        meter = self._usage(st) if st else None
         out = self.llm.answer(question, "\n\n".join(parts), meter=meter)
         if st:
             self._save(st)

@@ -372,11 +372,30 @@ def create_run(req: RunReq):
     return {"id": rid}
 
 
+@app.get("/api/usage")
+def usage():
+    """AI usage of the whole workspace: today, this month, the last 31 days by day,
+    priced with the current settings (USD) and converted to yen."""
+    import datetime as _dt
+    from .settings import load_pricing
+    from .usage import UsageLedger
+    led = UsageLedger(os.path.join(ws_root.root, "usage.db"))
+    pricing = load_pricing(ws_root.root)
+    now = _dt.datetime.now()
+    day0 = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    month0 = day0.replace(day=1)
+    jpy = lambda d: dict(d, cost_jpy=round(d["cost_usd"] * pricing.jpy_per_usd, 2))
+    return {"today": jpy(led.summary(day0.timestamp())), "month": jpy(led.summary(month0.timestamp())),
+            "by_day": [jpy(d) for d in led.by_day((day0 - _dt.timedelta(days=30)).timestamp())],
+            "jpy_per_usd": pricing.jpy_per_usd, "pricing_source": pricing.source}
+
+
 @app.get("/api/settings/llm")
 def llm_settings():
     """The AI-judgement budget new runs get (settings file + environment)."""
-    from .settings import load_llm_budget, settings_path
+    from .settings import load_llm_budget, load_pricing, settings_path
     return {"effective": load_llm_budget(ws_root.root).to_dict(), "settings_file": settings_path(ws_root.root),
+            "pricing": load_pricing(ws_root.root).to_dict(),
             "llm": (ws_root.engine(ws_root.default()).llm.name if ws_root.default() and
                     ws_root.engine(ws_root.default()) else None)}
 

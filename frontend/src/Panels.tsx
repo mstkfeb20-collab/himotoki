@@ -225,6 +225,9 @@ export function AiUsage({ run }: { run: RunState }) {
         {u.fallback > 0 && <tr><td>AI失敗でルールに切替</td><td className="num">{fmt(u.fallback)}</td><td /></tr>}
         <tr><td>API呼び出し</td><td className="num">{fmt(u.calls)}</td>
           <td className="sample">入力 {fmt(u.input_tokens)}・出力 {fmt(u.output_tokens)} トークン</td></tr>
+        <tr><td>費用</td><td className="num">¥{(u.cost_jpy ?? 0).toLocaleString("ja-JP", { maximumFractionDigits: 1 })}</td>
+          <td className="sample">${(u.cost_usd ?? 0).toFixed(4)} × {u.jpy_per_usd ?? "—"}円{u.model ? `・${u.model}` : ""}</td></tr>
+        {!!u.unpriced_calls && <tr><td colSpan={3} className="warn small">単価が未設定のモデルの呼び出し {u.unpriced_calls} 回は費用に含まれていません（settings.yaml の pricing）</td></tr>}
       </tbody></table>
     </div>
   );
