@@ -128,7 +128,7 @@ def _table_rows(f, grid, hr, hm, sheet, ctx_table, parent):
         name = f"{table}.{label}" if table and vals.get("column") else label
         text = " ".join(str(v) for v in row if v not in (None, ""))[:600]
         f.node(nid, Kind.DOC_ENTITY, f"{sheet}: {name}", r + 1, r + 1, text, keys=[nid], cell=cell, sheet=sheet,
-               fields=vals, doc=f.path)
+               fields=vals, doc=f.path, header_row=hr + 1)
         f.edge(parent, nid, Rel.CONTAINS, 1.0, "doc")
         ref = lambda key, conf=0.9: f.ref(nid, key, Rel.DESCRIBES, conf, r + 1, via="office-table", optional=True)
         if vals.get("column"):

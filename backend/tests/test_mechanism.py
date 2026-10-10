@@ -262,3 +262,20 @@ def test_webhook_payloads():
     gh = parse_webhook({"X-GitHub-Event": "push"}, {"ref": "refs/heads/dev", "after": "x"})
     assert gh == {"kind": "push", "branch": "dev", "sha": "x"}
     assert parse_webhook({}, {"object_kind": "note"}) is None
+
+
+def test_office_documents_are_shown_as_text_not_bytes(env):
+    """Selecting an Excel row in the viewer shows the table header and the rows around
+    it (read locally, no AI); the AI snippet for it is the extracted row, never bytes."""
+    repo, rules, data = env
+    store, _ = _index(repo, rules, data)
+    eng = Engine(store, str(data), str(repo))
+    row = next(n.id for n in store.nodes(["DocEntity"]) if "col:orders.note" in outs(store, n.id, Rel.DESCRIBES))
+    d = eng.node_detail(row)
+    texts = [l["text"] for l in d["code"]]
+    assert any("項目名(物理)" in t for t in texts) and any("NOTE" in t for t in texts)
+    assert d["highlight"] == [store.get(row).line]
+    assert all(t.isprintable() for t in texts)
+    assert "NOTE" in eng._snippet(row) and "PK\x03\x04" not in eng._snippet(row)
+    col = eng.node_detail("col:orders.note")
+    assert col["docs"] and all(x["text"].isprintable() or "\n" in x["text"] for x in col["docs"])

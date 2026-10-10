@@ -19,6 +19,7 @@ condition holds.
 from __future__ import annotations
 
 import logging
+from functools import lru_cache
 import os
 import re
 import threading
@@ -85,6 +86,49 @@ TEXT_EXT = (".java", ".html", ".sql", ".properties", ".yml", ".yaml", ".xml", ".
 
 def _now() -> float:
     return time.time()
+
+
+_OFFICE_EXT = (".xlsx", ".xlsm", ".xls", ".docx", ".doc", ".pptx", ".pdf")
+
+
+def _is_office(rel: str | None) -> bool:
+    return bool(rel) and rel.lower().endswith(_OFFICE_EXT)
+
+
+def _office_summary(n) -> str:
+    """Readable text of an Office row or section from the index (no file access)."""
+    fields = n.props.get("fields")
+    crud = n.props.get("crud")
+    head = [f"{n.props.get('cell') or n.props.get('title') or ''}".strip()]
+    if isinstance(fields, dict) and fields:
+        head.append("  ".join(f"{k}: {v}" for k, v in fields.items()))
+    if isinstance(crud, dict) and crud:
+        head.append("CRUD  " + "  ".join(f"{k}={v}" for k, v in crud.items()))
+    return "\n".join([h for h in head if h] + [n.text or ""])
+
+
+@lru_cache(maxsize=16)
+def _xlsx_rows(path: str, mtime: float, sheet: str) -> list[str]:
+    """Cell text of one sheet, one string per row (cached per file version)."""
+    try:
+        import openpyxl
+        from ..security import office_zip_ok
+        data = open(path, "rb").read()
+        if office_zip_ok(data):
+            return []
+        import io
+        wb = openpyxl.load_workbook(io.BytesIO(data), read_only=True, data_only=True)
+        if sheet not in wb.sheetnames:
+            return []
+        out = []
+        for row in wb[sheet].iter_rows(values_only=True):
+            out.append(" | ".join("" if v is None else str(v) for v in row).rstrip(" |"))
+            if len(out) >= 20000:
+                break
+        return out
+    except Exception:
+        log.warning("could not read %s", path, exc_info=True)
+        return []
 
 
 def _new_usage() -> dict:
@@ -534,6 +578,8 @@ class Engine:
         n = self.store.get(node_id)
         if not n or not n.file or not self.repo:
             return (n.text[:600] if n else "")
+        if _is_office(n.file):
+            return _office_summary(n)[:600]       # never send binary file content to the AI
         path = self._source_path(n.file)
         if not path or not os.path.isfile(path) or os.path.getsize(path) > max_file_bytes():
             return n.text[:600]
@@ -1045,7 +1091,11 @@ class Engine:
             start, end = (n.line or 1), (n.end_line or (n.line or 1))
             if hl and (end - start > 50 or not (start <= hl[0] <= end)):
                 start, end = max(1, hl[0] - 12), hl[-1] + 12
-            code = self._read_lines(n.file, max(1, start - 2), min(end + 2, start + 70))
+            if _is_office(n.file):
+                code = self._office_excerpt(n)
+                hl = sorted(set(hl) | ({n.line} if n.line and n.props.get("cell") else set()))
+            else:
+                code = self._read_lines(n.file, max(1, start - 2), min(end + 2, start + 70))
         callers = [x for x in neighbors if x["dir"] == "in" and x["rel"] in (Rel.CALLS, Rel.REFERENCES, Rel.BINDS)]
         callees = [x for x in neighbors if x["dir"] == "out" and x["rel"] in (Rel.CALLS, Rel.REFERENCES, Rel.MAPS_TO,
                                                                              Rel.RENDERS, Rel.USES_MESSAGE)]
@@ -1053,8 +1103,24 @@ class Engine:
                 "callees": callees, "docs": docs_full, "tests": tests, "history": n.props.get("history", [])}
 
     def _doc_text(self, dn) -> str:
+        if _is_office(dn.file):
+            # the row / section as extracted (header: value), not the binary file
+            return _office_summary(dn)
         lines = self._read_lines(dn.file, dn.line or 1, min((dn.end_line or 1), (dn.line or 1) + 40))
         return "\n".join(l["text"] for l in lines)
+
+    def _office_excerpt(self, n) -> list[dict]:
+        """Rows around an Excel row (with row numbers, so the row itself can be
+        highlighted), or the text of a Word / Markdown section. Read locally; no AI."""
+        path = self._source_path(n.file)
+        if path and n.file.lower().endswith(".xlsx") and n.props.get("sheet") and n.line:
+            rows = _xlsx_rows(path, os.path.getmtime(path) if os.path.exists(path) else 0, n.props["sheet"])
+            if rows:
+                hr = int(n.props.get("header_row") or 1)       # the table's own header row
+                a, b = max(hr + 1, n.line - 6), min(len(rows), n.line + 3)
+                header = [{"n": hr, "text": rows[hr - 1]}] if 0 < hr <= len(rows) else []
+                return header + [{"n": i, "text": rows[i - 1]} for i in range(a, b + 1)]
+        return [{"n": (n.line or 1) + i, "text": t} for i, t in enumerate((_office_summary(n) or "").splitlines()[:40])]
 
     def _source_path(self, rel: str | None) -> str | None:
         """Path of a graph file inside the repository / documents folder; None when the
@@ -1066,6 +1132,8 @@ class Engine:
         return safe_join(self.repo, rel) if self.repo else None
 
     def _read_lines(self, rel: str, a: int, b: int) -> list[dict]:
+        if _is_office(rel):
+            return []           # binary formats are shown through _office_excerpt
         path = self._source_path(rel)
         if not path or not os.path.isfile(path) or os.path.getsize(path) > max_file_bytes():
             return []
