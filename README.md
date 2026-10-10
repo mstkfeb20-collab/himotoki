@@ -244,6 +244,44 @@ docker compose up --build     # http://localhost:8765/?token=<CODEGRAPH_API_TOKE
 
 あわせて「取込状況」のずれ・未解決参照も確認できます。
 
+## AIの使用量と設定
+
+AI（Claude）を使うのは「要求の構造化」と「候補の判定」と「ビュワーでの質問」だけです。インデックス作成や、ビュワーでの閲覧・確定・除外には使いません。判定は候補数に比例してトークンを使うため、次の3つで量を抑えます。
+
+| 仕組み | 内容 | 設定（既定値） |
+|---|---|---|
+| 再調査での判定の再利用 | 親の解析でAIが判定した候補は判定し直さない。新しい根拠で点数が一定以上上がった候補だけ再判定する | `reuse_verdicts`（true）、`rescore_delta`（0.1） |
+| 低スコアはルールで判定 | 点数が閾値未満の候補はAIに送らない | `min_score`（0.3） |
+| 1回あたりの上限 | 点数の高い順に上限件数までAIで判定し、残りはルールで判定する（要確認として残る） | `max_items`（300。`unlimited` または -1 で上限なし、0 でAI判定なし） |
+
+あわせて、横断検索・独立再探索・CRUD確認で見つかった候補も、1件ずつではなくまとめて判定するようにしました（`batch_size`、既定 15 件／回）。
+
+**設定の場所**（下ほど優先）:
+
+1. 設定ファイル `<CODEGRAPH_DATA_DIR>/settings.yaml`（場所は `CODEGRAPH_SETTINGS` で変更可）。例は `samples/settings.example.yaml`
+2. 環境変数 `CODEGRAPH_LLM_MIN_SCORE`・`CODEGRAPH_LLM_MAX_ITEMS`・`CODEGRAPH_LLM_REUSE_VERDICTS`・`CODEGRAPH_LLM_RESCORE_DELTA`・`CODEGRAPH_LLM_BATCH_SIZE`
+3. 解析ごとの指定:
+   - API の `llm_max_items` / `llm_min_score`
+   - CLI の `--llm-max-items` / `--llm-min-score`
+   - MCP の `llm_max_items`
+   - ビュワーの「新しい解析」の入力欄
+
+解析ごとの内訳（AIで判定・再利用・ルール判定・API呼び出し回数・実際の入出力トークン数）は、ビュワーの「規模」タブ、CLI の出力、API の `llm_usage` で確認できます。現在の既定値は `GET /api/settings/llm` で確認できます。
+
+**測定結果**（ツアー予約の「備考 80→200文字」、候補 243 件）: Claude の呼び出し部分を記録用に差し替えて送信内容を数えたもので、トークン数は文字数からの換算です。
+
+| 条件 | AIで判定 | API呼び出し | トークン（入力＋出力） |
+|---|---|---|---|
+| 変更前（1件ずつの判定あり、再利用なし） | 243 | 102 回 | 約 88,000 |
+| 上限なし・閾値 0 | 243 | 19 回 | 約 78,000 |
+| 既定（閾値 0.3・上限 300） | 216 | 17 回 | 約 71,000 |
+| 閾値 0.4 | 59 | 5 回 | 約 20,000 |
+| 閾値 0.5 | 25 | 3 回 | 約 8,500 |
+| 上限 100 | 100 | 8 回 | 約 32,000 |
+| 再調査（既定、変更前は約 78,000） | 4（212 件は再利用） | 2 回 | 約 3,600 |
+
+閾値や上限を下げるほど、ルールで判定されて「要確認」のまま残る候補が増え、人の確認の手間が増えます。既定値は網羅を優先した値です。
+
 ## 規模見積もり
 
 `backend/codegraph/analysis/estimate.py` の係数表（要素種別 × 変更種別の基準時間。ジョブ・スクリプト・SQL文・DBオブジェクト・設計書の項目も含む）を基準にします。これに循環的複雑度・行数・呼び出し元数・難易度補正・ロケール数を掛け、テストが無い要素にはテスト作成時間を加えます。最後にレビュー等の係数（既定 1.3）と、過去実績から求める補正係数（`POST /api/estimator/calibrate`）を掛けて人日にします。
@@ -253,10 +291,11 @@ docker compose up --build     # http://localhost:8765/?token=<CODEGRAPH_API_TOKE
 | メソッド | パス | 用途 |
 |---|---|---|
 | GET | /api/status・/api/graphs | 状態・グラフ（ブランチ・タグごと）一覧 |
+| GET | /api/settings/llm | AI判定の既定の閾値・上限 |
 | POST | /api/index | インデックス（repo, docs_dir, ref, graph） |
 | GET | /api/index/report | 取込状況（未解決参照・ずれ・実行時SQLの対応・エラー） |
 | POST | /api/sources/catalog・/api/sources/runtime | DB辞書・実行時SQLの取込 |
-| POST | /api/runs | 要求から解析 |
+| POST | /api/runs | 要求から解析（`llm_max_items`・`llm_min_score` で今回だけAIの上限・閾値を変更） |
 | POST | /api/runs/diff | 差分から解析（base, head） |
 | GET | /api/runs/{id}・/api/runs/{id}/scope | 状態・回帰確認の範囲（Markdown 付き） |
 | WS | /ws/runs/{id} | イベントストリーム |
@@ -339,10 +378,11 @@ v1 からの回帰確認です。正解リストは `eval/ground_truth.json`、�
 
 ### テスト
 
-`backend/tests`（25 件、すべてオフライン）:
+`backend/tests`（31 件、すべてオフライン）:
 
 - 小さな固定リポジトリでの一連の操作
 - 一時リポジトリでの仕組みの検証: 社内フレームワークのルールパック、JP1→シェル→データファイル→後続ジョブ、Excel の見出し検出と CRUD 表、DB辞書のずれと実行時SQLの対応、キャッシュの増分、差分モード、Webhook の解釈、SQL の端のケース
+- AI判定の予算（`test_llm_budget.py`）: 再調査での再利用、閾値、上限、上限なし、設定ファイル・環境変数・解析ごとの指定の優先順位
 - 攻撃が失敗することの確認（`test_security.py`）: ファイル読み取りの迂回、CORS・Host 偽装・クロスサイト WebSocket、認証、パス制限、Webhook 偽装、シンボリックリンク、XXE、zip 爆弾
 
 Oracle 辞書の CSV 取込（`samples/tour-env/db/oracle_catalog`）は、パッケージ本体の CRUD と DB にだけある列 `reserve.cancel_reason` の検出までを確認しました。

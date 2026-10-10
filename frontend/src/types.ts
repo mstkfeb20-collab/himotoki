@@ -21,6 +21,7 @@ export interface Candidate {
   change_type?: string | null;
   difficulty?: string | null;
   decision: Decision;
+  judged_by?: string | null;
   assignee?: string | null;
   comments: { author: string; text: string; at: number }[];
 }
@@ -65,6 +66,9 @@ export interface RunState {
   grep: { terms?: string[]; hits?: { file: string; line: number; term: string; node_id: string; text: string }[] };
   shadow: { node_ids?: string[]; only?: string[] };
   approved: { actor: string; at: number; estimate_days: number } | null;
+  llm_usage?: { ai_items: number; reused: number; rule_low_score: number; rule_cap: number; rule: number;
+    fallback: number; calls: number; input_tokens: number; output_tokens: number };
+  params?: { llm?: { min_score: number; max_items: number | "unlimited"; reuse_verdicts: boolean } } & Record<string, any>;
   error?: string;
   created_at: number;
 }

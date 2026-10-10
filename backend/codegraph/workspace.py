@@ -83,7 +83,8 @@ class Workspace:
                 g = self.meta["graphs"].get(name, {})
                 d = self.graph_dir(name)
                 store = open_store(d, graph=name)
-                self.engines[name] = Engine(store, d, g.get("snapshot") or g.get("repo"), g.get("docs_dir"))
+                self.engines[name] = Engine(store, d, g.get("snapshot") or g.get("repo"), g.get("docs_dir"),
+                                            settings_dir=self.root)
             return self.engines[name]
 
     def index(self, repo: str, docs_dir: str | None = None, ref: str | None = None, name: str | None = None,

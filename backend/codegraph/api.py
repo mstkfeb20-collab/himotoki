@@ -132,6 +132,9 @@ class RunReq(BaseModel):
     min_score: float = Field(0.2, ge=0.0, le=1.0)
     pace: float = Field(0.0, ge=0.0, le=2.0)
     graph: str | None = Field(None, max_length=NAME)
+    # AI-judgement budget for this run (omit to use settings.yaml / CODEGRAPH_LLM_*)
+    llm_min_score: float | None = Field(None, ge=0.0, le=1.0)
+    llm_max_items: int | str | None = None          # number, or "unlimited"
 
 
 class DiffReq(BaseModel):
@@ -357,8 +360,25 @@ def runs(graph: str | None = None):
 @app.post("/api/runs")
 def create_run(req: RunReq):
     e = eng(req.graph)
-    rid = e.start_run(req.requirement, req.title, {"depth": req.depth, "min_score": req.min_score, "pace": req.pace})
+    params = {"depth": req.depth, "min_score": req.min_score, "pace": req.pace}
+    if req.llm_min_score is not None:
+        params["llm_min_score"] = req.llm_min_score
+    if req.llm_max_items is not None:
+        params["llm_max_items"] = req.llm_max_items
+    try:
+        rid = e.start_run(req.requirement, req.title, params)
+    except ValueError as ex:
+        raise HTTPException(400, f"invalid AI budget: {ex}")
     return {"id": rid}
+
+
+@app.get("/api/settings/llm")
+def llm_settings():
+    """The AI-judgement budget new runs get (settings file + environment)."""
+    from .settings import load_llm_budget, settings_path
+    return {"effective": load_llm_budget(ws_root.root).to_dict(), "settings_file": settings_path(ws_root.root),
+            "llm": (ws_root.engine(ws_root.default()).llm.name if ws_root.default() and
+                    ws_root.engine(ws_root.default()) else None)}
 
 
 @app.post("/api/runs/diff")

@@ -152,3 +152,4 @@ fieldset { border: 1px solid var(--line2); border-radius: 12px; padding: 12px 14
 .sample { font-family: "JetBrains Mono", monospace; font-size: 11px; color: #9AA6B8; word-break: break-all; }
 .graphsel { max-width: 220px; }
 .dot.agg { border: 3px double #6B7A92; background: #141B27; }
+.ai-usage { margin-top: 12px; }

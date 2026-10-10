@@ -33,6 +33,8 @@ def main(argv=None):
     p.add_argument("--dialect")
     p = sub.add_parser("report"); p.add_argument("--graph")
     p = sub.add_parser("analyze"); p.add_argument("requirement"); p.add_argument("--graph"); p.add_argument("--depth", type=int, default=3)
+    p.add_argument("--llm-max-items", help="AI-judged candidates for this run: a number, or 'unlimited'")
+    p.add_argument("--llm-min-score", type=float, help="candidates below this score are judged by rules")
     p.add_argument("--json", action="store_true")
     p = sub.add_parser("diff"); p.add_argument("--base", required=True); p.add_argument("--head", required=True)
     p.add_argument("--graph")
@@ -96,7 +98,12 @@ def main(argv=None):
                                                               "added_files": added}, background=False)
         print(e.scope_markdown(e.state(rid), f"{a.base}..{a.head}"))
         return
-    rid = e.start_run(a.requirement, params={"depth": a.depth}, background=False)
+    params = {"depth": a.depth}
+    if a.llm_max_items is not None:
+        params["llm_max_items"] = a.llm_max_items
+    if a.llm_min_score is not None:
+        params["llm_min_score"] = a.llm_min_score
+    rid = e.start_run(a.requirement, params=params, background=False)
     st = e.state(rid)
     if st["status"] != "done":
         sys.exit(f"error: {st.get('error')}")
@@ -104,6 +111,10 @@ def main(argv=None):
         print(json.dumps(st, ensure_ascii=False, indent=1))
         return
     print(f"run {rid}  判定: {e.llm.name}  候補 {len(st['candidates'])} 件  規模(暫定) {st['estimate']['days']} 人日")
+    u = st.get("llm_usage") or {}
+    print(f"  AI判定 {u.get('ai_items', 0)} 件・再利用 {u.get('reused', 0)}・ルール判定（低スコア {u.get('rule_low_score', 0)}"
+          f"・上限超過 {u.get('rule_cap', 0)}・AI未使用 {u.get('rule', 0)}）  API {u.get('calls', 0)} 回 "
+          f"入力 {u.get('input_tokens', 0)} / 出力 {u.get('output_tokens', 0)} トークン  上限設定 {st['params']['llm']['max_items']}")
     for it in st["intents"]:
         print(f"  {it['id']} {it['summary']} [{it['change_type']}{', ' + it['pattern'] if it.get('pattern') else ''}]")
     top = sorted((c for c in st["candidates"].values() if c["verdict"] == "impacted"),

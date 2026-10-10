@@ -28,9 +28,10 @@ from collections import defaultdict
 
 from ..model import EDITABLE, Kind, LAYER, Rel
 from ..security import max_file_bytes, safe_join
+from ..settings import LLMBudget, load_llm_budget
 from ..store.base import GraphStore
 from .estimate import Estimator
-from .llm import make_llm
+from .llm import RuleBasedLLM, make_llm
 from .runstore import EventBus, RunStore
 from .search import NodeSearch
 from ..rules import load_rules
@@ -86,11 +87,19 @@ def _now() -> float:
     return time.time()
 
 
+def _new_usage() -> dict:
+    """Per-run AI usage: how candidates were judged and the tokens the API reported."""
+    return {"ai_items": 0, "reused": 0, "rule_low_score": 0, "rule_cap": 0, "rule": 0, "fallback": 0,
+            "calls": 0, "input_tokens": 0, "output_tokens": 0}
+
+
 class Engine:
     def __init__(self, store: GraphStore, data_dir: str, repo: str | None = None,
-                 docs_dir: str | None = None):
+                 docs_dir: str | None = None, settings_dir: str | None = None):
         self.store = store
         self.data_dir = data_dir
+        # where settings.yaml lives (the workspace root); falls back to CODEGRAPH_DATA_DIR
+        self.settings_dir = settings_dir
         self.repo = repo
         self.docs_dir = docs_dir
         self.runs = RunStore(data_dir)
@@ -160,6 +169,11 @@ class Engine:
                   instruction: str | None = None, background: bool = True) -> str:
         p = {"depth": 3, "min_score": 0.2, "pace": 0.0, "seed_k": 10, "boost": []}
         p.update(params or {})
+        # AI-judgement budget: settings file < environment < this run's parameters
+        budget = load_llm_budget(self.settings_dir).with_run_params(params or {})
+        p["llm"] = budget.to_dict()
+        for k in [k for k in p if k.startswith("llm_")]:
+            p.pop(k)
         run_id = uuid.uuid4().hex[:10]
         st = {
             "id": run_id, "parent_id": parent_id, "title": title or requirement[:40],
@@ -167,7 +181,7 @@ class Engine:
             "created_at": _now(), "status": "running", "phase": "queued", "progress": 0.0,
             "params": p, "llm": self.llm.name, "intents": [], "candidates": {}, "grep": {},
             "shadow": {}, "crud": {}, "checks": [], "estimate": {}, "approved": None, "seq": -1,
-            "repo": self.repo,
+            "repo": self.repo, "llm_usage": _new_usage(),
         }
         self._states[run_id] = st
         self._save(st)
@@ -231,7 +245,7 @@ class Engine:
         text = st["requirement"]
         if st.get("instruction"):
             text = st["instruction"] if st["parent_id"] else text + "\n" + st["instruction"]
-        intents = self.llm.structure_requirement(text)
+        intents = self.llm.structure_requirement(text, meter=st.setdefault("llm_usage", _new_usage()))
         offset = len(st["intents"])
         for i, it in enumerate(intents, offset + 1):
             it["id"] = f"I{i}"
@@ -552,28 +566,68 @@ class Engine:
             return "delete"
         return "modify"
 
+    def _budget(self, st) -> LLMBudget:
+        return LLMBudget().with_run_params(st["params"])
+
     def _judge(self, st, node_ids):
-        by_intent = defaultdict(list)
-        for nid in node_ids:
-            c = st["candidates"][nid]
+        """Judge candidates. Three ways to avoid spending AI tokens, all configurable
+        (settings.yaml / CODEGRAPH_LLM_* / per-run params, see settings.py):
+          - reuse: a re-investigation keeps the parent's AI verdict unless the
+            candidate gained evidence (score up by >= rescore_delta);
+          - min_score: weakly connected candidates are judged by rules;
+          - max_items: at most this many candidates per run go to the AI (highest
+            score first); the rest are judged by rules. None = no cap."""
+        budget = self._budget(st)
+        usage = st.setdefault("llm_usage", _new_usage())
+        cands = st["candidates"]
+        ai_items, rule_items = defaultdict(list), defaultdict(list)
+        for nid in sorted(set(node_ids), key=lambda n: -cands[n]["score"]):
+            c = cands[nid]
             c["change_type"] = c.get("change_type") or self._default_change_type(st, c)
+            if (budget.reuse_verdicts and c.get("verdict") and c.get("judged_by") in ("ai", "reused")
+                    and c["score"] < (c.get("judged_score") or 0) + budget.rescore_delta):
+                if c["judged_by"] == "ai" and st.get("parent_id"):
+                    c["judged_by"] = "reused"
+                usage["reused"] += 1
+                continue
+            iid = (c["intent_ids"] or ["I1"])[0]
             item = {"id": nid, "kind": c["kind"], "name": c["name"], "score": c["score"],
-                    "path_reason": self.path_reason(st, nid), "change_type": c["change_type"],
-                    "snippet": self._snippet(nid) if self.llm.available else ""}
-            by_intent[(c["intent_ids"] or ["I1"])[0]].append(item)
+                    "path_reason": self.path_reason(st, nid), "change_type": c["change_type"]}
+            if not self.llm.available:
+                rule_items[iid].append((item, "rule"))
+            elif c["score"] < budget.min_score:
+                rule_items[iid].append((item, "rule:low_score"))
+            elif budget.max_items is not None and usage["ai_items"] >= budget.max_items:
+                rule_items[iid].append((item, "rule:cap"))
+            else:
+                item["snippet"] = self._snippet(nid)
+                ai_items[iid].append(item)
+                usage["ai_items"] += 1
         intents = {i["id"]: i for i in st["intents"]} or {"I1": {"summary": st["requirement"], "change_type": "modify"}}
-        for iid, items in by_intent.items():
-            intent = intents.get(iid) or next(iter(intents.values()))
-            for r in self.llm.judge(intent, items):
-                c = st["candidates"].get(r["id"])
-                if not c:
-                    continue
-                c["verdict"], c["confidence"] = r["verdict"], r["confidence"]
-                c["reason"] = r.get("reason") or self.path_reason(st, r["id"])
-                if r.get("change_type") in ("add", "modify", "delete", "test", "doc"):
-                    c["change_type"] = r["change_type"]
-                self.emit(st, "verdict", {"node_id": r["id"], "verdict": c["verdict"],
-                                          "confidence": c["confidence"], "reason": c["reason"]})
+        pick = lambda iid: intents.get(iid) or next(iter(intents.values()))
+        for iid, items in ai_items.items():
+            for r in self.llm.judge(pick(iid), items, batch_size=budget.batch_size, meter=usage):
+                if r.get("_by") == "rule:fallback":
+                    usage["fallback"] += 1
+                self._apply_verdict(st, r, r.get("_by") or "ai")
+        for iid, pairs in rule_items.items():
+            how = {it["id"]: why for it, why in pairs}
+            for k in ("rule", "rule:low_score", "rule:cap"):
+                usage[k.replace("rule:", "rule_") if k != "rule" else "rule"] += sum(1 for v in how.values() if v == k)
+            for r in RuleBasedLLM.judge(self.llm, pick(iid), [it for it, _ in pairs]):
+                self._apply_verdict(st, r, how[r["id"]])
+
+    def _apply_verdict(self, st, r, by):
+        c = st["candidates"].get(r["id"])
+        if not c:
+            return
+        c["verdict"], c["confidence"] = r["verdict"], r["confidence"]
+        c["reason"] = r.get("reason") or self.path_reason(st, r["id"])
+        if r.get("change_type") in ("add", "modify", "delete", "test", "doc"):
+            c["change_type"] = r["change_type"]
+        c["judged_by"], c["judged_score"] = by, c["score"]
+        self.emit(st, "verdict", {"node_id": r["id"], "verdict": c["verdict"], "confidence": c["confidence"],
+                                  "reason": c["reason"], "judged_by": by})
 
     # ------------------------------------------------------------ phase 5
     def _grep_terms(self, st) -> list[str]:
@@ -635,6 +689,7 @@ class Engine:
             hits.append(h)
         st["grep"] = {"terms": terms, "hits": hits[:3000], "backend": searcher.name, "total": len(hits)}
         new = 0
+        added = []
         for h in hits:
             nid = h["node_id"]
             if nid in st["candidates"]:
@@ -645,7 +700,8 @@ class Engine:
             if self._add_candidate(st, nid, 0.35, "grep", None, reason=f"キーワード「{h['term']}」が出現"
                                    f"（{h['file']}:{h['line']}）。依存グラフからは未到達", virtual=virtual):
                 new += 1
-                self._judge(st, [nid])
+                added.append(nid)
+        self._judge(st, added)
         self.emit(st, "grep.done", {"terms": terms, "hits": len(hits), "new_candidates": new, "backend": searcher.name})
 
     # ------------------------------------------------------------ phase 6
@@ -661,7 +717,7 @@ class Engine:
         for nid in only:
             self._add_candidate(st, nid, min(0.45, 0.2 + found[nid]), "shadow", None,
                                 reason=f"独立した再探索（全文類似度 {found[nid]:.2f}）でのみ検出")
-            self._judge(st, [nid])
+        self._judge(st, [n for n in only if n in st["candidates"]])
         st["shadow"] = {"node_ids": list(found), "only": only}
         self.emit(st, "shadow.done", {"found": len(found), "only": len(only)})
 
@@ -670,6 +726,7 @@ class Engine:
         """Everything that defines, loads, maps, reads or writes an affected table —
         code, SQL statements, stored code, design-doc CRUD rows and SQL seen at runtime."""
         tables = {}
+        crud_new = []
         rels = [Rel.DEFINES, Rel.POPULATES, Rel.MAPS_TO, Rel.READS, Rel.WRITES, Rel.DOC_CRUD]
         for c in list(st["candidates"].values()):
             if c["kind"] != Kind.TABLE:
@@ -696,8 +753,10 @@ class Engine:
                     origin = "runtime" if n and n.kind == Kind.RUNTIME_SQL else "crud"
                     reason = (f"{c['name']} に実行時に触れたSQL（コード上の出所が不明）" if origin == "runtime" and
                               not n.props.get("matched") else f"{c['name']} を読み書きしている箇所（CRUD確認）")
-                    self._add_candidate(st, nid, 0.4, origin, (c["intent_ids"] or [None])[0], parent=tid, reason=reason)
-                    self._judge(st, [nid])
+                    if self._add_candidate(st, nid, 0.4, origin, (c["intent_ids"] or [None])[0], parent=tid,
+                                           reason=reason):
+                        crud_new.append(nid)
+        self._judge(st, crud_new)
         st["crud"] = {"tables": tables}
         self.emit(st, "crud.done", {"tables": {k: len(v) for k, v in tables.items()}})
 
@@ -1024,7 +1083,11 @@ class Engine:
             parts.append(f"## {d['node']['name']} ({d['node'].get('file')}:{d['node'].get('line')})\n"
                          f"判定: {c.get('verdict')} {c.get('reason') or ''}\n" +
                          "\n".join(f"{l['n']}: {l['text']}" for l in d["code"][:30]))
-        return self.llm.answer(question, "\n\n".join(parts))
+        meter = st.setdefault("llm_usage", _new_usage()) if st else None
+        out = self.llm.answer(question, "\n\n".join(parts), meter=meter)
+        if st:
+            self._save(st)
+        return out
 
     def report(self, run_id) -> str:
         st = self.state(run_id)

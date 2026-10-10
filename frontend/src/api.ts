@@ -29,10 +29,13 @@ export const api = {
     req<IndexReport>("GET", `/api/index/report${graph ? `?graph=${encodeURIComponent(graph)}` : ""}`),
   diffRun: (base: string, head: string, graph?: string | null, title?: string) =>
     req<{ id: string; changed_elements: number; added_files: string[] }>("POST", "/api/runs/diff", { base, head, graph, title }),
+  llmSettings: () => req<{ effective: { min_score: number; max_items: number | "unlimited" }; settings_file: string; llm: string | null }>(
+    "GET", "/api/settings/llm"),
   scope: (id: string) => req<{ groups: any; markdown: string }>("GET", `/api/runs/${id}/scope`),
   runs: () => req<RunSummary[]>("GET", "/api/runs"),
   run: (id: string) => req<RunState>("GET", `/api/runs/${id}`),
-  createRun: (requirement: string, opts: { title?: string; depth?: number; pace?: number; graph?: string | null }) =>
+  createRun: (requirement: string, opts: { title?: string; depth?: number; pace?: number; graph?: string | null;
+    llm_max_items?: string | number; llm_min_score?: number }) =>
     req<{ id: string }>("POST", "/api/runs", { requirement, ...opts }),
   decide: (id: string, node_id: string, status: string, reason = "", extra: Record<string, unknown> = {}) =>
     req<any>("POST", `/api/runs/${id}/decisions`, { node_id, status, reason, ...extra }),

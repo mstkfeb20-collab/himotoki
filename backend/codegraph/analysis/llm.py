@@ -54,7 +54,7 @@ class RuleBasedLLM:
         self.vocab = vocabulary or {}
         self.identifiers = identifiers or set()
 
-    def structure_requirement(self, text: str) -> list[dict]:
+    def structure_requirement(self, text: str, meter: dict | None = None) -> list[dict]:
         clauses = [c.strip() for c in re.split(r"[。\n]|(?<=[しり])、|。", text) if c.strip()]
         if not clauses:
             clauses = [text]
@@ -94,7 +94,7 @@ class RuleBasedLLM:
             })
         return intents
 
-    def judge(self, intent: dict, items: list[dict]) -> list[dict]:
+    def judge(self, intent: dict, items: list[dict], batch_size: int = 15, meter: dict | None = None) -> list[dict]:
         out = []
         for it in items:
             s = it["score"]
@@ -102,10 +102,10 @@ class RuleBasedLLM:
             hi = 0.6 if it["kind"] in (Kind.TEST_CLASS, Kind.TEST_METHOD, Kind.DOC) else 0.5
             verdict = "impacted" if s >= hi else "uncertain" if s >= 0.3 else "not_impacted"
             out.append({"id": it["id"], "verdict": verdict, "confidence": round(min(0.95, s), 2),
-                        "reason": it["path_reason"], "change_type": it.get("change_type", "modify")})
+                        "reason": it["path_reason"], "change_type": it.get("change_type", "modify"), "_by": "rule"})
         return out
 
-    def answer(self, question: str, context: str) -> str:
+    def answer(self, question: str, context: str, meter: dict | None = None) -> str:
         return ("LLMが未設定のため自由質問には回答できません（ANTHROPIC_API_KEY を設定すると有効になります）。"
                 "関連する根拠情報:\n" + context[:1500])
 
@@ -122,12 +122,18 @@ class ClaudeLLM(RuleBasedLLM):
         self.client = anthropic.Anthropic(timeout=float(os.environ.get("CODEGRAPH_LLM_TIMEOUT", "90")), max_retries=2)
         self.model = os.environ.get("CODEGRAPH_LLM_MODEL", "claude-sonnet-5-5")
 
-    def _ask(self, system: str, user: str, max_tokens: int = 4000) -> str:
+    def _ask(self, system: str, user: str, max_tokens: int = 4000, meter: dict | None = None) -> str:
         msg = self.client.messages.create(model=self.model, max_tokens=max_tokens, system=system,
                                           messages=[{"role": "user", "content": user}])
+        if meter is not None:
+            # actual usage reported by the API (not an estimate)
+            u = getattr(msg, "usage", None)
+            meter["calls"] = meter.get("calls", 0) + 1
+            meter["input_tokens"] = meter.get("input_tokens", 0) + int(getattr(u, "input_tokens", 0) or 0)
+            meter["output_tokens"] = meter.get("output_tokens", 0) + int(getattr(u, "output_tokens", 0) or 0)
         return "".join(b.text for b in msg.content if getattr(b, "type", "") == "text")
 
-    def structure_requirement(self, text: str) -> list[dict]:
+    def structure_requirement(self, text: str, meter: dict | None = None) -> list[dict]:
         hint = super().structure_requirement(text)
         system = ("You decompose software change requirements into change intents for impact analysis. "
                   "Answer with JSON only: {\"intents\":[{\"summary\":str (in the requirement's language),"
@@ -137,7 +143,7 @@ class ClaudeLLM(RuleBasedLLM):
         try:
             data = _extract_json(self._ask(system, f"Requirement:\n{text}\n\nKnown vocabulary (UI label -> "
                                                     f"identifier): {vocab_sample}\n\nRule-based draft: "
-                                                    f"{json.dumps(hint, ensure_ascii=False)}"))
+                                                    f"{json.dumps(hint, ensure_ascii=False)}", meter=meter))
             intents = data.get("intents") or hint
             for i in intents:
                 i.setdefault("keywords", []); i.setdefault("new_terms", []); i.setdefault("change_type", "modify")
@@ -146,33 +152,36 @@ class ClaudeLLM(RuleBasedLLM):
             log.warning("Claude API call failed; using the rule-based structuring", exc_info=True)
             return hint
 
-    def judge(self, intent: dict, items: list[dict]) -> list[dict]:
-        base = {r["id"]: r for r in super().judge(intent, items)}
+    def judge(self, intent: dict, items: list[dict], batch_size: int = 15, meter: dict | None = None) -> list[dict]:
+        base = {r["id"]: dict(r, _by="rule:fallback") for r in super().judge(intent, items)}
         system = ("You judge whether code elements must change to implement a requirement intent. "
                   "For each item answer JSON only: {\"results\":[{\"id\":str,\"verdict\":"
                   "\"impacted|uncertain|not_impacted\",\"confidence\":0-1,\"reason\":str (Japanese, one "
                   "sentence),\"change_type\":\"add|modify|delete|test|doc\"}]}")
         results = []
-        for i in range(0, len(items), 15):
-            chunk = items[i:i + 15]
+        step = max(1, int(batch_size))
+        for i in range(0, len(items), step):
+            chunk = items[i:i + step]
             body = json.dumps([{k: it[k] for k in ("id", "kind", "name", "path_reason", "snippet")}
                                for it in chunk], ensure_ascii=False)
             try:
                 data = _extract_json(self._ask(system, f"Intent: {intent['summary']} "
-                                                        f"(change type: {intent['change_type']})\nItems:\n{body}"))
+                                                        f"(change type: {intent['change_type']})\nItems:\n{body}",
+                                               meter=meter))
                 for r in data.get("results", []):
                     if r.get("id") in base:
-                        results.append({**base[r["id"]], **r})
+                        results.append({**base[r["id"]], **r, "_by": "ai"})
             except Exception:
                 log.warning("Claude judgement failed for a chunk; keeping rule-based verdicts", exc_info=True)
                 results += [base[it["id"]] for it in chunk]
         seen = {r["id"] for r in results}
         return results + [r for k, r in base.items() if k not in seen]
 
-    def answer(self, question: str, context: str) -> str:
+    def answer(self, question: str, context: str, meter: dict | None = None) -> str:
         try:
             return self._ask("You are an impact-analysis assistant. Answer in Japanese, concisely, citing the "
-                             "given context (file:line).", f"Context:\n{context}\n\nQuestion: {question}", 1500)
+                             "given context (file:line).", f"Context:\n{context}\n\nQuestion: {question}", 1500,
+                             meter=meter)
         except Exception:
             log.warning("Claude API call failed; answering without it", exc_info=True)
             return "Claude API に接続できなかったため回答できません。関連する根拠情報:\n" + context[:1500]

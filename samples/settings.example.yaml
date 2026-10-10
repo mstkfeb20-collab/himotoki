@@ -1,0 +1,17 @@
+# codegraph settings — copy to <CODEGRAPH_DATA_DIR>/settings.yaml (or point CODEGRAPH_SETTINGS at it).
+# Environment variables (CODEGRAPH_LLM_MIN_SCORE, CODEGRAPH_LLM_MAX_ITEMS, ...) override this file,
+# and per-run parameters (API llm_max_items / llm_min_score, CLI --llm-max-items / --llm-min-score)
+# override both. Only used when the AI judgement is enabled (ANTHROPIC_API_KEY).
+llm:
+  # Candidates scoring below this are judged by rules instead of the AI.
+  # Measured on the tour sample (243 candidates): 0.3 -> 216 sent, 0.4 -> 59, 0.5 -> 25.
+  min_score: 0.3
+  # Candidates per run sent to the AI, highest score first; the rest are judged by rules
+  # (they stay "uncertain" for review). "unlimited" (or -1) = no cap; 0 = no AI judgement.
+  max_items: 300
+  # Re-investigations keep the parent's AI verdicts; a candidate is asked again only when
+  # its score rose by at least rescore_delta (new evidence reached it).
+  reuse_verdicts: true
+  rescore_delta: 0.1
+  # Candidates per AI request.
+  batch_size: 15

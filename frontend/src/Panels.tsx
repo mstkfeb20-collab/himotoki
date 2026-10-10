@@ -63,6 +63,7 @@ export function EstimatePanel({ run, onSelect }: { run: RunState; onSelect: (ids
         <span className="mono small muted">（{e.low} 〜 {e.high}）</span></div>
       <p className="muted small">確定分 {e.confirmed_hours}h ＋ 未判定の期待値 {e.pending_expected_hours}h、レビュー等の係数 ×{e.overhead}、
         実績補正 ×{e.calibration}{e.calibration_samples ? `（過去${e.calibration_samples}件）` : "（実績未登録）"}</p>
+      <AiUsage run={run} />
       <table className="tbl">
         <thead><tr><th>対象</th><th>変更</th><th className="r">h</th></tr></thead>
         <tbody>
@@ -198,6 +199,33 @@ export function IndexPanel({ graph }: { graph?: string | null }) {
 
       {r.errors > 0 && <><span className="k">抽出エラー {r.errors}</span>
         {(r.error_samples || []).slice(0, 5).map((e, i) => <p key={i} className="sample">{e.file}: {e.error}</p>)}</>}
+    </div>
+  );
+}
+
+
+/** How the candidates of this run were judged and what the AI calls cost. */
+export function AiUsage({ run }: { run: RunState }) {
+  const u = run.llm_usage;
+  const b = run.params?.llm;
+  if (!u) return null;
+  const fmt = (n: number) => n.toLocaleString("ja-JP");
+  return (
+    <div className="ai-usage">
+      <span className="k">AIの利用</span>
+      <table className="report-table"><tbody>
+        <tr><td>AIで判定</td><td className="num">{fmt(u.ai_items)}</td>
+          <td className="sample">上限 {b ? (b.max_items === "unlimited" ? "なし" : fmt(b.max_items as number)) : "—"}</td></tr>
+        <tr><td>前回の判定を再利用</td><td className="num">{fmt(u.reused)}</td><td /></tr>
+        <tr><td>ルールで判定（低スコア）</td><td className="num">{fmt(u.rule_low_score)}</td>
+          <td className="sample">{b ? `${b.min_score} 未満` : ""}</td></tr>
+        <tr><td>ルールで判定（上限超過）</td><td className="num">{fmt(u.rule_cap)}</td>
+          <td className="sample">{u.rule_cap ? "要確認として残ります" : ""}</td></tr>
+        {u.rule > 0 && <tr><td>ルールで判定（AI未設定）</td><td className="num">{fmt(u.rule)}</td><td /></tr>}
+        {u.fallback > 0 && <tr><td>AI失敗でルールに切替</td><td className="num">{fmt(u.fallback)}</td><td /></tr>}
+        <tr><td>API呼び出し</td><td className="num">{fmt(u.calls)}</td>
+          <td className="sample">入力 {fmt(u.input_tokens)}・出力 {fmt(u.output_tokens)} トークン</td></tr>
+      </tbody></table>
     </div>
   );
 }

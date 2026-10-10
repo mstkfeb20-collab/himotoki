@@ -84,11 +84,15 @@ def neighbors(node_id: str, direction: str = "both", relations: list[str] | None
 
 
 @mcp.tool()
-def analyze_requirement(requirement: str, graph: str | None = None, top: int = 40) -> dict:
+def analyze_requirement(requirement: str, graph: str | None = None, top: int = 40,
+                        llm_max_items: str | None = None) -> dict:
     """Run an impact analysis for a requirement text. Returns intents, the most likely
-    impacted elements with reasons, the completeness checks and an effort estimate."""
+    impacted elements with reasons, the completeness checks and an effort estimate.
+    llm_max_items caps AI-judged candidates for this run (a number or "unlimited");
+    omit it to use the server's settings."""
     e = _engine(graph)
-    rid = e.start_run(requirement, params={}, background=False)
+    rid = e.start_run(requirement, params={"llm_max_items": llm_max_items} if llm_max_items else {},
+                      background=False)
     st = e.state(rid)
     cands = sorted(st["candidates"].values(), key=lambda c: -(c.get("confidence") or c["score"]))
     return {"run_id": rid, "intents": st["intents"],
@@ -96,7 +100,8 @@ def analyze_requirement(requirement: str, graph: str | None = None, top: int = 4
                                                   "reason", "origin")} for c in cands[:top]],
             "total_candidates": len(cands),
             "checks": [{k: c[k] for k in ("key", "title", "ok", "detail")} for c in st["checks"]],
-            "estimate_days": st["estimate"].get("days")}
+            "estimate_days": st["estimate"].get("days"), "llm_usage": st.get("llm_usage"),
+            "llm_budget": st["params"].get("llm")}
 
 
 @mcp.tool()

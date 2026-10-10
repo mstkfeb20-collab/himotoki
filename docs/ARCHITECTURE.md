@@ -359,7 +359,7 @@ flowchart LR
 | 構造化 | 要求文 | 変更意図（種別: add / modify / delete、語、新しい語、値の変化、変更パターン） | `RuleBasedLLM` / `ClaudeLLM` |
 | 起点 | 変更意図 | 起点ノードと理由 | |
 | 伝播 | 起点 | 候補（経路・関係・スコア） | `propagation.yaml` |
-| 判定 | 候補と経路 | 判定・確度・理由・変更種別 | 判定器 |
+| 判定 | 候補と経路 | 判定・確度・理由・変更種別・判定方法（AI／再利用／ルール：低スコア・上限超過） | 判定器、AIの予算（`settings.yaml`・`CODEGRAPH_LLM_*`・解析ごとの指定） |
 | 横断検索 | 起点の語 | ヒットした行と要素 | `CODEGRAPH_CODESEARCH` |
 | 独立再探索 | 要求文 | グラフを使わずに見つけた要素 | |
 | CRUD | 影響テーブル | 読み書きする全箇所 | |
@@ -379,6 +379,17 @@ flowchart LR
 - **ハブの抑制**: 被参照が多い要素（ユーティリティ等）からの CALLS / REFERENCES は減衰させます。
 - **終端**: 設計書・テスト・SQL ファイル・設定などは終端とし、そこから先へは広げません。ただし SQL ファイルやスクリプトを**起動している**もの（RUNS の逆向き）へは伝えます。列の変更 → 夜間 SQL → シェル → JP1 ジョブ、という経路のためです。
 - **ブースト**: 再調査の指示（「設計書と照合して」「DB まで追って」）で、特定の層の重みを上げます。
+
+### 6.2.1 AI判定の予算
+
+判定は候補数に比例してトークンを使うため、`_judge` は候補を点数の高い順に並べ、次の順で振り分けます（設定は `codegraph/settings.py`、既定値は README の「AIの使用量と設定」）。
+
+1. **再利用**: 再調査で、親の解析でAIが判定済みかつ点数の上昇が `rescore_delta` 未満の候補は、親の判定をそのまま使う。
+2. **低スコア**: `min_score` 未満はルール判定。
+3. **上限**: その解析でAIに送った件数が `max_items` に達したら、残りはルール判定（`unlimited` で上限なし）。
+4. 残りを `batch_size` 件ずつまとめてAIに送る。
+
+候補ごとに `judged_by`（ai / reused / rule:low_score / rule:cap / rule / rule:fallback）を記録します。解析ごとの内訳と、API が返した実際の入出力トークン数は `llm_usage` に記録します。横断検索・独立再探索・CRUD確認で見つかった候補は、工程ごとにまとめて判定します。
 
 ### 6.3 全数判定の条件
 
@@ -571,6 +582,7 @@ MCP サーバは、エージェントがファイルを丸ごと読まずに「�
 | `CODEGRAPH_WEBHOOK_SECRET` | Webhook の検証 |
 | `GITLAB_API` / `GITLAB_TOKEN`、`GITHUB_API` / `GITHUB_TOKEN` | MR / PR へのコメント、GitLab コード検索 |
 | `CODEGRAPH_FRONTEND` | 配信するビュワーのビルド先 |
+| `CODEGRAPH_SETTINGS`、`CODEGRAPH_LLM_MIN_SCORE` / `MAX_ITEMS` / `REUSE_VERDICTS` / `RESCORE_DELTA` / `BATCH_SIZE` | 設定ファイルの場所と、AI判定の予算（§6.2.1） |
 | `CODEGRAPH_API_TOKEN`、`CODEGRAPH_ALLOWED_HOSTS`、`CODEGRAPH_CORS_ORIGINS` | API の認証・許可するホスト名・CORS（[SECURITY](SECURITY.md)） |
 | `CODEGRAPH_ALLOWED_ROOTS`、`CODEGRAPH_ALLOW_DB_FROM_API` | API で指定できるパスの範囲、API からの DB 接続の許可 |
 | `CODEGRAPH_MAX_FILE_MB`、`CODEGRAPH_MAX_OFFICE_MB`、`CODEGRAPH_GIT_TIMEOUT`、`CODEGRAPH_LLM_TIMEOUT` | 資源の上限・タイムアウト |

@@ -267,6 +267,10 @@ function NewRun({ status, onClose, onCreated, onIndexed }: { status: any; onClos
   const [title, setTitle] = useState("");
   const [depth, setDepth] = useState(3);
   const [pace, setPace] = useState(0.03);
+  const [aiMax, setAiMax] = useState("");          // empty = server setting
+  const [aiMin, setAiMin] = useState("");
+  const [aiDefault, setAiDefault] = useState<{ min_score: number; max_items: number | "unlimited" } | null>(null);
+  useEffect(() => { api.llmSettings().then((r) => setAiDefault(r.effective)).catch(() => {}); }, []);
   const [idx, setIdx] = useState<any>(status?.index);
   const [err, setErr] = useState<string | null>(null);
   const reindex = async () => {
@@ -287,7 +291,9 @@ function NewRun({ status, onClose, onCreated, onIndexed }: { status: any; onClos
     try {
       const r = mode === "diff"
         ? await api.diffRun(base, head, graph || null, title || undefined)
-        : await api.createRun(req, { title: title || undefined, depth, pace, graph: graph || null });
+        : await api.createRun(req, { title: title || undefined, depth, pace, graph: graph || null,
+            ...(aiMax.trim() ? { llm_max_items: aiMax.trim() } : {}),
+            ...(aiMin.trim() ? { llm_min_score: Number(aiMin) } : {}) });
       onCreated(r.id);
     }
     catch (e: any) { setErr(e.message); }
@@ -336,6 +342,17 @@ function NewRun({ status, onClose, onCreated, onIndexed }: { status: any; onClos
           <label className="field"><span className="k">探索の深さ</span><input className="input" type="number" min={1} max={6} value={depth} onChange={(e) => setDepth(Number(e.target.value))} /></label>
           <label className="field"><span className="k">表示ウェイト(秒)</span><input className="input" type="number" min={0} max={1} step={0.01} value={pace} onChange={(e) => setPace(Number(e.target.value))} /></label>
         </div>
+        {status?.llm === "claude" && mode === "req" && (
+          <div className="grid3">
+            <label className="field"><span className="k">AI判定の上限件数</span>
+              <input className="input mono" value={aiMax} onChange={(e) => setAiMax(e.target.value)}
+                placeholder={aiDefault ? `既定 ${aiDefault.max_items}（unlimited で上限なし）` : "unlimited で上限なし"} /></label>
+            <label className="field"><span className="k">AIに回す最低スコア</span>
+              <input className="input mono" type="number" min={0} max={1} step={0.05} value={aiMin}
+                onChange={(e) => setAiMin(e.target.value)} placeholder={aiDefault ? `既定 ${aiDefault.min_score}` : ""} /></label>
+            <p className="muted small">上限を超えた候補と低スコアの候補はルールで判定し、要確認として残ります。</p>
+          </div>
+        )}
         <p className="muted small">判定方式: {status?.llm === "claude" ? "Claude API" : "ルールベース（ANTHROPIC_API_KEY を設定するとClaudeで判定）"}・ストア: {status?.store}</p>
         {err && <p className="warn small">{err}</p>}
         <div className="actions end"><button className="btn ghost" onClick={onClose}>閉じる</button>
