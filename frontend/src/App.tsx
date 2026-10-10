@@ -100,13 +100,13 @@ export default function App() {
     const md = await api.report(run.id);
     const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob); a.download = `impact-${run.id}.md`; a.click();
+    a.href = URL.createObjectURL(blob); a.download = `codegraph-${run.id}.md`; a.click();
   };
 
   return (
     <div className="app">
       <header className="top">
-        <div className="brand"><span className="logo mono">IMPACT</span>
+        <div className="brand"><span className="logo mono">CODEGRAPH</span>
           <select className="runsel" aria-label="解析を選択" value={runId || ""} onChange={(e) => setRunId(e.target.value)}>
             {runs.map((r) => <option key={r.id} value={r.id}>{r.parent_id ? "↳ " : ""}{r.title}（{r.graph ? `${r.graph}・` : ""}{r.id.slice(0, 4)}）</option>)}
           </select>

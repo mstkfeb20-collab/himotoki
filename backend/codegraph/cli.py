@@ -1,16 +1,16 @@
 """Command line.
 
-  python -m impact.cli index   --repo PATH [--docs PATH] [--ref BRANCH] [--graph NAME]
-  python -m impact.cli catalog postgres --dsn DSN [--name NAME]
-  python -m impact.cli catalog oracle (--csv-dir DIR | --dsn DSN --user U --password P [--owner O]) [--name NAME]
-  python -m impact.cli runtime (--pg DSN | --csv FILE) [--name NAME]
-  python -m impact.cli report  [--graph NAME]                 what the graph knows it is missing
-  python -m impact.cli analyze "要求文" [--graph NAME] [--json]
-  python -m impact.cli diff    --base REF --head REF [--graph NAME]   regression scope of a change set
-  python -m impact.cli serve   [--port 8765]
-  python -m impact.cli mcp                                    MCP server on stdio for coding agents
+  python -m codegraph.cli index   --repo PATH [--docs PATH] [--ref BRANCH] [--graph NAME]
+  python -m codegraph.cli catalog postgres --dsn DSN [--name NAME]
+  python -m codegraph.cli catalog oracle (--csv-dir DIR | --dsn DSN --user U --password P [--owner O]) [--name NAME]
+  python -m codegraph.cli runtime (--pg DSN | --csv FILE) [--name NAME]
+  python -m codegraph.cli report  [--graph NAME]                 what the graph knows it is missing
+  python -m codegraph.cli analyze "要求文" [--graph NAME] [--json]
+  python -m codegraph.cli diff    --base REF --head REF [--graph NAME]   regression scope of a change set
+  python -m codegraph.cli serve   [--port 8765]
+  python -m codegraph.cli mcp                                    MCP server on stdio for coding agents
 
-The workspace directory is IMPACT_DATA_DIR (default ./data); --data overrides it.
+The workspace directory is CODEGRAPH_DATA_DIR (default ./data); --data overrides it.
 """
 from __future__ import annotations
 
@@ -21,8 +21,8 @@ import sys
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(prog="impact")
-    ap.add_argument("--data", default=os.environ.get("IMPACT_DATA_DIR", "./data"))
+    ap = argparse.ArgumentParser(prog="codegraph")
+    ap.add_argument("--data", default=os.environ.get("CODEGRAPH_DATA_DIR", "./data"))
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("index"); p.add_argument("--repo", required=True); p.add_argument("--docs")
     p.add_argument("--ref"); p.add_argument("--graph")
@@ -39,19 +39,19 @@ def main(argv=None):
     p = sub.add_parser("serve"); p.add_argument("--port", type=int, default=8765); p.add_argument("--host", default="127.0.0.1")
     sub.add_parser("mcp")
     a = ap.parse_args(argv)
-    os.environ["IMPACT_DATA_DIR"] = os.path.abspath(a.data)
+    os.environ["CODEGRAPH_DATA_DIR"] = os.path.abspath(a.data)
 
     if a.cmd == "serve":
         import uvicorn
         local = a.host in ("127.0.0.1", "localhost", "::1")
-        if not local and not os.environ.get("IMPACT_API_TOKEN") and os.environ.get("IMPACT_ALLOW_NO_AUTH") != "1":
+        if not local and not os.environ.get("CODEGRAPH_API_TOKEN") and os.environ.get("CODEGRAPH_ALLOW_NO_AUTH") != "1":
             # the API serves source code: refuse to expose it on the network without a token
-            sys.exit("refusing to listen on a non-local address without IMPACT_API_TOKEN "
-                     "(set IMPACT_ALLOW_NO_AUTH=1 only behind an authenticating proxy)")
-        if not local and not os.environ.get("IMPACT_ALLOWED_HOSTS"):
-            sys.exit("set IMPACT_ALLOWED_HOSTS to the host names clients use (comma separated)")
-        uvicorn.run("impact.api:app", host=a.host, port=a.port, proxy_headers=False,
-                    limit_concurrency=int(os.environ.get("IMPACT_MAX_CONNECTIONS", "200")))
+            sys.exit("refusing to listen on a non-local address without CODEGRAPH_API_TOKEN "
+                     "(set CODEGRAPH_ALLOW_NO_AUTH=1 only behind an authenticating proxy)")
+        if not local and not os.environ.get("CODEGRAPH_ALLOWED_HOSTS"):
+            sys.exit("set CODEGRAPH_ALLOWED_HOSTS to the host names clients use (comma separated)")
+        uvicorn.run("codegraph.api:app", host=a.host, port=a.port, proxy_headers=False,
+                    limit_concurrency=int(os.environ.get("CODEGRAPH_MAX_CONNECTIONS", "200")))
         return
     if a.cmd == "mcp":
         from .mcp_server import main as mcp_main
@@ -110,7 +110,7 @@ def main(argv=None):
                  key=lambda c: -(c["confidence"] or 0))[:30]
     for c in top:
         print(f"  {c['confidence']:.2f}  {c['kind']:<12} {c['name'][:56]:<56} {c['reason'] or ''}")
-    print(f"ビュワー: python -m impact.cli serve → http://localhost:8765/?run={rid}")
+    print(f"ビュワー: python -m codegraph.cli serve → http://localhost:8765/?run={rid}")
 
 
 if __name__ == "__main__":

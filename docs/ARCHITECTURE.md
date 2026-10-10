@@ -1,8 +1,8 @@
-# アーキテクチャ設計書 — Impact Analyzer
+# アーキテクチャ設計書 — codegraph
 
 | 項目 | 内容 |
 |---|---|
-| 対象 | Impact Analyzer v2（`mstkfeb20-collab/codegraph` main） |
+| 対象 | codegraph v2（`mstkfeb20-collab/codegraph` main） |
 | 目的 | 要求（仕様書・チャット）または変更差分から、影響範囲と修整規模を確定させる仕組みの設計を記録する |
 | 読者 | 導入・運用を判断する人、ルールパックや抽出器を追加する開発者、連携するエージェントの設計者 |
 | 関連 | 使い方・検証結果は [README](../README.md)、脅威と対策・エラー処理の方針は [SECURITY](SECURITY.md)。本書は「なぜこの構成か」と「部品の境界・契約」を扱う |
@@ -70,13 +70,13 @@ flowchart TB
     Q[要求文 / MR・PR]
   end
 
-  subgraph Index["インデックス（impact.pipeline）"]
+  subgraph Index["インデックス（codegraph.pipeline）"]
     L[列挙・分類<br/>run.classify / list_repo]
-    X[抽出器 ×7<br/>impact.extractors]
-    RP[(ルールパック<br/>impact/rules/*.yaml<br/>+ IMPACT_RULES)]
+    X[抽出器 ×7<br/>codegraph.extractors]
+    RP[(ルールパック<br/>codegraph/rules/*.yaml<br/>+ CODEGRAPH_RULES)]
     FC[(抽出キャッシュ<br/>facts.db)]
     K[リンカ<br/>linker / resolve_java]
-    S[外部ソース取込<br/>impact.sources]
+    S[外部ソース取込<br/>codegraph.sources]
   end
 
   subgraph Store["グラフ"]
@@ -84,7 +84,7 @@ flowchart TB
     REP[取込状況<br/>index_stats.json]
   end
 
-  subgraph Analysis["解析（impact.analysis）"]
+  subgraph Analysis["解析（codegraph.analysis）"]
     E[エンジン<br/>構造化→起点→伝播→判定→横断検索→独立再探索→CRUD→規模]
     LLM[判定器<br/>ルールベース / Claude]
     CS[コード検索<br/>git grep / Zoekt / GitLab]
@@ -92,10 +92,10 @@ flowchart TB
   end
 
   subgraph Front["利用者インターフェース"]
-    API[REST + WebSocket<br/>impact.api]
+    API[REST + WebSocket<br/>codegraph.api]
     V[ビュワー<br/>React + Cytoscape.js]
-    CLI[CLI<br/>impact.cli]
-    MCP[MCP サーバ<br/>impact.mcp_server]
+    CLI[CLI<br/>codegraph.cli]
+    MCP[MCP サーバ<br/>codegraph.mcp_server]
     WH[Webhook<br/>/api/hooks/git]
   end
 
@@ -128,15 +128,15 @@ flowchart TB
 
 | パッケージ | 責務 | 主なファイル |
 |---|---|---|
-| `impact.model` | ノード種別・関係種別・層の定義 | `model.py` |
-| `impact.extractors` | 形式ごとの抽出（フレームワーク非依存） | `java.py` `xml.py` `text.py` `sql.py` `props.py` `jobs.py` `docs.py` |
-| `impact.rules` | ルールパックの読み込み・統合 | `__init__.py`、`*.yaml` |
-| `impact.pipeline` | 列挙・分類・抽出の実行・キャッシュ・リンク | `run.py` `facts.py` `cache.py` `linker.py` `resolve_java.py` |
-| `impact.sources` | DB 辞書・実行時 SQL・git・コード検索 | `catalog.py` `runtime.py` `git.py` `codesearch.py` |
-| `impact.store` | グラフストアの抽象と実装 | `base.py` `local.py` `neo4j_store.py` |
-| `impact.workspace` | 複数グラフ（ref ごと）の管理 | `workspace.py` |
-| `impact.analysis` | 解析エンジン・判定器・規模・Run 保存 | `engine.py` `llm.py` `estimate.py` `search.py` `runstore.py` |
-| `impact.api` / `cli` / `mcp_server` | 外部インターフェース | |
+| `codegraph.model` | ノード種別・関係種別・層の定義 | `model.py` |
+| `codegraph.extractors` | 形式ごとの抽出（フレームワーク非依存） | `java.py` `xml.py` `text.py` `sql.py` `props.py` `jobs.py` `docs.py` |
+| `codegraph.rules` | ルールパックの読み込み・統合 | `__init__.py`、`*.yaml` |
+| `codegraph.pipeline` | 列挙・分類・抽出の実行・キャッシュ・リンク | `run.py` `facts.py` `cache.py` `linker.py` `resolve_java.py` |
+| `codegraph.sources` | DB 辞書・実行時 SQL・git・コード検索 | `catalog.py` `runtime.py` `git.py` `codesearch.py` |
+| `codegraph.store` | グラフストアの抽象と実装 | `base.py` `local.py` `neo4j_store.py` |
+| `codegraph.workspace` | 複数グラフ（ref ごと）の管理 | `workspace.py` |
+| `codegraph.analysis` | 解析エンジン・判定器・規模・Run 保存 | `engine.py` `llm.py` `estimate.py` `search.py` `runstore.py` |
+| `codegraph.api` / `cli` / `mcp_server` | 外部インターフェース | |
 | `frontend` | ビュワー | `App.tsx` `Graph.tsx` `Inspector.tsx` `Panels.tsx` |
 
 ---
@@ -201,7 +201,7 @@ sequenceDiagram
 
 ルールパックの合成（`rules/__init__.py`）:
 
-- 組み込みパック、`IMPACT_RULES` のディレクトリ（`:` 区切り）の順に読み込みます。
+- 組み込みパック、`CODEGRAPH_RULES` のディレクトリ（`:` 区切り）の順に読み込みます。
 - `java:` `office:` `sql:` は辞書として深くマージします（リストは和集合）。`xml:` `text:` `propagation:` はルールを連結します。
 - 全パックのバイト列からダイジェストを計算し、キャッシュキーに含めます（§4.5）。
 
@@ -360,7 +360,7 @@ flowchart LR
 | 起点 | 変更意図 | 起点ノードと理由 | |
 | 伝播 | 起点 | 候補（経路・関係・スコア） | `propagation.yaml` |
 | 判定 | 候補と経路 | 判定・確度・理由・変更種別 | 判定器 |
-| 横断検索 | 起点の語 | ヒットした行と要素 | `IMPACT_CODESEARCH` |
+| 横断検索 | 起点の語 | ヒットした行と要素 | `CODEGRAPH_CODESEARCH` |
 | 独立再探索 | 要求文 | グラフを使わずに見つけた要素 | |
 | CRUD | 影響テーブル | 読み書きする全箇所 | |
 | 規模 | 確定・未判定の候補 | 人日（確定分＋未判定分の期待値と幅） | `estimate.py` の係数 |
@@ -461,7 +461,7 @@ sequenceDiagram
 ### 9.1 ワークスペース
 
 ```
-<IMPACT_DATA_DIR>/
+<CODEGRAPH_DATA_DIR>/
   workspace.json          グラフの一覧（repo・ref・snapshot・docs_dir・commit・件数）
   facts.db                抽出キャッシュ（全グラフで共有）
   sources/*.json          DB辞書・実行時SQL
@@ -492,7 +492,7 @@ sequenceDiagram
 
 ### 9.3 コード検索
 
-横断検索の実装は `IMPACT_CODESEARCH` で切り替えます。
+横断検索の実装は `CODEGRAPH_CODESEARCH` で切り替えます。
 
 - 既定: チェックアウト上の `git grep`
 - `zoekt:<url>`: Zoekt の JSON API
@@ -549,7 +549,7 @@ MCP サーバは、エージェントがファイルを丸ごと読まずに「�
 
 | やりたいこと | 手順 |
 |---|---|
-| 社内フレームワーク・新しい XML 形式に対応する | `IMPACT_RULES` のディレクトリに YAML を追加し、`impact report` で未解決参照が減ることを確認する |
+| 社内フレームワーク・新しい XML 形式に対応する | `CODEGRAPH_RULES` のディレクトリに YAML を追加し、`codegraph report` で未解決参照が減ることを確認する |
 | 新しいテキスト形式（テンプレート言語・スクリプト）に対応する | `text:` ルールを追加する（glob・正規表現・キー） |
 | 設計書の書式に合わせる | `office:` の `headers` に見出し語を追加する |
 | 伝播の強さを調整する | `propagation.yaml` の重みを変える（コードの変更は不要） |
@@ -563,17 +563,17 @@ MCP サーバは、エージェントがファイルを丸ごと読まずに「�
 
 | 変数 | 用途 |
 |---|---|
-| `IMPACT_DATA_DIR` | ワークスペースの場所 |
-| `IMPACT_RULES` | 追加ルールパックのディレクトリ（`:` 区切り） |
-| `IMPACT_STORE`、`NEO4J_URI` / `NEO4J_USER` / `NEO4J_PASSWORD` / `NEO4J_DATABASE` | グラフストアの選択と接続 |
-| `ANTHROPIC_API_KEY`、`IMPACT_LLM_MODEL` | Claude 判定（無ければルールベース） |
-| `IMPACT_CODESEARCH` | 横断検索の実装 |
-| `IMPACT_WEBHOOK_SECRET` | Webhook の検証 |
+| `CODEGRAPH_DATA_DIR` | ワークスペースの場所 |
+| `CODEGRAPH_RULES` | 追加ルールパックのディレクトリ（`:` 区切り） |
+| `CODEGRAPH_STORE`、`NEO4J_URI` / `NEO4J_USER` / `NEO4J_PASSWORD` / `NEO4J_DATABASE` | グラフストアの選択と接続 |
+| `ANTHROPIC_API_KEY`、`CODEGRAPH_LLM_MODEL` | Claude 判定（無ければルールベース） |
+| `CODEGRAPH_CODESEARCH` | 横断検索の実装 |
+| `CODEGRAPH_WEBHOOK_SECRET` | Webhook の検証 |
 | `GITLAB_API` / `GITLAB_TOKEN`、`GITHUB_API` / `GITHUB_TOKEN` | MR / PR へのコメント、GitLab コード検索 |
-| `IMPACT_FRONTEND` | 配信するビュワーのビルド先 |
-| `IMPACT_API_TOKEN`、`IMPACT_ALLOWED_HOSTS`、`IMPACT_CORS_ORIGINS` | API の認証・許可するホスト名・CORS（[SECURITY](SECURITY.md)） |
-| `IMPACT_ALLOWED_ROOTS`、`IMPACT_ALLOW_DB_FROM_API` | API で指定できるパスの範囲、API からの DB 接続の許可 |
-| `IMPACT_MAX_FILE_MB`、`IMPACT_MAX_OFFICE_MB`、`IMPACT_GIT_TIMEOUT`、`IMPACT_LLM_TIMEOUT` | 資源の上限・タイムアウト |
+| `CODEGRAPH_FRONTEND` | 配信するビュワーのビルド先 |
+| `CODEGRAPH_API_TOKEN`、`CODEGRAPH_ALLOWED_HOSTS`、`CODEGRAPH_CORS_ORIGINS` | API の認証・許可するホスト名・CORS（[SECURITY](SECURITY.md)） |
+| `CODEGRAPH_ALLOWED_ROOTS`、`CODEGRAPH_ALLOW_DB_FROM_API` | API で指定できるパスの範囲、API からの DB 接続の許可 |
+| `CODEGRAPH_MAX_FILE_MB`、`CODEGRAPH_MAX_OFFICE_MB`、`CODEGRAPH_GIT_TIMEOUT`、`CODEGRAPH_LLM_TIMEOUT` | 資源の上限・タイムアウト |
 
 ## 付録 B. 検証の対応表
 

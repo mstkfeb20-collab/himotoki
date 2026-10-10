@@ -8,14 +8,14 @@ import textwrap
 
 import pytest
 
-from impact.analysis.engine import Engine
-from impact.extractors.sql import analyze
-from impact.model import Rel
-from impact.pipeline.run import Pipeline
-from impact.sources.catalog import CatalogBuilder, save_source
-from impact.sources.git import GitRepo, parse_webhook
-from impact.sources.runtime import build as runtime_build
-from impact.store import LocalStore
+from codegraph.analysis.engine import Engine
+from codegraph.extractors.sql import analyze
+from codegraph.model import Rel
+from codegraph.pipeline.run import Pipeline
+from codegraph.sources.catalog import CatalogBuilder, save_source
+from codegraph.sources.git import GitRepo, parse_webhook
+from codegraph.sources.runtime import build as runtime_build
+from codegraph.store import LocalStore
 
 RULES = """
 name: inhouse

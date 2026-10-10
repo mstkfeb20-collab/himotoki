@@ -13,9 +13,9 @@ COPY backend/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./
 COPY --from=web /web/dist /app/frontend/dist
-ENV IMPACT_DATA_DIR=/data IMPACT_FRONTEND=/app/frontend/dist IMPACT_ALLOWED_ROOTS=/repos:/data
-RUN useradd --create-home --uid 10001 impact && mkdir -p /data && chown impact /data
-USER impact
+ENV CODEGRAPH_DATA_DIR=/data CODEGRAPH_FRONTEND=/app/frontend/dist CODEGRAPH_ALLOWED_ROOTS=/repos:/data
+RUN useradd --create-home --uid 10001 codegraph && mkdir -p /data && chown codegraph /data
+USER codegraph
 EXPOSE 8765
-# refuses to start without IMPACT_API_TOKEN and IMPACT_ALLOWED_HOSTS (see docs/SECURITY.md)
-CMD ["python", "-m", "impact.cli", "serve", "--host", "0.0.0.0", "--port", "8765"]
+# refuses to start without CODEGRAPH_API_TOKEN and CODEGRAPH_ALLOWED_HOSTS (see docs/SECURITY.md)
+CMD ["python", "-m", "codegraph.cli", "serve", "--host", "0.0.0.0", "--port", "8765"]

@@ -18,9 +18,9 @@ import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend"))
 
-from impact.analysis.engine import Engine  # noqa: E402
-from impact.pipeline.run import Pipeline  # noqa: E402
-from impact.store import LocalStore  # noqa: E402
+from codegraph.analysis.engine import Engine  # noqa: E402
+from codegraph.pipeline.run import Pipeline  # noqa: E402
+from codegraph.store import LocalStore  # noqa: E402
 
 
 def covered(item, ids):
@@ -54,7 +54,7 @@ def main():
     ap.add_argument("--out", default=os.path.join(os.path.dirname(__file__), "results.json"))
     args = ap.parse_args()
 
-    data_dir = tempfile.mkdtemp(prefix="impact-eval-")
+    data_dir = tempfile.mkdtemp(prefix="codegraph-eval-")
     store = LocalStore(os.path.join(data_dir, "graph.json"))
     t0 = time.time()
     stats = Pipeline(data_dir).index(args.repo, store, args.docs)

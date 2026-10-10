@@ -24,28 +24,28 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from .security import PathNotAllowed, check_input_path, check_ref, constant_time_equals, redact
 from .workspace import Workspace
 
-log = logging.getLogger("impact.api")
-DATA_DIR = os.environ.get("IMPACT_DATA_DIR", os.path.abspath("./data"))
+log = logging.getLogger("codegraph.api")
+DATA_DIR = os.environ.get("CODEGRAPH_DATA_DIR", os.path.abspath("./data"))
 ws_root = Workspace(DATA_DIR)
 
-app = FastAPI(title="Impact Analyzer", version="2.0")
+app = FastAPI(title="codegraph", version="2.0")
 
 # --------------------------------------------------------------- security
 # The API exposes source code, so by default it only answers same-origin requests
 # for a local host name: no CORS, and the Host header must be a local name (this
 # also stops DNS-rebinding pages from talking to a server on 127.0.0.1).
-# Deployments set IMPACT_ALLOWED_HOSTS and IMPACT_API_TOKEN (see docs/SECURITY.md).
-API_TOKEN = os.environ.get("IMPACT_API_TOKEN") or None
+# Deployments set CODEGRAPH_ALLOWED_HOSTS and CODEGRAPH_API_TOKEN (see docs/SECURITY.md).
+API_TOKEN = os.environ.get("CODEGRAPH_API_TOKEN") or None
 _hosts = [h.strip() for h in os.environ.get(
-    "IMPACT_ALLOWED_HOSTS", "localhost,127.0.0.1,::1,[::1],testserver").split(",") if h.strip()]
+    "CODEGRAPH_ALLOWED_HOSTS", "localhost,127.0.0.1,::1,[::1],testserver").split(",") if h.strip()]
 app.add_middleware(TrustedHostMiddleware, allowed_hosts=_hosts)
-_origins = [o.strip() for o in os.environ.get("IMPACT_CORS_ORIGINS", "").split(",") if o.strip()]
+_origins = [o.strip() for o in os.environ.get("CODEGRAPH_CORS_ORIGINS", "").split(",") if o.strip()]
 if _origins:
     app.add_middleware(CORSMiddleware, allow_origins=_origins, allow_methods=["GET", "POST"],
                        allow_headers=["content-type", "authorization"], allow_credentials=False)
 
 _PUBLIC = ("/api/hooks/git",)          # authenticated by the webhook secret instead
-COOKIE = "impact_token"
+COOKIE = "codegraph_token"
 
 
 def _token_ok(headers, cookies, query: str = "") -> bool:
@@ -283,9 +283,9 @@ def _source_req(name: str, dsn: str | None, path: str | None):
     import re as _re
     if not _re.fullmatch(r"[\w.\-]{1,80}", name or "") or name in (".", ".."):
         raise HTTPException(400, "name: letters, digits, . _ - only")
-    if dsn and os.environ.get("IMPACT_ALLOW_DB_FROM_API") != "1":
+    if dsn and os.environ.get("CODEGRAPH_ALLOW_DB_FROM_API") != "1":
         # connecting to arbitrary hosts from the server is opt-in (use the CLI, or CSV exports)
-        raise HTTPException(403, "database connections from the API are disabled (set IMPACT_ALLOW_DB_FROM_API=1)")
+        raise HTTPException(403, "database connections from the API are disabled (set CODEGRAPH_ALLOW_DB_FROM_API=1)")
     check_input_path(path, "export folder")
 
 
@@ -479,10 +479,10 @@ async def git_hook(request: Request):
     import hmac
     import json as _json
     from .sources.git import GitRepo, parse_webhook, post_review_comment
-    secret = os.environ.get("IMPACT_WEBHOOK_SECRET")
+    secret = os.environ.get("CODEGRAPH_WEBHOOK_SECRET")
     if not secret:
         # an unauthenticated hook would let anyone trigger fetches and indexing
-        raise HTTPException(503, "webhook disabled: set IMPACT_WEBHOOK_SECRET")
+        raise HTTPException(503, "webhook disabled: set CODEGRAPH_WEBHOOK_SECRET")
     raw = await request.body()
     if len(raw) > 5 * 1024 * 1024:
         raise HTTPException(413, "payload too large")
@@ -590,7 +590,7 @@ async def ws_run(ws: WebSocket, run_id: str):
 
 
 # ------------------------------------------------------------- frontend
-_DIST = os.environ.get("IMPACT_FRONTEND", os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist"))
+_DIST = os.environ.get("CODEGRAPH_FRONTEND", os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist"))
 if os.path.isdir(_DIST):
     app.mount("/assets", StaticFiles(directory=os.path.join(_DIST, "assets")), name="assets")
 

@@ -124,7 +124,7 @@ def _work(args):
         size = os.path.getsize(full)
         if size > limit:
             f = FileFacts(display, ext_name)
-            f.errors.append(f"skipped: {size // 1048576} MB is over the {limit // 1048576} MB limit (IMPACT_MAX_FILE_MB)")
+            f.errors.append(f"skipped: {size // 1048576} MB is over the {limit // 1048576} MB limit (CODEGRAPH_MAX_FILE_MB)")
             return f.to_dict()
         data = open(full, "rb").read()
         if ext_name == "docs" and rel.lower().endswith(LEGACY_OFFICE):

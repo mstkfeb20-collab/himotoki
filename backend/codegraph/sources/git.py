@@ -13,7 +13,7 @@ import subprocess
 from ..security import check_ref
 
 
-GIT_TIMEOUT = int(os.environ.get("IMPACT_GIT_TIMEOUT", "900"))
+GIT_TIMEOUT = int(os.environ.get("CODEGRAPH_GIT_TIMEOUT", "900"))
 
 
 def _git(repo, *args, check=True) -> str:

@@ -1,4 +1,4 @@
-# Impact Analyzer — 要求からソースコードの影響範囲・修整規模を出す仕組み
+# codegraph — 要求からソースコードの影響範囲・修整規模を出す仕組み
 
 要求仕様書の該当箇所やチャットの内容を投入すると、ソースコード・SQL・画面・メッセージ・DB・ジョブ・運用スクリプト・設計書（Excel/Word）のどこに影響するかを依存グラフで洗い出します。その過程はビュワーでリアルタイムに表示されます。
 
@@ -68,7 +68,7 @@
 
 抽出結果は `FileFacts`（ノード、ファイル内の関係、`table:reserve` や `view:reservetour/reserveForm` のような**キーへの参照**）という共通形式で、ファイルごとに独立しています。そのため並列に処理でき、キャッシュも効きます。
 
-フレームワークの知識は `backend/impact/rules/*.yaml` にあります。
+フレームワークの知識は `backend/codegraph/rules/*.yaml` にあります。
 
 | パック | 内容 |
 |---|---|
@@ -82,7 +82,7 @@
 | `office` | 設計書の見出しの語彙（テーブル名・項目名(物理)・画面ID・ジョブ名…）と CRUD 記号 |
 | `propagation` | 影響が伝わる関係・向き・重み（エンジンはこの表だけを見る） |
 
-`IMPACT_RULES` で指定したディレクトリのパックも読み込みます。`samples/rules/ofbiz.yaml` は、Apache OFBiz（エンティティエンジン・サービスエンジン・リクエストコントローラ・スクリーン・ラベル・Groovy）を**コードを1行も書かずに**ルールだけで取り込む例です。
+`CODEGRAPH_RULES` で指定したディレクトリのパックも読み込みます。`samples/rules/ofbiz.yaml` は、Apache OFBiz（エンティティエンジン・サービスエンジン・リクエストコントローラ・スクリーン・ラベル・Groovy）を**コードを1行も書かずに**ルールだけで取り込む例です。
 
 #### 社内フレームワークへの対応例
 
@@ -142,7 +142,7 @@ XML ルールのテンプレートには `{@attr}`（自要素の属性）・`{/
 | 起点 | 識別子の一致、用語集、変更前の値（「80文字」→ 80 を持つ要素）、類似度 |
 | 伝播 | `propagation.yaml` の関係・向き・重みで閉包を計算。設計書・テスト・SQLファイルなどは終端（SQLファイルはそれを起動するジョブへは伝わる） |
 | 判定 | 確度・理由・変更種別 |
-| 横断検索 | 起点の語でリポジトリ全体を検索（既定は git grep。`IMPACT_CODESEARCH` で Zoekt・GitLab のコード検索に切り替え、ソース管理サーバ側の全ブランチ・全リポジトリを対象にできる） |
+| 横断検索 | 起点の語でリポジトリ全体を検索（既定は git grep。`CODEGRAPH_CODESEARCH` で Zoekt・GitLab のコード検索に切り替え、ソース管理サーバ側の全ブランチ・全リポジトリを対象にできる） |
 | 独立再探索 | 依存グラフを使わない別戦略で探し、本探索と突き合わせる |
 | CRUD確認 | 影響テーブルを読み書きする全箇所（コード・SQL・ジョブ・設計書の CRUD 表・実行時SQL） |
 | 規模 | 係数表 ＋ 複雑度・行数・呼び出し元数・テスト有無・ロケール数 |
@@ -151,11 +151,11 @@ XML ルールのテンプレートには `{@attr}`（自要素の属性）・`{/
 
 ## ソース管理サーバとの連携
 
-- **Webhook**（`POST /api/hooks/git`）: GitLab・GitHub の push と MR/PR を受けます（`IMPACT_WEBHOOK_SECRET` で GitLab トークン／GitHub の HMAC 署名を検証）。
+- **Webhook**（`POST /api/hooks/git`）: GitLab・GitHub の push と MR/PR を受けます（`CODEGRAPH_WEBHOOK_SECRET` で GitLab トークン／GitHub の HMAC 署名を検証）。
   - push: そのブランチのグラフを更新します（変更ファイルだけ再抽出）。
   - MR/PR: ターゲットブランチのグラフで差分モードを実行し、`GITLAB_TOKEN` / `GITHUB_TOKEN` があれば回帰確認の範囲を MR/PR にコメントします。
-- **コード検索**: `IMPACT_CODESEARCH=zoekt:http://zoekt:6070` または `gitlab:https://gitlab.example.com/api/v4:<project id>`
-- **MCP サーバ**（`python -m impact.cli mcp`、stdio）: Claude Code などのエージェントが次のツールでグラフを使えます。
+- **コード検索**: `CODEGRAPH_CODESEARCH=zoekt:http://zoekt:6070` または `gitlab:https://gitlab.example.com/api/v4:<project id>`
+- **MCP サーバ**（`codegraph mcp`、stdio）: Claude Code などのエージェントが次のツールでグラフを使えます。
   - `list_graphs`・`search_elements`・`get_element`・`neighbors`
   - `analyze_requirement`・`analyze_change`・`index_gaps`
 
@@ -169,35 +169,35 @@ SVN は対象外です（git 前提。必要なら git-svn で移行・ミラー
 
 ```bash
 cd backend
-pip install -r requirements.txt
-export IMPACT_DATA_DIR=./data
+pip install -e .            # `codegraph` コマンドが使えるようになる（python -m codegraph.cli でも同じ）
+export CODEGRAPH_DATA_DIR=./data
 
 # インデックス（設計書・ジョブ定義・運用シェルのフォルダは --docs）
-python -m impact.cli index --repo /path/to/repo --docs /path/to/ops-and-docs [--ref release/1.2]
+codegraph index --repo /path/to/repo --docs /path/to/ops-and-docs [--ref release/1.2]
 
 # DB辞書と実行時SQL（任意。取り込んだら index をやり直すとリンクされる）
-python -m impact.cli catalog postgres --dsn "postgresql://user@host/db" --name proddb
-python -m impact.cli catalog oracle --csv-dir ./dict_export --name ora      # ALL_TAB_COLUMNS 等の CSV
-python -m impact.cli catalog oracle --dsn host:1521/svc --user u --password p --owner APP --name ora
-python -m impact.cli runtime --pg "postgresql://user@host/db" --name prod-rt  # pg_stat_statements
-python -m impact.cli runtime --csv sql_stats.csv --name ora-rt               # V$SQL などのエクスポート
+codegraph catalog postgres --dsn "postgresql://user@host/db" --name proddb
+codegraph catalog oracle --csv-dir ./dict_export --name ora      # ALL_TAB_COLUMNS 等の CSV
+codegraph catalog oracle --dsn host:1521/svc --user u --password p --owner APP --name ora
+codegraph runtime --pg "postgresql://user@host/db" --name prod-rt  # pg_stat_statements
+codegraph runtime --csv sql_stats.csv --name ora-rt               # V$SQL などのエクスポート
 
-python -m impact.cli report                       # 取込状況（未解決・ずれ・実行時SQLの対応）
-python -m impact.cli analyze "要求文"            # 要求から
-python -m impact.cli diff --base main --head feature/x   # 差分から（回帰確認の範囲）
-python -m impact.cli serve --port 8765            # ビュワー http://localhost:8765
-python -m impact.cli mcp                          # MCP サーバ（stdio）
+codegraph report                       # 取込状況（未解決・ずれ・実行時SQLの対応）
+codegraph analyze "要求文"            # 要求から
+codegraph diff --base main --head feature/x   # 差分から（回帰確認の範囲）
+codegraph serve --port 8765            # ビュワー http://localhost:8765
+codegraph mcp                          # MCP サーバ（stdio）
 ```
 
 ビュワーの開発サーバは `cd frontend && npm install && npm run dev` で起動します（ビルド済みなら backend が `frontend/dist` を配信します）。
 
-`serve` は既定で 127.0.0.1 だけで待ち受けます。ほかのマシンから使う場合は `IMPACT_API_TOKEN` と `IMPACT_ALLOWED_HOSTS` が必要です（無いと起動しません）。
+`serve` は既定で 127.0.0.1 だけで待ち受けます。ほかのマシンから使う場合は `CODEGRAPH_API_TOKEN` と `CODEGRAPH_ALLOWED_HOSTS` が必要です（無いと起動しません）。
 
 ### Docker（Neo4j 構成）
 
 ```bash
-cp .env.example .env          # IMPACT_API_TOKEN・NEO4J_PASSWORD（必須）、ANTHROPIC_API_KEY・REPOS_DIR など
-docker compose up --build     # http://localhost:8765/?token=<IMPACT_API_TOKEN> で一度開く
+cp .env.example .env          # CODEGRAPH_API_TOKEN・NEO4J_PASSWORD（必須）、ANTHROPIC_API_KEY・REPOS_DIR など
+docker compose up --build     # http://localhost:8765/?token=<CODEGRAPH_API_TOKEN> で一度開く
 ```
 
 ## セキュリティ
@@ -246,7 +246,7 @@ docker compose up --build     # http://localhost:8765/?token=<IMPACT_API_TOKEN> 
 
 ## 規模見積もり
 
-`backend/impact/analysis/estimate.py` の係数表（要素種別 × 変更種別の基準時間。ジョブ・スクリプト・SQL文・DBオブジェクト・設計書の項目も含む）を基準にします。これに循環的複雑度・行数・呼び出し元数・難易度補正・ロケール数を掛け、テストが無い要素にはテスト作成時間を加えます。最後にレビュー等の係数（既定 1.3）と、過去実績から求める補正係数（`POST /api/estimator/calibrate`）を掛けて人日にします。
+`backend/codegraph/analysis/estimate.py` の係数表（要素種別 × 変更種別の基準時間。ジョブ・スクリプト・SQL文・DBオブジェクト・設計書の項目も含む）を基準にします。これに循環的複雑度・行数・呼び出し元数・難易度補正・ロケール数を掛け、テストが無い要素にはテスト作成時間を加えます。最後にレビュー等の係数（既定 1.3）と、過去実績から求める補正係数（`POST /api/estimator/calibrate`）を掛けて人日にします。
 
 ## API
 
@@ -361,14 +361,14 @@ Oracle 辞書の CSV 取込（`samples/tour-env/db/oracle_catalog`）は、パ�
 ## ディレクトリ
 
 ```
-backend/impact/extractors/         汎用の抽出器（java / xml / text / sql / props / jobs / docs）
-backend/impact/rules/              ルールパック（YAML）: フレームワークの知識と伝播の重み
-backend/impact/pipeline/           抽出の実行・キャッシュ・リンク（名前空間ごとの解決・Java の型解決）
-backend/impact/sources/            DB辞書・実行時SQL・git（worktree・差分・Webhook）・コード検索
-backend/impact/store/              ローカルストア / Neo4jストア（グラフ名前空間・一括取得）
-backend/impact/analysis/           解析エンジン・LLM／ルールベース判定・規模見積もり
-backend/impact/workspace.py        複数グラフ（ブランチ・タグ）の管理
-backend/impact/api.py・cli.py・mcp_server.py   REST + WebSocket / コマンドライン / MCP
+backend/codegraph/extractors/         汎用の抽出器（java / xml / text / sql / props / jobs / docs）
+backend/codegraph/rules/              ルールパック（YAML）: フレームワークの知識と伝播の重み
+backend/codegraph/pipeline/           抽出の実行・キャッシュ・リンク（名前空間ごとの解決・Java の型解決）
+backend/codegraph/sources/            DB辞書・実行時SQL・git（worktree・差分・Webhook）・コード検索
+backend/codegraph/store/              ローカルストア / Neo4jストア（グラフ名前空間・一括取得）
+backend/codegraph/analysis/           解析エンジン・LLM／ルールベース判定・規模見積もり
+backend/codegraph/workspace.py        複数グラフ（ブランチ・タグ）の管理
+backend/codegraph/api.py・cli.py・mcp_server.py   REST + WebSocket / コマンドライン / MCP
 backend/scripts/eval_history.py    コミット履歴による評価
 backend/tests/                     テスト
 frontend/src/                      ビュワー

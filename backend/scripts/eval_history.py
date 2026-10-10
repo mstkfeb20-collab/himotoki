@@ -23,7 +23,7 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from impact.workspace import Workspace  # noqa: E402
+from codegraph.workspace import Workspace  # noqa: E402
 
 SKIP = re.compile(r"format|copyright|import statements|sonar|license|typo|version|upgrade|bump|deprecat|"
                   r"schema location|logback|log format|loglevel", re.I)

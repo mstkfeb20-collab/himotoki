@@ -35,7 +35,7 @@ from .runstore import EventBus, RunStore
 from .search import NodeSearch
 from ..rules import load_rules
 
-log = logging.getLogger("impact.engine")
+log = logging.getLogger("codegraph.engine")
 
 SINKS = {Kind.TEST_CLASS, Kind.TEST_METHOD, Kind.DOC, Kind.DOC_ENTITY, Kind.FEATURE, Kind.SQL_FILE, Kind.CONFIG,
          Kind.RUNTIME_SQL}
