@@ -26,6 +26,8 @@
 
 ## 仕組み
 
+設計の詳細（要件・設計原則・部品の境界と契約・設計判断・制約・拡張手順）は [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) にあります。
+
 ```
  リポジトリ(git)  設計書(xlsx/docx/md)  ジョブ定義(JP1/cron)  DB辞書(Oracle/PG)  実行時SQL(pg_stat_statements/CSV)
        │               │                    │                   │                   │
