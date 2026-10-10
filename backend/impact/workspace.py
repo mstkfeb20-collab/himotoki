@@ -10,29 +10,52 @@
 from __future__ import annotations
 
 import json
+import logging
+import time
 import os
 import re
 import threading
 
 from .analysis.engine import Engine
 from .pipeline.run import Pipeline
+from .security import atomic_write_json
 from .store import open_store
 
+
+log = logging.getLogger("impact.workspace")
 
 class Workspace:
     def __init__(self, root: str):
         self.root = os.path.abspath(root)
         os.makedirs(os.path.join(self.root, "graphs"), exist_ok=True)
         self.meta_path = os.path.join(self.root, "workspace.json")
-        self.meta = json.load(open(self.meta_path, encoding="utf-8")) if os.path.exists(self.meta_path) else \
-            {"graphs": {}, "default": None}
+        self.meta = self._load_meta()
         self.engines: dict[str, Engine] = {}
         self.lock = threading.RLock()
         self.pipeline = Pipeline(self.root)
         self.index_state: dict[str, dict] = {}
+        self._graph_locks: dict[str, threading.Lock] = {}
+
+    def _load_meta(self) -> dict:
+        empty = {"graphs": {}, "default": None}
+        if not os.path.exists(self.meta_path):
+            return empty
+        try:
+            with open(self.meta_path, encoding="utf-8") as f:
+                meta = json.load(f)
+            if not isinstance(meta, dict) or not isinstance(meta.get("graphs"), dict):
+                raise ValueError("unexpected structure")
+            return meta
+        except (OSError, ValueError) as e:
+            # keep the broken file for inspection and start with an empty registry;
+            # graphs on disk stay and are re-registered by indexing again
+            bad = f"{self.meta_path}.corrupt-{int(time.time())}"
+            os.replace(self.meta_path, bad)
+            log.error("workspace.json unreadable (%s); moved to %s", e, bad)
+            return empty
 
     def save(self):
-        json.dump(self.meta, open(self.meta_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+        atomic_write_json(self.meta_path, self.meta, indent=1)
 
     @staticmethod
     def graph_name(repo: str, ref: str | None) -> str:
@@ -40,6 +63,8 @@ class Workspace:
         return re.sub(r"[^\w.@\-]+", "_", f"{base}@{ref}" if ref else base)
 
     def graph_dir(self, name: str) -> str:
+        if not re.fullmatch(r"[\w.@\-]{1,200}", name or "") or name in (".", ".."):
+            raise ValueError(f"invalid graph name: {name[:60]!r}")
         d = os.path.join(self.root, "graphs", name)
         os.makedirs(d, exist_ok=True)
         return d
@@ -52,6 +77,8 @@ class Workspace:
         if not name:
             return None
         with self.lock:
+            if name not in self.meta["graphs"]:
+                return None          # unknown names never touch the file system
             if name not in self.engines:
                 g = self.meta["graphs"].get(name, {})
                 d = self.graph_dir(name)
@@ -63,13 +90,17 @@ class Workspace:
               progress=None) -> dict:
         from .sources.git import GitRepo
         repo = os.path.abspath(repo)
-        snapshot = repo
-        if ref:
-            snapshot = GitRepo(repo, self.root).worktree(ref)
         name = name or self.graph_name(repo, ref)
         d = self.graph_dir(name)
-        store = open_store(d, graph=name)
-        stats = self.pipeline.index(snapshot, store, docs_dir, progress=progress, stats_dir=d)
+        with self.lock:
+            glock = self._graph_locks.setdefault(name, threading.Lock())
+        with glock:      # a webhook and a manual request never write the same graph at once
+            snapshot = GitRepo(repo, self.root).worktree(ref) if ref else repo
+            store = open_store(d, graph=name)
+            stats = self.pipeline.index(snapshot, store, docs_dir, progress=progress, stats_dir=d)
+        return self._register(name, repo, ref, snapshot, docs_dir, store, stats)
+
+    def _register(self, name, repo, ref, snapshot, docs_dir, store, stats) -> dict:
         with self.lock:
             self.meta["graphs"][name] = {"repo": repo, "ref": ref, "snapshot": snapshot, "docs_dir": docs_dir,
                                          "commit": stats.get("commit"), "nodes": stats["nodes"], "edges": stats["edges"]}
@@ -88,7 +119,14 @@ class Workspace:
     def stats(self, name: str | None = None) -> dict:
         name = name or self.default()
         p = os.path.join(self.root, "graphs", name or "", "index_stats.json")
-        return json.load(open(p, encoding="utf-8")) if name and os.path.exists(p) else {}
+        if not (name and os.path.exists(p)):
+            return {}
+        try:
+            with open(p, encoding="utf-8") as f:
+                return json.load(f)
+        except (OSError, ValueError):
+            log.warning("index_stats.json for %s is unreadable", name)
+            return {}
 
     def find_run(self, run_id: str):
         for name in list(self.meta["graphs"]):

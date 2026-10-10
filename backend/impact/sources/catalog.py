@@ -13,9 +13,11 @@ from __future__ import annotations
 import csv
 import json
 import os
+import re
 import subprocess
 from collections import defaultdict
 
+from ..security import atomic_write_json, redact
 from ..extractors.sql import crud_refs
 from ..model import Kind, Rel
 from ..pipeline.facts import FileFacts
@@ -53,8 +55,17 @@ PG_QUERIES = {
 
 
 def _psql(dsn: str, sql: str) -> list[list[str]]:
-    out = subprocess.run(["psql", dsn, "-X", "-A", "-t", "-F", "\x1f", "-R", "\x1e", "-c", sql],
-                         capture_output=True, text=True, check=True).stdout
+    # --dbname= keeps a DSN that starts with "-" from being read as a psql option
+    env = dict(os.environ, PGCONNECT_TIMEOUT=os.environ.get("PGCONNECT_TIMEOUT", "15"))
+    try:
+        out = subprocess.run(["psql", f"--dbname={dsn}", "-X", "-A", "-t", "-v", "ON_ERROR_STOP=1",
+                              "-F", "\x1f", "-R", "\x1e", "-c", sql],
+                             capture_output=True, text=True, check=True, timeout=600, env=env).stdout
+    except subprocess.CalledProcessError as e:
+        # the exception text would contain the command line, i.e. the DSN and its password
+        raise RuntimeError(f"psql failed: {redact(e.stderr.strip())[:300]}") from None
+    except subprocess.TimeoutExpired:
+        raise RuntimeError("psql timed out") from None
     return [r.split("\x1f") for r in out.split("\x1e") if r.strip()]
 
 
@@ -224,8 +235,8 @@ def import_oracle(name: str = "oracle", csv_dir: str | None = None, dsn: str | N
 def save_source(data_dir: str, facts: FileFacts) -> str:
     d = os.path.join(data_dir, "sources")
     os.makedirs(d, exist_ok=True)
-    p = os.path.join(d, facts.path.replace(":", "_").replace("/", "_") + ".json")
-    json.dump(facts.to_dict(), open(p, "w", encoding="utf-8"), ensure_ascii=False)
+    p = os.path.join(d, re.sub(r"[^\w.\-]+", "_", facts.path).lstrip(".") + ".json")
+    atomic_write_json(p, facts.to_dict())
     return p
 
 

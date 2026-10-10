@@ -66,6 +66,13 @@ def parse_xml(data: bytes) -> El | None:
 
     p.StartElementHandler, p.EndElementHandler, p.CharacterDataHandler = start, end, chars
     p.SetParamEntityParsing(xml.parsers.expat.XML_PARAM_ENTITY_PARSING_NEVER)
+
+    def no_entities(*_):
+        # entity declarations are the vehicle for "billion laughs" and external
+        # entity (XXE) payloads; configuration files in a repository never need them
+        raise ValueError("XML entity declarations are not processed")
+    p.EntityDeclHandler = no_entities
+    p.ExternalEntityRefHandler = lambda *a: 1     # never fetch, never fail
     try:
         p.Parse(data, True)
     except xml.parsers.expat.ExpatError:

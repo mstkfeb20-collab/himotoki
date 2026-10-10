@@ -17,6 +17,7 @@ import unicodedata
 
 from ..model import Kind, Rel
 from ..pipeline.facts import FileFacts
+from ..security import office_zip_ok
 from ..text import words
 
 NAME = "docs"
@@ -196,6 +197,10 @@ def _crud_matrix(f, grid, sheet, office, parent):
 
 def extract_xlsx(path, data, rules, f: FileFacts):
     import openpyxl
+    bad = office_zip_ok(data)
+    if bad:
+        f.errors.append(bad)
+        return
     wb = openpyxl.load_workbook(io.BytesIO(data), read_only=True, data_only=True)
     office = _Office(rules)
     fid = f"file:{path}"
@@ -212,6 +217,10 @@ def extract_xlsx(path, data, rules, f: FileFacts):
 
 def extract_docx(path, data, rules, f: FileFacts):
     import docx
+    bad = office_zip_ok(data)
+    if bad:
+        f.errors.append(bad)
+        return
     d = docx.Document(io.BytesIO(data))
     office = _Office(rules)
     fid = f"file:{path}"

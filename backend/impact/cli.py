@@ -43,7 +43,15 @@ def main(argv=None):
 
     if a.cmd == "serve":
         import uvicorn
-        uvicorn.run("impact.api:app", host=a.host, port=a.port)
+        local = a.host in ("127.0.0.1", "localhost", "::1")
+        if not local and not os.environ.get("IMPACT_API_TOKEN") and os.environ.get("IMPACT_ALLOW_NO_AUTH") != "1":
+            # the API serves source code: refuse to expose it on the network without a token
+            sys.exit("refusing to listen on a non-local address without IMPACT_API_TOKEN "
+                     "(set IMPACT_ALLOW_NO_AUTH=1 only behind an authenticating proxy)")
+        if not local and not os.environ.get("IMPACT_ALLOWED_HOSTS"):
+            sys.exit("set IMPACT_ALLOWED_HOSTS to the host names clients use (comma separated)")
+        uvicorn.run("impact.api:app", host=a.host, port=a.port, proxy_headers=False,
+                    limit_concurrency=int(os.environ.get("IMPACT_MAX_CONNECTIONS", "200")))
         return
     if a.cmd == "mcp":
         from .mcp_server import main as mcp_main

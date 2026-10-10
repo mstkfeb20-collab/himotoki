@@ -191,12 +191,28 @@ python -m impact.cli mcp                          # MCP サーバ（stdio）
 
 ビュワーの開発サーバは `cd frontend && npm install && npm run dev` で起動します（ビルド済みなら backend が `frontend/dist` を配信します）。
 
+`serve` は既定で 127.0.0.1 だけで待ち受けます。ほかのマシンから使う場合は `IMPACT_API_TOKEN` と `IMPACT_ALLOWED_HOSTS` が必要です（無いと起動しません）。
+
 ### Docker（Neo4j 構成）
 
 ```bash
-cp .env.example .env          # ANTHROPIC_API_KEY・REPOS_DIR・RULES_DIR などを設定
-docker compose up --build     # http://localhost:8765 、リポジトリは /repos/<名前> で指定
+cp .env.example .env          # IMPACT_API_TOKEN・NEO4J_PASSWORD（必須）、ANTHROPIC_API_KEY・REPOS_DIR など
+docker compose up --build     # http://localhost:8765/?token=<IMPACT_API_TOKEN> で一度開く
 ```
+
+## セキュリティ
+
+このサーバはソースコードと設計書を返すため、次の対策を入れています。
+
+- 既定では同一オリジン・ローカルのホスト名からのアクセスだけに応答する
+- トークン認証（ビュワーは HttpOnly クッキー）
+- 読めるファイルはリポジトリと設計書フォルダの中に限る
+- API で指定できるパスは許可ルート配下に限る
+- Webhook には署名を必須にする
+- 細工されたリポジトリへの防御: シンボリックリンク、巨大ファイル、XML の実体参照、zip 爆弾
+- エラー応答から内部情報・資格情報を除く
+
+想定する脅威・設定・残っているリスク・エラー処理の方針は [docs/SECURITY.md](docs/SECURITY.md) にあります。
 
 ## ビュワーでできること（上の表の工程 2〜4）
 
@@ -323,10 +339,11 @@ v1 からの回帰確認です。正解リストは `eval/ground_truth.json`、�
 
 ### テスト
 
-`backend/tests`（13 件、すべてオフライン）:
+`backend/tests`（25 件、すべてオフライン）:
 
 - 小さな固定リポジトリでの一連の操作
 - 一時リポジトリでの仕組みの検証: 社内フレームワークのルールパック、JP1→シェル→データファイル→後続ジョブ、Excel の見出し検出と CRUD 表、DB辞書のずれと実行時SQLの対応、キャッシュの増分、差分モード、Webhook の解釈、SQL の端のケース
+- 攻撃が失敗することの確認（`test_security.py`）: ファイル読み取りの迂回、CORS・Host 偽装・クロスサイト WebSocket、認証、パス制限、Webhook 偽装、シンボリックリンク、XXE、zip 爆弾
 
 Oracle 辞書の CSV 取込（`samples/tour-env/db/oracle_catalog`）は、パッケージ本体の CRUD と DB にだけある列 `reserve.cancel_reason` の検出までを確認しました。
 

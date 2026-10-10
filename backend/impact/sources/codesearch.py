@@ -66,6 +66,8 @@ class LocalSearch:
                 if not f.endswith(TEXT_EXT):
                     continue
                 p = os.path.join(d, f)
+                if os.path.islink(p):
+                    continue
                 rel = os.path.relpath(p, self.root)
                 try:
                     for i, line in enumerate(open(p, encoding="utf-8", errors="replace"), 1):

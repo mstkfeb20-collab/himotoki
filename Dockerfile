@@ -13,6 +13,9 @@ COPY backend/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./
 COPY --from=web /web/dist /app/frontend/dist
-ENV IMPACT_DATA_DIR=/data IMPACT_FRONTEND=/app/frontend/dist
+ENV IMPACT_DATA_DIR=/data IMPACT_FRONTEND=/app/frontend/dist IMPACT_ALLOWED_ROOTS=/repos:/data
+RUN useradd --create-home --uid 10001 impact && mkdir -p /data && chown impact /data
+USER impact
 EXPOSE 8765
-CMD ["uvicorn", "impact.api:app", "--host", "0.0.0.0", "--port", "8765"]
+# refuses to start without IMPACT_API_TOKEN and IMPACT_ALLOWED_HOSTS (see docs/SECURITY.md)
+CMD ["python", "-m", "impact.cli", "serve", "--host", "0.0.0.0", "--port", "8765"]

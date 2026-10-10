@@ -6,6 +6,9 @@ async function req<T>(method: string, url: string, body?: unknown): Promise<T> {
     headers: body ? { "content-type": "application/json" } : undefined,
     body: body ? JSON.stringify(body) : undefined,
   });
+  if (res.status === 401) {
+    throw new Error("認証が必要です。管理者から受け取った ?token=… 付きのURLでビュワーを開き直してください。");
+  }
   if (!res.ok) {
     let msg = res.statusText;
     try { msg = (await res.json()).detail ?? msg; } catch { /* plain text */ }

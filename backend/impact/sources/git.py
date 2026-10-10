@@ -10,10 +10,17 @@ import os
 import re
 import subprocess
 
+from ..security import check_ref
+
+
+GIT_TIMEOUT = int(os.environ.get("IMPACT_GIT_TIMEOUT", "900"))
+
 
 def _git(repo, *args, check=True) -> str:
+    # GIT_TERMINAL_PROMPT=0: a missing credential fails fast instead of hanging a worker
+    env = dict(os.environ, GIT_TERMINAL_PROMPT="0")
     return subprocess.run(["git", "-C", repo, *args], capture_output=True, text=True, check=check,
-                          errors="replace").stdout
+                          errors="replace", timeout=GIT_TIMEOUT, env=env).stdout
 
 
 class GitRepo:
@@ -23,11 +30,12 @@ class GitRepo:
 
     def fetch(self, remote: str = "origin"):
         try:
-            _git(self.path, "fetch", "--prune", remote)
-        except subprocess.CalledProcessError:
+            _git(self.path, "fetch", "--prune", "--", remote)
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
             pass   # offline / no remote: work with what we have
 
     def resolve(self, ref: str) -> str:
+        check_ref(ref)              # refs reach git as arguments: no options, no "..", no odd characters
         for cand in (ref, f"origin/{ref}"):
             try:
                 return _git(self.path, "rev-parse", "--verify", f"{cand}^{{commit}}").strip()

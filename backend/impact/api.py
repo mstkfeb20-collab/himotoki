@@ -7,22 +7,96 @@ name a `graph` (repository/branch); the workspace default is used otherwise.
 from __future__ import annotations
 
 import asyncio
+import logging
 import os
 import threading
+import time
+import uuid
+from urllib.parse import parse_qs, urlencode
 
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, PlainTextResponse
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
+from .security import PathNotAllowed, check_input_path, check_ref, constant_time_equals, redact
 from .workspace import Workspace
 
+log = logging.getLogger("impact.api")
 DATA_DIR = os.environ.get("IMPACT_DATA_DIR", os.path.abspath("./data"))
 ws_root = Workspace(DATA_DIR)
 
 app = FastAPI(title="Impact Analyzer", version="2.0")
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+# --------------------------------------------------------------- security
+# The API exposes source code, so by default it only answers same-origin requests
+# for a local host name: no CORS, and the Host header must be a local name (this
+# also stops DNS-rebinding pages from talking to a server on 127.0.0.1).
+# Deployments set IMPACT_ALLOWED_HOSTS and IMPACT_API_TOKEN (see docs/SECURITY.md).
+API_TOKEN = os.environ.get("IMPACT_API_TOKEN") or None
+_hosts = [h.strip() for h in os.environ.get(
+    "IMPACT_ALLOWED_HOSTS", "localhost,127.0.0.1,::1,[::1],testserver").split(",") if h.strip()]
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=_hosts)
+_origins = [o.strip() for o in os.environ.get("IMPACT_CORS_ORIGINS", "").split(",") if o.strip()]
+if _origins:
+    app.add_middleware(CORSMiddleware, allow_origins=_origins, allow_methods=["GET", "POST"],
+                       allow_headers=["content-type", "authorization"], allow_credentials=False)
+
+_PUBLIC = ("/api/hooks/git",)          # authenticated by the webhook secret instead
+COOKIE = "impact_token"
+
+
+def _token_ok(headers, cookies, query: str = "") -> bool:
+    if not API_TOKEN:
+        return True
+    auth = headers.get("authorization", "")
+    if auth.lower().startswith("bearer ") and constant_time_equals(auth[7:].strip(), API_TOKEN):
+        return True
+    return constant_time_equals(cookies.get(COOKIE), API_TOKEN)
+
+
+@app.middleware("http")
+async def guard(request: Request, call_next):
+    path = request.url.path
+    if API_TOKEN and request.method == "GET" and "token" in request.query_params and not path.startswith("/api/"):
+        # first visit with ?token=...: keep it in an HttpOnly, SameSite=Strict cookie
+        # and drop it from the URL (and from the browser history)
+        if not constant_time_equals(request.query_params["token"], API_TOKEN):
+            return JSONResponse({"detail": "invalid token"}, status_code=401)
+        rest = {k: v for k, v in request.query_params.items() if k != "token"}
+        resp = RedirectResponse(path + (("?" + urlencode(rest)) if rest else ""), status_code=303)
+        resp.set_cookie(COOKIE, API_TOKEN, httponly=True, samesite="strict",
+                        secure=request.url.scheme == "https", max_age=12 * 3600)
+        return resp
+    if path.startswith("/api/") and not path.startswith(_PUBLIC) and \
+            not _token_ok(request.headers, request.cookies):
+        return JSONResponse({"detail": "authentication required"}, status_code=401)
+    resp = await call_next(request)
+    resp.headers.setdefault("X-Content-Type-Options", "nosniff")
+    resp.headers.setdefault("X-Frame-Options", "DENY")
+    resp.headers.setdefault("Referrer-Policy", "no-referrer")
+    if not path.startswith("/api/"):
+        resp.headers.setdefault(
+            "Content-Security-Policy",
+            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' ws: wss:; "
+            "frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
+    return resp
+
+
+@app.exception_handler(PathNotAllowed)
+async def _path_denied(request: Request, exc: PathNotAllowed):
+    return JSONResponse({"detail": str(exc)}, status_code=403)
+
+
+@app.exception_handler(Exception)
+async def _unexpected(request: Request, exc: Exception):
+    # details go to the server log only; the client gets a reference id
+    eid = uuid.uuid4().hex[:8]
+    log.exception("unhandled error %s on %s %s", eid, request.method, request.url.path)
+    return JSONResponse({"detail": "internal error", "error_id": eid}, status_code=500)
 
 
 def eng(graph: str | None = None):
@@ -40,28 +114,32 @@ def run_engine(run_id: str):
 
 
 # ------------------------------------------------------------------ models
+TEXT = 100_000      # requirement / instruction size limit (characters)
+NAME = 200
+
+
 class IndexReq(BaseModel):
-    repo: str
-    docs_dir: str | None = None
-    ref: str | None = None
-    graph: str | None = None
+    repo: str = Field(max_length=4096)
+    docs_dir: str | None = Field(None, max_length=4096)
+    ref: str | None = Field(None, max_length=NAME)
+    graph: str | None = Field(None, max_length=NAME)
 
 
 class RunReq(BaseModel):
-    requirement: str
-    title: str | None = None
-    depth: int = 3
-    min_score: float = 0.2
-    pace: float = 0.0
-    graph: str | None = None
+    requirement: str = Field(min_length=1, max_length=TEXT)
+    title: str | None = Field(None, max_length=NAME)
+    depth: int = Field(3, ge=1, le=8)
+    min_score: float = Field(0.2, ge=0.0, le=1.0)
+    pace: float = Field(0.0, ge=0.0, le=2.0)
+    graph: str | None = Field(None, max_length=NAME)
 
 
 class DiffReq(BaseModel):
-    base: str
-    head: str
-    graph: str | None = None
-    title: str | None = None
-    depth: int = 3
+    base: str = Field(max_length=NAME)
+    head: str = Field(max_length=NAME)
+    graph: str | None = Field(None, max_length=NAME)
+    title: str | None = Field(None, max_length=NAME)
+    depth: int = Field(3, ge=1, le=8)
 
 
 class CatalogReq(BaseModel):
@@ -85,14 +163,14 @@ class RuntimeReq(BaseModel):
 class DecisionReq(BaseModel):
     node_id: str
     status: str
-    reason: str = ""
+    reason: str = Field("", max_length=TEXT)
     actor: str = "user"
     change_type: str | None = None
     difficulty: str | None = None
 
 
 class BulkReq(BaseModel):
-    items: list[dict]
+    items: list[dict] = Field(max_length=50_000)
     actor: str = "user"
 
 
@@ -105,22 +183,22 @@ class AddReq(BaseModel):
 
 class CommentReq(BaseModel):
     node_id: str
-    text: str = ""
+    text: str = Field("", max_length=TEXT)
     author: str = "user"
     assignee: str | None = None
 
 
 class ReinvestigateReq(BaseModel):
-    node_ids: list[str] = []
-    instruction: str
-    depth: int | None = None
+    node_ids: list[str] = Field([], max_length=5000)
+    instruction: str = Field(max_length=TEXT)
+    depth: int | None = Field(None, ge=1, le=8)
     actor: str = "user"
     pace: float = 0.0
 
 
 class AskReq(BaseModel):
-    node_ids: list[str]
-    question: str
+    node_ids: list[str] = Field(max_length=200)
+    question: str = Field(max_length=TEXT)
 
 
 class CalibrateReq(BaseModel):
@@ -148,9 +226,21 @@ def graphs():
 
 @app.post("/api/index")
 def index(req: IndexReq):
+    check_input_path(req.repo, "repository")
+    check_input_path(req.docs_dir, "documents folder")
+    try:
+        check_ref(req.ref)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     if not os.path.isdir(req.repo):
-        raise HTTPException(400, f"repository not found: {req.repo}")
+        raise HTTPException(400, "repository not found")
+    if req.docs_dir and not os.path.isdir(req.docs_dir):
+        raise HTTPException(400, "documents folder not found")
     name = req.graph or ws_root.graph_name(req.repo, req.ref)
+    try:
+        ws_root.graph_dir(name)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     if ws_root.index_state.get(name, {}).get("status") == "running":
         raise HTTPException(409, "indexing already running")
     state = ws_root.index_state.setdefault(name, {})
@@ -162,7 +252,8 @@ def index(req: IndexReq):
                                   progress=lambda e, d: state["events"].append({"type": e, "data": d}))
             state.update(status="done", stats={k: stats.get(k) for k in ("nodes", "edges", "files", "seconds")})
         except Exception as e:
-            state.update(status="error", error=str(e))
+            log.exception("indexing %s failed", name)
+            state.update(status="error", error=redact(str(e))[:500])
 
     threading.Thread(target=work, daemon=True).start()
     return {"status": "started", "graph": name}
@@ -188,9 +279,20 @@ def index_report(graph: str | None = None):
     return {k: st.get(k) for k in keys}
 
 
+def _source_req(name: str, dsn: str | None, path: str | None):
+    import re as _re
+    if not _re.fullmatch(r"[\w.\-]{1,80}", name or "") or name in (".", ".."):
+        raise HTTPException(400, "name: letters, digits, . _ - only")
+    if dsn and os.environ.get("IMPACT_ALLOW_DB_FROM_API") != "1":
+        # connecting to arbitrary hosts from the server is opt-in (use the CLI, or CSV exports)
+        raise HTTPException(403, "database connections from the API are disabled (set IMPACT_ALLOW_DB_FROM_API=1)")
+    check_input_path(path, "export folder")
+
+
 @app.post("/api/sources/catalog")
 def catalog(req: CatalogReq, graph: str | None = None):
     from .sources.catalog import import_oracle, import_postgres, save_source
+    _source_req(req.name, req.dsn, req.csv_dir)
     try:
         if req.kind == "postgres":
             f = import_postgres(req.dsn, req.name)
@@ -200,8 +302,11 @@ def catalog(req: CatalogReq, graph: str | None = None):
             raise HTTPException(400, "kind must be postgres or oracle")
     except HTTPException:
         raise
+    except PathNotAllowed:
+        raise
     except Exception as e:
-        raise HTTPException(400, f"catalog import failed: {e}")
+        log.exception("catalog import failed")
+        raise HTTPException(400, f"catalog import failed: {redact(str(e))[:300]}")
     save_source(ws_root.root, f)
     return {"saved": f.path, "counts": f.payload.get("catalog_counts"), "note": "re-index to link it with the code"}
 
@@ -210,11 +315,13 @@ def catalog(req: CatalogReq, graph: str | None = None):
 def runtime(req: RuntimeReq):
     from .sources.catalog import save_source
     from .sources.runtime import from_csv, from_pg_stat_statements
+    _source_req(req.name, req.dsn if req.kind == "pg_stat_statements" else None, req.path)
     try:
         f = from_pg_stat_statements(req.dsn, req.name) if req.kind == "pg_stat_statements" else \
             from_csv(req.path, req.name, dialect=req.dialect)
     except Exception as e:
-        raise HTTPException(400, f"runtime import failed: {e}")
+        log.exception("runtime import failed")
+        raise HTTPException(400, f"runtime import failed: {redact(str(e))[:300]}")
     save_source(ws_root.root, f)
     return {"saved": f.path, "statements": sum(1 for n in f.nodes if n["kind"] == "RuntimeSql"),
             "note": "re-index to link it with the code"}
@@ -263,9 +370,12 @@ def create_diff_run(req: DiffReq):
     g = ws_root.meta["graphs"].get(name, {})
     repo = GitRepo(g.get("repo") or e.repo, ws_root.root)
     try:
-        hunks = repo.hunks(repo.resolve(req.base), repo.resolve(req.head))
-    except Exception as ex:
+        hunks = repo.hunks(repo.resolve(check_ref(req.base, "base")), repo.resolve(check_ref(req.head, "head")))
+    except ValueError as ex:
         raise HTTPException(400, str(ex))
+    except Exception:
+        log.exception("diff failed")
+        raise HTTPException(400, "could not compute the diff between the given refs")
     nodes, added = e.diff_nodes(hunks)
     rid = e.start_run(f"変更差分 {req.base}..{req.head}", req.title or f"差分 {req.base}..{req.head}",
                       {"mode": "diff", "diff_nodes": nodes, "added_files": added, "depth": req.depth})
@@ -369,17 +479,30 @@ async def git_hook(request: Request):
     import hmac
     import json as _json
     from .sources.git import GitRepo, parse_webhook, post_review_comment
-    raw = await request.body()
     secret = os.environ.get("IMPACT_WEBHOOK_SECRET")
-    if secret:
-        gl = request.headers.get("x-gitlab-token")
-        gh = request.headers.get("x-hub-signature-256", "")
-        ok = (gl is not None and hmac.compare_digest(gl, secret)) or \
-             (gh and hmac.compare_digest(gh, "sha256=" + hmac.new(secret.encode(), raw, hashlib.sha256).hexdigest()))
-        if not ok:
-            raise HTTPException(401, "bad webhook signature")
-    payload = _json.loads(raw or b"{}")
-    ev = parse_webhook(dict(request.headers), payload)
+    if not secret:
+        # an unauthenticated hook would let anyone trigger fetches and indexing
+        raise HTTPException(503, "webhook disabled: set IMPACT_WEBHOOK_SECRET")
+    raw = await request.body()
+    if len(raw) > 5 * 1024 * 1024:
+        raise HTTPException(413, "payload too large")
+    gl = request.headers.get("x-gitlab-token")
+    gh = request.headers.get("x-hub-signature-256", "")
+    ok = (gl is not None and constant_time_equals(gl, secret)) or \
+         (bool(gh) and constant_time_equals(gh, "sha256=" + hmac.new(secret.encode(), raw, hashlib.sha256).hexdigest()))
+    if not ok:
+        raise HTTPException(401, "bad webhook signature")
+    try:
+        payload = _json.loads(raw or b"{}")
+        ev = parse_webhook(dict(request.headers), payload) if isinstance(payload, dict) else None
+        if ev:
+            for k in ("branch", "base", "head"):
+                check_ref(ev.get(k), k)
+            for k in ("sha", "base_sha", "head_sha"):
+                if ev.get(k) and not __import__("re").fullmatch(r"[0-9a-f]{7,64}", str(ev[k])):
+                    ev[k] = None
+    except ValueError as e:
+        raise HTTPException(400, f"invalid webhook payload: {e}")
     if not ev:
         return {"ignored": True}
     name = ws_root.default()
@@ -388,7 +511,20 @@ async def git_hook(request: Request):
         raise HTTPException(400, "no graph registered for this repository")
     repo = g["repo"]
 
+    entry = {"at": time.time(), "event": {k: ev.get(k) for k in ("kind", "branch", "base", "head", "number")},
+             "status": "running"}
+    HOOK_LOG.append(entry)
+    del HOOK_LOG[:-50]
+
     def work():
+        try:
+            _work()
+            entry["status"] = "done"
+        except Exception as ex:
+            log.exception("webhook processing failed")
+            entry.update(status="error", error=redact(str(ex))[:300])
+
+    def _work():
         gr = GitRepo(repo, ws_root.root)
         gr.fetch()
         if ev["kind"] == "push":
@@ -403,15 +539,32 @@ async def git_hook(request: Request):
         rid = e.start_run(f"変更差分 {ev['base']}..{ev['head']}", f"#{ev['number']} {ev.get('title', '')}"[:60],
                           {"mode": "diff", "diff_nodes": nodes, "added_files": added}, background=False)
         body = e.scope_markdown(e.state(rid), f"#{ev['number']}")
-        e.state(rid)["review_comment"] = post_review_comment(ev, body)
+        e.state(rid)["review_comment"] = entry["comment"] = post_review_comment(ev, body)
+        entry["run_id"] = rid
 
     threading.Thread(target=work, daemon=True).start()
     return {"accepted": ev}
 
 
+HOOK_LOG: list[dict] = []
+
+
+@app.get("/api/hooks/log")
+def hook_log():
+    """Outcome of the last webhook deliveries (processing runs in the background)."""
+    return list(reversed(HOOK_LOG))
+
+
 # ------------------------------------------------------------------ live events
 @app.websocket("/ws/runs/{run_id}")
 async def ws_run(ws: WebSocket, run_id: str):
+    if not _token_ok(ws.headers, ws.cookies):
+        await ws.close(code=4401)
+        return
+    origin = ws.headers.get("origin")
+    if origin and _origins == [] and origin.split("://", 1)[-1] != ws.headers.get("host"):
+        await ws.close(code=4403)     # cross-site WebSocket (browsers do not apply CORS to it)
+        return
     await ws.accept()
     e = ws_root.find_run(run_id)
     if e is None:

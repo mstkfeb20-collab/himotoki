@@ -4,6 +4,7 @@ rule-based fallback keeps the whole pipeline usable (and testable) offline."""
 from __future__ import annotations
 
 import json
+import logging
 import os
 import re
 from typing import Any
@@ -40,6 +41,8 @@ def _extract_json(text: str) -> Any:
     start = min([i for i in (raw.find("{"), raw.find("[")) if i >= 0] or [0])
     return json.loads(raw[start:])
 
+
+log = logging.getLogger("impact.llm")
 
 class RuleBasedLLM:
     name = "rule-based"
@@ -114,7 +117,9 @@ class ClaudeLLM(RuleBasedLLM):
     def __init__(self, vocabulary=None, identifiers=None):
         super().__init__(vocabulary, identifiers)
         import anthropic
-        self.client = anthropic.Anthropic()
+        # bounded waits: a slow or unreachable API must not stall a run indefinitely;
+        # failures fall back to the rule-based answer (see the except branches below)
+        self.client = anthropic.Anthropic(timeout=float(os.environ.get("IMPACT_LLM_TIMEOUT", "90")), max_retries=2)
         self.model = os.environ.get("IMPACT_LLM_MODEL", "claude-sonnet-5-5")
 
     def _ask(self, system: str, user: str, max_tokens: int = 4000) -> str:
@@ -138,6 +143,7 @@ class ClaudeLLM(RuleBasedLLM):
                 i.setdefault("keywords", []); i.setdefault("new_terms", []); i.setdefault("change_type", "modify")
             return intents
         except Exception:
+            log.warning("Claude API call failed; using the rule-based structuring", exc_info=True)
             return hint
 
     def judge(self, intent: dict, items: list[dict]) -> list[dict]:
@@ -158,13 +164,18 @@ class ClaudeLLM(RuleBasedLLM):
                     if r.get("id") in base:
                         results.append({**base[r["id"]], **r})
             except Exception:
+                log.warning("Claude judgement failed for a chunk; keeping rule-based verdicts", exc_info=True)
                 results += [base[it["id"]] for it in chunk]
         seen = {r["id"] for r in results}
         return results + [r for k, r in base.items() if k not in seen]
 
     def answer(self, question: str, context: str) -> str:
-        return self._ask("You are an impact-analysis assistant. Answer in Japanese, concisely, citing the "
-                         "given context (file:line).", f"Context:\n{context}\n\nQuestion: {question}", 1500)
+        try:
+            return self._ask("You are an impact-analysis assistant. Answer in Japanese, concisely, citing the "
+                             "given context (file:line).", f"Context:\n{context}\n\nQuestion: {question}", 1500)
+        except Exception:
+            log.warning("Claude API call failed; answering without it", exc_info=True)
+            return "Claude API に接続できなかったため回答できません。関連する根拠情報:\n" + context[:1500]
 
 
 def make_llm(vocabulary: dict[str, list[str]], identifiers: set[str] | None = None):

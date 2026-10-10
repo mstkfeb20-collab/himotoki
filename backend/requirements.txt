@@ -15,3 +15,5 @@ python-docx>=1.1
 mcp>=1.2
 # optional: Oracle dictionary import over the network (CSV export works without it)
 oracledb>=2.0
+# openpyxl parses xlsx XML with defusedxml when it is installed
+defusedxml>=0.7

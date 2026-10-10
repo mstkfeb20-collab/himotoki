@@ -5,7 +5,7 @@
 | 対象 | Impact Analyzer v2（`mstkfeb20-collab/codegraph` main） |
 | 目的 | 要求（仕様書・チャット）または変更差分から、影響範囲と修整規模を確定させる仕組みの設計を記録する |
 | 読者 | 導入・運用を判断する人、ルールパックや抽出器を追加する開発者、連携するエージェントの設計者 |
-| 関連 | 使い方・検証結果は [README](../README.md)。本書は「なぜこの構成か」と「部品の境界・契約」を扱う |
+| 関連 | 使い方・検証結果は [README](../README.md)、脅威と対策・エラー処理の方針は [SECURITY](SECURITY.md)。本書は「なぜこの構成か」と「部品の境界・契約」を扱う |
 
 ---
 
@@ -528,6 +528,7 @@ MCP サーバは、エージェントがファイルを丸ごと読まずに「�
 | D6 | DB 辞書・実行時 SQL を、インデックスとは別に取り込む | 本番 DB への常時接続を不要にする。エクスポートで運用できる | インデックスのたびに DB へ接続 |
 | D7 | 差分は merge-base 基準、グラフは base 側 | MR が見せる差分と一致させる。変更行の位置を base 側のグラフと合わせる | base の先端との単純な差分（他の人の変更が混ざる） |
 | D8 | 判定器・ストア・コード検索をインターフェースの裏に置く | API キー無し・Neo4j 無しでも全工程が動く。導入環境に合わせて差し替えられる | |
+| D9 | 既定で閉じる（同一オリジン・ローカルのホスト名のみ、公開時はトークン必須、Webhook は署名必須） | ソースコードを返すサーバであり、開発者の手元で動かしたときにブラウザ経由で読まれる経路（CSRF・DNS リバインディング）を塞ぐ必要がある | 全オリジン許可・認証なし（v2 初版。ファイル読み取りの迂回と合わせて実際に悪用できたため改めた） |
 
 ---
 
@@ -570,6 +571,9 @@ MCP サーバは、エージェントがファイルを丸ごと読まずに「�
 | `IMPACT_WEBHOOK_SECRET` | Webhook の検証 |
 | `GITLAB_API` / `GITLAB_TOKEN`、`GITHUB_API` / `GITHUB_TOKEN` | MR / PR へのコメント、GitLab コード検索 |
 | `IMPACT_FRONTEND` | 配信するビュワーのビルド先 |
+| `IMPACT_API_TOKEN`、`IMPACT_ALLOWED_HOSTS`、`IMPACT_CORS_ORIGINS` | API の認証・許可するホスト名・CORS（[SECURITY](SECURITY.md)） |
+| `IMPACT_ALLOWED_ROOTS`、`IMPACT_ALLOW_DB_FROM_API` | API で指定できるパスの範囲、API からの DB 接続の許可 |
+| `IMPACT_MAX_FILE_MB`、`IMPACT_MAX_OFFICE_MB`、`IMPACT_GIT_TIMEOUT`、`IMPACT_LLM_TIMEOUT` | 資源の上限・タイムアウト |
 
 ## 付録 B. 検証の対応表
 

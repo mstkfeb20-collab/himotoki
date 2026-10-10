@@ -18,21 +18,24 @@ condition holds.
 """
 from __future__ import annotations
 
+import logging
 import os
 import re
 import threading
 import time
-import traceback
 import uuid
 from collections import defaultdict
 
 from ..model import EDITABLE, Kind, LAYER, Rel
+from ..security import max_file_bytes, safe_join
 from ..store.base import GraphStore
 from .estimate import Estimator
 from .llm import make_llm
 from .runstore import EventBus, RunStore
 from .search import NodeSearch
 from ..rules import load_rules
+
+log = logging.getLogger("impact.engine")
 
 SINKS = {Kind.TEST_CLASS, Kind.TEST_METHOD, Kind.DOC, Kind.DOC_ENTITY, Kind.FEATURE, Kind.SQL_FILE, Kind.CONFIG,
          Kind.RUNTIME_SQL}
@@ -219,7 +222,9 @@ class Engine:
             st["status"] = "error"
             st["error"] = str(e)
             self._save(st)
-            self.emit(st, "error", {"message": str(e), "trace": traceback.format_exc()[-2000:]}, pace=False)
+            log.exception("run %s failed", st.get("id"))
+            # the stack trace stays in the server log; clients get the message only
+            self.emit(st, "error", {"message": str(e)[:500]}, pace=False)
 
     # ------------------------------------------------------------ phase 1
     def _structure(self, st):
@@ -515,10 +520,8 @@ class Engine:
         n = self.store.get(node_id)
         if not n or not n.file or not self.repo:
             return (n.text[:600] if n else "")
-        path = os.path.join(self.repo, n.file)
-        if n.file.startswith("design:") and self.docs_dir:
-            path = os.path.join(self.docs_dir, n.file[len("design:"):])
-        if not os.path.exists(path):
+        path = self._source_path(n.file)
+        if not path or not os.path.isfile(path) or os.path.getsize(path) > max_file_bytes():
             return n.text[:600]
         lines = open(path, encoding="utf-8", errors="replace").read().splitlines()
         a = max(0, (n.line or 1) - 1)
@@ -935,6 +938,8 @@ class Engine:
         n = self.store.get(node_id)
         if n is None and node_id.startswith("file:"):
             rel = node_id[5:]
+            if not self._source_path(rel):
+                return {}
             return {"node": {"id": node_id, "kind": Kind.CONFIG, "name": rel.split("/")[-1], "file": rel,
                              "line": 1, "layer": "code", "props": {}},
                     "code": self._read_lines(rel, 1, 40), "neighbors": [], "docs": [], "tests": [], "history": []}
@@ -992,16 +997,18 @@ class Engine:
         lines = self._read_lines(dn.file, dn.line or 1, min((dn.end_line or 1), (dn.line or 1) + 40))
         return "\n".join(l["text"] for l in lines)
 
-    def _read_lines(self, rel: str, a: int, b: int) -> list[dict]:
+    def _source_path(self, rel: str | None) -> str | None:
+        """Path of a graph file inside the repository / documents folder; None when the
+        name would escape them (../, absolute paths, symlinks pointing outside)."""
+        if not rel:
+            return None
         if rel.startswith("design:"):
-            if not self.docs_dir:
-                return []
-            path = os.path.join(self.docs_dir, rel[len("design:"):])
-        else:
-            if not self.repo:
-                return []
-            path = os.path.join(self.repo, rel)
-        if not os.path.exists(path):
+            return safe_join(self.docs_dir, rel[len("design:"):]) if self.docs_dir else None
+        return safe_join(self.repo, rel) if self.repo else None
+
+    def _read_lines(self, rel: str, a: int, b: int) -> list[dict]:
+        path = self._source_path(rel)
+        if not path or not os.path.isfile(path) or os.path.getsize(path) > max_file_bytes():
             return []
         lines = open(path, encoding="utf-8", errors="replace").read().splitlines()
         return [{"n": i, "text": lines[i - 1]} for i in range(max(1, a), min(len(lines), b) + 1)]

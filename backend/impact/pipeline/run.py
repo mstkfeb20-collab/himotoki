@@ -15,6 +15,8 @@ import time
 from concurrent.futures import ProcessPoolExecutor
 from typing import Callable
 
+from ..security import max_file_bytes, safe_join
+
 from ..extractors import docs, java, jobs, props, sql, text, xml
 from ..rules import load_rules
 from .cache import FactCache
@@ -63,7 +65,8 @@ def list_repo(root: str) -> dict[str, str]:
                 continue
             meta, _, path = rec.partition("\t")
             parts = meta.split()
-            if len(parts) >= 2:
+            # 120000 = symlink, 160000 = submodule: never follow them out of the checkout
+            if len(parts) >= 2 and parts[0] not in ("120000", "160000"):
                 res[path] = parts[1]
         if res:
             # include modified-but-uncommitted content by hashing dirty files
@@ -79,6 +82,8 @@ def list_repo(root: str) -> dict[str, str]:
         dirs[:] = [x for x in dirs if x not in SKIP_DIRS and not x.startswith(".")]
         for f in fs:
             full = os.path.join(d, f)
+            if os.path.islink(full) or not os.path.isfile(full):
+                continue
             res[os.path.relpath(full, root)] = "w" + _sha1(full)
     return res
 
@@ -109,8 +114,18 @@ def _convert_legacy(full: str) -> bytes | None:
 def _work(args):
     root, rel, display, ext_name, rules_dir = args
     rules = load_rules(rules_dir)
-    full = os.path.join(root, rel)
+    full = safe_join(root, rel)
     try:
+        if not full or os.path.islink(full) or not os.path.isfile(full):
+            f = FileFacts(display, ext_name)
+            f.errors.append("skipped: not a regular file inside the repository")
+            return f.to_dict()
+        limit = max_file_bytes() * (4 if ext_name == "docs" else 1)
+        size = os.path.getsize(full)
+        if size > limit:
+            f = FileFacts(display, ext_name)
+            f.errors.append(f"skipped: {size // 1048576} MB is over the {limit // 1048576} MB limit (IMPACT_MAX_FILE_MB)")
+            return f.to_dict()
         data = open(full, "rb").read()
         if ext_name == "docs" and rel.lower().endswith(LEGACY_OFFICE):
             conv = _convert_legacy(full)
@@ -122,14 +137,14 @@ def _work(args):
             f = EXTRACTORS["docs"].extract(display + display_ext, conv, rules)
             f.path = display
             return f.to_dict()
-        if len(data) > 8 * 1024 * 1024 and ext_name not in ("docs",):
-            f = FileFacts(display, ext_name)
-            f.errors.append("skipped: larger than 8MB")
-            return f.to_dict()
         return EXTRACTORS[ext_name].extract(display, data, rules).to_dict()
-    except Exception as e:
+    except RecursionError:
         f = FileFacts(display, ext_name)
-        f.errors.append(f"{type(e).__name__}: {e}")
+        f.errors.append("skipped: nesting too deep")
+        return f.to_dict()
+    except Exception as e:      # one bad file never stops the index; it is reported instead
+        f = FileFacts(display, ext_name)
+        f.errors.append(f"{type(e).__name__}: {str(e)[:300]}")
         return f.to_dict()
 
 
