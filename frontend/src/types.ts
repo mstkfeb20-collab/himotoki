@@ -60,7 +60,8 @@ export interface RunState {
   checks: Check[];
   estimate: {
     days?: number; low?: number; high?: number; confirmed_hours?: number; pending_expected_hours?: number;
-    overhead?: number; calibration?: number; calibration_samples?: number;
+    overhead?: number; calibration?: number; calibration_samples?: number; hours_per_day?: number;
+    per_node?: Record<string, { h: number; e: number; s: "confirmed" | "pending"; p?: number; n?: string[] }>;
     lines?: EstimateLine[]; pending?: EstimateLine[];
   };
   grep: { terms?: string[]; hits?: { file: string; line: number; term: string; node_id: string; text: string }[] };

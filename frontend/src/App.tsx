@@ -3,6 +3,7 @@ import { api, openRunSocket } from "./api";
 import Graph, { AGGREGATE_ABOVE, Filters } from "./Graph";
 import Inspector from "./Inspector";
 import ListView from "./ListView";
+import { isFiltered, sizeOf, visibleCandidates } from "./sizing";
 import { ChecksPanel, DiffPanel, EstimatePanel, IndexPanel, LogPanel } from "./Panels";
 import type { Candidate, RunEvent, RunState, RunSummary, WorkspaceUsage } from "./types";
 
@@ -175,6 +176,8 @@ export default function App() {
                   onChange={(e) => setFilters((f) => ({ ...f, minConf: Number(e.target.value) }))} />
                 <span className="mono small">{filters.minConf.toFixed(2)}+</span></label>
             </div>
+            {shownView === "graph" && run && isFiltered(filters) && <FilteredSize run={run} filters={filters}
+              onReset={() => setFilters({ layers: { feature: true, code: true, data: true, test: true, doc: true }, onlyOpen: false, minConf: 0, query: "" })} />}
             <input className="input search" placeholder="ノードを検索" aria-label="ノードを検索" value={filters.query}
               onChange={(e) => setFilters((f) => ({ ...f, query: e.target.value }))}
               onKeyDown={(e) => {
@@ -211,7 +214,8 @@ export default function App() {
               </div>
               <div className="tabbody">
                 {side === "checks" && <ChecksPanel run={run} onSelect={select} onChanged={changed} />}
-                {side === "estimate" && <EstimatePanel run={run} onSelect={select} />}
+                {side === "estimate" && <EstimatePanel run={run} onSelect={select}
+                  onOnlyLayer={(layer) => setFilters((f) => ({ ...f, layers: Object.fromEntries(Object.keys(f.layers).map((k) => [k, k === layer])) }))} />}
                 {side === "log" && <LogPanel events={events} onSelect={select} />}
                 {side === "diff" && <DiffPanel run={run} onOpenRun={setRunId} />}
                 {side === "index" && <IndexPanel graph={runGraph} />}
@@ -254,6 +258,18 @@ function AiCost({ run, ws }: { run: RunState | null; ws: WorkspaceUsage | null }
       <span className={`mono val${run?.status === "running" && u?.calls ? " live" : ""}`}>{u?.calls ? yen(u.cost_jpy) : "—"}
         {!!u?.calls && <small> {ktok(tokens)}tok</small>}</span>
       {ws && <span className="mono sub">今月 {yen(ws.month.cost_jpy)}</span>}
+    </div>
+  );
+}
+
+/** In the graph view: how many candidates and how much effort the current filter shows. */
+function FilteredSize({ run, filters, onReset }: { run: RunState; filters: Filters; onReset: () => void }) {
+  const s = sizeOf(run, visibleCandidates(run, filters));
+  return (
+    <div className="fsize" title={`確定 ${s.confirmedH}h ＋ 見込み ${s.expectedH}h`}>
+      <span className="k">表示中</span><span className="mono">{s.count}</span><span className="muted small">件・</span>
+      <span className="mono">{s.days}</span><span className="muted small">人日 ／ 全体 {run.estimate?.days ?? "—"}人日</span>
+      <button className="link small" onClick={onReset}>絞り込み解除</button>
     </div>
   );
 }

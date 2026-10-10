@@ -207,3 +207,12 @@ fieldset { border: 1px solid var(--line2); border-radius: 12px; padding: 12px 14
 .graph-head.static { position: static; padding: 12px 14px 2px; align-items: center; }
 .graph-head.static .search { height: 34px; }
 .graph-head .viewtabs + .chips { flex: 1; }
+
+.lrow-main { grid-template-columns: 20px 64px minmax(180px, 1.1fr) minmax(140px, 1.5fr) 58px 96px auto; }
+.lrow-eff { display: flex; flex-direction: column; align-items: flex-end; font-size: 12.5px; line-height: 1.15; }
+.lrow-eff.confirmed .mono { color: var(--cyan); } .lrow-eff.pending .mono { color: var(--text2); }
+.lv-size { display: flex; align-items: baseline; gap: 4px; } .lv-size .mono { font-size: 18px; margin-left: 6px; }
+.layer-tbl td, .layer-tbl th { padding: 4px 6px; } .layer-tbl tr.sum td { border-top: 1px solid var(--line3); color: var(--text); }
+.layer-tbl tbody tr.click { cursor: pointer; } .layer-tbl tbody tr.click:hover { background: #111826; }
+.fsize { display: flex; align-items: baseline; gap: 4px; background: rgba(10,14,21,.85); border: 1px solid var(--line3); border-radius: 999px; padding: 4px 12px; }
+.fsize .mono { font-size: 14px; } .fsize .link { margin-left: 8px; }

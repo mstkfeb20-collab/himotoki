@@ -120,6 +120,12 @@ class Estimator:
             "overhead": self.coef["overhead"],
             "calibration": self.coef["calibration"],
             "calibration_samples": self.coef.get("calibration_samples", 0),
+            "hours_per_day": hpd,
             "lines": sorted(lines, key=lambda l: -l["hours"]),
             "pending": sorted(pending, key=lambda p: -p["hours"] * p["probability"])[:50],
+            # every element's share, so the viewer can total any subset (a filter, a layer)
+            "per_node": {**{l["node_id"]: {"h": l["hours"], "e": l["hours"], "s": "confirmed", "n": l["notes"]}
+                            for l in lines},
+                         **{p["node_id"]: {"h": p["hours"], "e": p["hours"] * p["probability"],
+                                           "s": "pending", "p": p["probability"], "n": p["notes"]} for p in pending}},
         }

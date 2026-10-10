@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "./api";
 import type { Filters } from "./Graph";
+import { elementSize, isFiltered, sizeOf, visibleCandidates } from "./sizing";
 import type { Candidate, RunState } from "./types";
 
 /** What kind of thing a candidate is, in words a reviewer uses. */
@@ -68,19 +69,16 @@ export default function ListView({ run, filters, selected, onSelect, onChanged, 
 
   const all = Object.values(run.candidates);
   const rows = useMemo(() => {
-    const q = filters.query.trim().toLowerCase();
-    let cs = all.filter((c) => filters.layers[c.layer] !== false)
-      .filter((c) => !filters.onlyOpen || !c.decision)
-      .filter((c) => c.decision || (c.confidence ?? c.score) >= filters.minConf)
-      .filter((c) => !q || c.name.toLowerCase().includes(q) || (c.file || "").toLowerCase().includes(q)
-        || (c.reason || "").toLowerCase().includes(q));
+    let cs = visibleCandidates(run, filters);
     const conf = (c: Candidate) => c.confidence ?? c.score;
     if (sort === "score") cs = cs.sort((a, b) => conf(b) - conf(a));
     else if (sort === "kind") cs = cs.sort((a, b) => (KIND_JA[a.kind] || a.kind).localeCompare(KIND_JA[b.kind] || b.kind, "ja") || conf(b) - conf(a));
     else if (sort === "file") cs = cs.sort((a, b) => (a.file || "~").localeCompare(b.file || "~") || (a.line ?? 0) - (b.line ?? 0));
     else cs = cs.sort((a, b) => conf(b) - conf(a));
     return cs;
-  }, [all, filters, sort]);
+  }, [run, filters, sort]);
+  const size = useMemo(() => sizeOf(run, rows), [run, rows]);
+  const whole = run.estimate?.days;
 
   const grouped = useMemo(() => {
     const g: Record<Group, Candidate[]> = { "todo-impacted": [], "todo-uncertain": [], "todo-low": [], done: [] };
@@ -163,6 +161,7 @@ export default function ListView({ run, filters, selected, onSelect, onChanged, 
             </div>
           </div>
           <div className="lrow-reason">{c.decision?.reason ? `「${c.decision.reason}」` : (c.reason || c.seed_reason || "")}</div>
+          <Effort run={run} c={c} />
           <div className="lrow-conf" title={`確からしさ ${conf.toFixed(2)}`}>
             <div className="cbar"><div style={{ width: `${Math.round(conf * 100)}%` }} /></div>
             <span className="mono">{conf.toFixed(2)}</span>
@@ -210,8 +209,16 @@ export default function ListView({ run, filters, selected, onSelect, onChanged, 
     <div className="listview">
       <div className="lv-head">
         <div className="lv-progress">
-          <span className="mono">{decided}</span><span className="muted"> / {total} 件 判断済み</span>
-          <div className="bar"><div className="fill" style={{ width: `${total ? (decided / total) * 100 : 0}%` }} /></div>
+          <span className="mono">{isFiltered(filters) ? size.decided : decided}</span>
+          <span className="muted"> / {isFiltered(filters) ? `${size.count} 件（全体 ${total} 件）` : `${total} 件`} 判断済み</span>
+          <div className="bar"><div className="fill" style={{ width: `${isFiltered(filters)
+            ? (size.count ? (size.decided / size.count) * 100 : 0) : (total ? (decided / total) * 100 : 0)}%` }} /></div>
+        </div>
+        <div className="lv-size" title={`確定分 ${size.confirmedH}h ＋ 未判定の見込み ${size.expectedH}h（最大 ${size.maxH}h）に、全体と同じ係数（レビュー等・実績補正）を掛けたもの`}>
+          <span className="k">{isFiltered(filters) ? "この一覧の規模" : "規模"}</span>
+          <span className="mono">{size.days}</span><span className="muted small"> 人日</span>
+          <span className="muted small">（{size.low}〜{size.high}）</span>
+          {isFiltered(filters) && whole !== undefined && <span className="muted small"> ／ 全体 {whole}人日</span>}
         </div>
         <label className="lv-sort"><span className="k">並び順</span>
           <select className="input" value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
@@ -264,6 +271,26 @@ export default function ListView({ run, filters, selected, onSelect, onChanged, 
         {!rows.length && <p className="muted small lv-empty">条件に合う候補はありません。上の絞り込みを確認してください。</p>}
       </div>
       <p className="lv-keys muted tiny">キー操作: ↑↓（j/k）で移動・c で確定・x で除外・u で戻す。層のチップ・未判定だけ・確度・検索の絞り込みはリストにも効きます（{LAYER_JA.code}・{LAYER_JA.data} など）。</p>
+    </div>
+  );
+}
+
+/** The element's share of the estimate: confirmed hours, or the expected hours while undecided. */
+function Effort({ run, c }: { run: RunState; c: Candidate }) {
+  const s0 = elementSize(run, c.node_id);
+  const r2 = (x: number) => Math.round(x * 100) / 100;
+  const s = { ...s0, hours: r2(s0.hours), expected: r2(s0.expected) };
+  if (s.status === "none") {
+    return <div className="lrow-eff muted" title={c.decision?.status === "excluded" ? "除外のため工数に含めません"
+      : "工数の対象外（設定・ログなど）、または影響低のため含めません"}>—</div>;
+  }
+  const tip = s.status === "confirmed"
+    ? `確定: ${s.hours}h${s.notes.length ? `（${s.notes.join(" / ")}）` : ""}`
+    : `未判定: ${s.hours}h × 確からしさ ${s.probability} = 見込み ${s.expected}h${s.notes.length ? `（${s.notes.join(" / ")}）` : ""}`;
+  return (
+    <div className={`lrow-eff ${s.status}`} title={tip}>
+      <span className="mono">{s.status === "confirmed" ? s.hours : s.expected}h</span>
+      {s.status === "pending" && <span className="tiny muted">見込み</span>}
     </div>
   );
 }

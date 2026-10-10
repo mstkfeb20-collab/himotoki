@@ -194,6 +194,14 @@ class Engine:
         st = self.runs.load(run_id)
         if st:
             self._states[run_id] = st
+            # runs saved by an older version lack the per-element breakdown: rebuild it once
+            if st.get("status") == "done" and "per_node" not in (st.get("estimate") or {}):
+                try:
+                    with self._locks[run_id]:
+                        st["estimate"] = self.estimate(st)
+                        self._save(st)
+                except Exception:
+                    log.warning("could not rebuild the estimate of run %s", run_id, exc_info=True)
         return st
 
     def _save(self, st: dict) -> None:

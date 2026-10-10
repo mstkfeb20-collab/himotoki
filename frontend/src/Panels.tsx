@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
+import { LAYERS_JA, sizeOf } from "./sizing";
 import type { IndexReport, RunEvent, RunState } from "./types";
 
 export function ChecksPanel({ run, onSelect, onChanged }: {
@@ -54,7 +55,36 @@ export function ChecksPanel({ run, onSelect, onChanged }: {
   );
 }
 
-export function EstimatePanel({ run, onSelect }: { run: RunState; onSelect: (ids: string[], f?: boolean) => void }) {
+/** Effort by layer (機能 / コード / データ / テスト / 設計書); clicking a row filters the views to it. */
+function LayerBreakdown({ run, onOnlyLayer }: { run: RunState; onOnlyLayer?: (layer: string) => void }) {
+  const cs = Object.values(run.candidates);
+  const rows = LAYERS_JA.map(([k, l]) => ({ k, l, s: sizeOf(run, cs.filter((c) => c.layer === k)) }))
+    .filter((r) => r.s.count);
+  const tot = sizeOf(run, cs);
+  return (
+    <div>
+      <span className="k">層ごとの内訳</span>
+      <table className="tbl layer-tbl">
+        <thead><tr><th>層</th><th className="r">件数</th><th className="r">確定 h</th><th className="r">見込み h</th><th className="r">人日</th></tr></thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.k} className={onOnlyLayer ? "click" : ""} onClick={() => onOnlyLayer?.(r.k)}
+              title={onOnlyLayer ? `${r.l}だけを一覧・グラフに表示` : ""}>
+              <td>{r.l}</td><td className="r mono">{r.s.count}</td><td className="r mono">{r.s.confirmedH}</td>
+              <td className="r mono">{r.s.expectedH}</td><td className="r mono">{r.s.days}</td>
+            </tr>
+          ))}
+          <tr className="sum"><td>合計</td><td className="r mono">{tot.count}</td><td className="r mono">{tot.confirmedH}</td>
+            <td className="r mono">{tot.expectedH}</td><td className="r mono">{tot.days}</td></tr>
+        </tbody>
+      </table>
+      <p className="muted tiny">人日 =（確定 h ＋ 見込み h）× レビュー等の係数 × 実績補正 ÷ 1日の時間。見込み h は未判定の要素の工数 × 確からしさ。</p>
+    </div>
+  );
+}
+
+export function EstimatePanel({ run, onSelect, onOnlyLayer }: { run: RunState; onSelect: (ids: string[], f?: boolean) => void;
+  onOnlyLayer?: (layer: string) => void }) {
   const e = run.estimate;
   if (!e || e.days === undefined) return <p className="muted small">算出中…</p>;
   return (
@@ -63,7 +93,9 @@ export function EstimatePanel({ run, onSelect }: { run: RunState; onSelect: (ids
         <span className="mono small muted">（{e.low} 〜 {e.high}）</span></div>
       <p className="muted small">確定分 {e.confirmed_hours}h ＋ 未判定の期待値 {e.pending_expected_hours}h、レビュー等の係数 ×{e.overhead}、
         実績補正 ×{e.calibration}{e.calibration_samples ? `（過去${e.calibration_samples}件）` : "（実績未登録）"}</p>
+      <LayerBreakdown run={run} onOnlyLayer={onOnlyLayer} />
       <AiUsage run={run} />
+      <span className="k">要素ごとの工数（確定分と、見込みの大きい未判定分）</span>
       <table className="tbl">
         <thead><tr><th>対象</th><th>変更</th><th className="r">h</th></tr></thead>
         <tbody>
