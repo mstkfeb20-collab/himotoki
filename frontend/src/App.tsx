@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, openRunSocket } from "./api";
 import Graph, { AGGREGATE_ABOVE, Filters } from "./Graph";
 import Inspector from "./Inspector";
+import ListView from "./ListView";
 import { ChecksPanel, DiffPanel, EstimatePanel, IndexPanel, LogPanel } from "./Panels";
 import type { Candidate, RunEvent, RunState, RunSummary, WorkspaceUsage } from "./types";
 
@@ -20,6 +21,8 @@ export default function App() {
   const [showNew, setShowNew] = useState(false);
   const [busy, setBusy] = useState(false);
   const [grouping, setGrouping] = useState(true);
+  // null = automatic: the graph while a run is in progress (to watch it grow), the list once it is done
+  const [view, setView] = useState<"list" | "graph" | null>(null);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [filters, setFilters] = useState<Filters>({
     layers: { feature: true, code: true, data: true, test: true, doc: true }, onlyOpen: false, minConf: 0, query: "",
@@ -58,7 +61,7 @@ export default function App() {
   useEffect(() => {
     if (!runId) return;
     const url = new URL(location.href); url.searchParams.set("run", runId); history.replaceState(null, "", url);
-    setSelected([]); setEvents([]); setExpanded(new Set()); lastSeq.current = -1;
+    setSelected([]); setEvents([]); setExpanded(new Set()); setView(null); lastSeq.current = -1;
     let alive = true;
     api.run(runId).then((r) => { if (alive) setRun(r); });
     const close = openRunSocket(runId, (ev) => {
@@ -107,6 +110,8 @@ export default function App() {
     };
   }, [run]);
 
+  const shownView: "list" | "graph" = view ?? (run && run.status === "running" ? "graph" : "list");
+  const showInGraph = useCallback((id: string) => { setView("graph"); setSelected([id]); setFocusId(id + "|" + Date.now()); }, []);
   const runGraph = useMemo(() => runs.find((r) => r.id === runId)?.graph ?? status?.graph ?? null, [runs, runId, status]);
   const nCands = run ? Object.keys(run.candidates).length : 0;
 
@@ -144,7 +149,13 @@ export default function App() {
 
       <main className="main">
         <section className="pane graph-pane" aria-label="影響グラフ">
-          <div className="graph-head">
+          <div className={`graph-head${shownView === "list" ? " static" : ""}`}>
+            <div className="viewtabs" role="tablist" aria-label="表示">
+              {([["list", "リスト"], ["graph", "グラフ"]] as const).map(([k, l]) => (
+                <button key={k} role="tab" aria-selected={shownView === k} className={shownView === k ? "vtab on" : "vtab"}
+                  onClick={() => setView(k)}>{l}</button>
+              ))}
+            </div>
             <div className="chips">
               {LAYERS.map(([k, label]) => (
                 <button key={k} className={filters.layers[k] ? "chip on" : "chip"} aria-pressed={filters.layers[k]}
@@ -152,7 +163,7 @@ export default function App() {
               ))}
               <button className={filters.onlyOpen ? "chip on amber" : "chip"} aria-pressed={filters.onlyOpen}
                 onClick={() => setFilters((f) => ({ ...f, onlyOpen: !f.onlyOpen }))}>未判定だけ</button>
-              {nCands > AGGREGATE_ABOVE && (
+              {shownView === "graph" && nCands > AGGREGATE_ABOVE && (
                 <>
                   <button className={grouping ? "chip on" : "chip"} aria-pressed={grouping} title="確度の低い候補をモジュール単位にまとめる"
                     onClick={() => setGrouping((g) => !g)}>まとめ表示</button>
@@ -174,14 +185,19 @@ export default function App() {
                 }
               }} />
           </div>
+          {shownView === "list" && run ? (
+            <ListView run={run} filters={filters} selected={selected} onSelect={select} onChanged={changed}
+              onShowInGraph={showInGraph} />
+          ) : (
           <Graph run={run} filters={filters} selected={selected} onSelect={select} focusId={focusId?.split("|")[0]}
             expanded={expanded} grouping={grouping} onExpand={(k) => setExpanded((e) => new Set(e).add(k))} />
-          <div className="legend">
+          )}
+          {shownView === "graph" && <div className="legend">
             <span><i className="dot cyan" />確定</span><span><i className="dot amber" />影響あり(AI)</span>
             <span><i className="dot amber dashed" />要確認(AI)</span><span><i className="dot" />影響低・未判定</span>
             <span><i className="dot violet" />人が追加</span>
             {nCands > AGGREGATE_ABOVE && grouping && <span><i className="dot agg" />まとめ（クリックで展開）</span>}<span className="muted">内側から 機能 / コード / データ / テスト / 設計書</span>
-          </div>
+          </div>}
         </section>
 
         <aside className="side">
@@ -235,8 +251,8 @@ function AiCost({ run, ws }: { run: RunState | null; ws: WorkspaceUsage | null }
   return (
     <div className="stat ai-cost" title={title} aria-label={title}>
       <span className="k">AI</span>
-      <span className={`mono val${run?.status === "running" && u?.calls ? " live" : ""}`}>{yen(u?.cost_jpy)}
-        <small> {ktok(tokens)}tok</small></span>
+      <span className={`mono val${run?.status === "running" && u?.calls ? " live" : ""}`}>{u?.calls ? yen(u.cost_jpy) : "—"}
+        {!!u?.calls && <small> {ktok(tokens)}tok</small>}</span>
       {ws && <span className="mono sub">今月 {yen(ws.month.cost_jpy)}</span>}
     </div>
   );
