@@ -1,0 +1,22 @@
+name: struts1
+description: Struts 1.x action mappings (struts-config.xml)
+xml:
+  - name: action
+    when: {root: struts-config}
+    select: "//action-mappings/action"
+    node: {kind: Endpoint, id: "ep:ANY {@path}.do", name: "ANY {@path}.do", keys: ["url:{@path}.do", "url:{@path}"],
+           layer: feature}
+    refs:
+      - {key: "class:{@type}", rel: HANDLES, conf: 0.95}
+      - {key: "formbean:{@name}", rel: BINDS, conf: 0.9}
+  - name: forward
+    when: {root: struts-config}
+    select: "//action/forward"
+    refs:
+      - {from: "{ancestor-node}", key: "view:{@path}", rel: RENDERS, conf: 0.9}
+  - name: form-bean
+    when: {root: struts-config}
+    select: "//form-beans/form-bean"
+    node: {kind: Bean, id: "formbean:{@name}", name: "{@name}", keys: ["formbean:{@name}"]}
+    refs:
+      - {key: "class:{@type}", rel: CONFIGURES, conf: 0.95}

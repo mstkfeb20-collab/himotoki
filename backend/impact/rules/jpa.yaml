@@ -1,0 +1,30 @@
+name: jpa
+description: JPA / Jakarta Persistence and annotation-based SQL (Spring Data @Query, MyBatis @Select...)
+java:
+  annotations:
+    entity:
+      names: [Entity]
+      table_annotation: Table
+      table_attr: name
+    column:
+      names: [Column]
+      attr: name
+    join_column:
+      names: [JoinColumn]
+      attr: name
+    relation: [OneToMany, ManyToOne, ManyToMany, OneToOne]
+    transient: [Transient]
+    sql:
+      names: [Query, Select, Insert, Update, Delete, NamedNativeQuery]
+      attr: value
+  # repository interfaces whose method names are queries (findByZipStartingWith):
+  # the properties named after "By" are fields of the repository's entity type
+  derived_query:
+    base_types: [Repository, CrudRepository, ListCrudRepository, PagingAndSortingRepository, JpaRepository,
+                 ReactiveCrudRepository, MongoRepository]
+    pattern: '^(?:find|read|get|query|search|stream|count|exists|delete|remove)\w*?By([A-Z]\w*)$'
+    split: '(?:And|Or)(?=[A-Z])'
+    operators: [IsStartingWith, StartingWith, StartsWith, IsEndingWith, EndingWith, EndsWith, IsContaining,
+                Containing, Contains, NotLike, Like, IgnoreCase, AllIgnoreCase, Between, LessThanEqual, LessThan,
+                GreaterThanEqual, GreaterThan, Before, After, IsNotNull, NotNull, IsNull, 'Null', NotIn, In,
+                IsTrue, 'True', IsFalse, 'False', Not, Is, Equals, Exists, Regex, Near, Within]

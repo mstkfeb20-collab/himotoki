@@ -1,0 +1,32 @@
+name: propagation
+description: >
+  How impact spreads over the graph. `in` follows edges pointing at the changed
+  element (its dependents), `out` follows edges leaving it. Effective strength =
+  weight x edge confidence. Tune here, not in code.
+propagation:
+  - {rel: BINDS, dir: in, weight: 0.85}
+  - {rel: MAPS_TO, dir: out, weight: 0.9}
+  - {rel: MAPS_TO, dir: in, weight: 0.7}
+  - {rel: DEFINES, dir: in, weight: 0.9}
+  - {rel: POPULATES, dir: in, weight: 0.5, positional_weight: 0.9}
+  - {rel: TESTS, dir: in, weight: 0.8}
+  - {rel: HANDLES, dir: in, weight: 0.75}
+  - {rel: DESCRIBES, dir: in, weight: 0.8}
+  - {rel: DOC_CRUD, dir: in, weight: 0.75}
+  - {rel: CALLS, dir: in, weight: 0.65}
+  - {rel: REFERENCES, dir: in, weight: 0.6}
+  - {rel: IMPLEMENTED_BY, dir: in, weight: 0.9}
+  - {rel: IMPLEMENTED_BY, dir: out, weight: 0.7}
+  - {rel: EXECUTES, dir: in, weight: 0.85}
+  - {rel: READS, dir: in, weight: 0.75}
+  - {rel: WRITES, dir: in, weight: 0.8}
+  - {rel: WRITES, dir: out, weight: 0.6}
+  - {rel: INCLUDES, dir: in, weight: 0.6}
+  - {rel: RUNS, dir: in, weight: 0.8}
+  - {rel: PRECEDES, dir: out, weight: 0.5}
+  - {rel: OBSERVED_AS, dir: in, weight: 0.6}
+  - {rel: INJECTS, dir: in, weight: 0.5}
+  - {rel: CONFIGURES, dir: in, weight: 0.7}
+  - {rel: CONTAINS, dir: in, weight: 0.55, from_kinds: [Field, Column, MessageKey, SqlStatement]}
+  - {rel: EXTENDS, dir: in, weight: 0.5}
+  - {rel: USES_MESSAGE, dir: in, weight: 0.7, from_kinds: [MessageKey]}

@@ -6,18 +6,19 @@ import pytest
 from fastapi.testclient import TestClient
 
 from impact.analysis.engine import Engine
-from impact.indexer import index_repository
 from impact.model import Rel
+from impact.pipeline.run import Pipeline
 from impact.store import LocalStore
 
 FIX = os.path.join(os.path.dirname(__file__), "fixtures", "minirepo")
 P = "java:com.example.shop."
+TPL = "file:src/main/resources/templates/customers/customerForm.html"
 
 
 @pytest.fixture()
 def indexed(tmp_path):
     store = LocalStore(str(tmp_path / "graph.json"))
-    stats = index_repository(FIX, store)
+    stats = Pipeline(str(tmp_path)).index(FIX, store)
     return store, stats, tmp_path
 
 
@@ -31,12 +32,12 @@ def test_index_links_layers(indexed):
     zip_field = P + "Customer.zip"
     assert "col:customers.zip" in rels(store, zip_field, Rel.MAPS_TO)
     assert P + "Customer.name" in {e.src for e in store.in_edges("col:customers.full_name", [Rel.MAPS_TO])}
-    assert zip_field in rels(store, "tpl:customers/customerForm", Rel.BINDS)
+    assert zip_field in rels(store, TPL, Rel.BINDS)
     assert "msg:zip.invalid" in rels(store, zip_field, Rel.USES_MESSAGE)
     # Spring Data derived query references the field
     assert zip_field in rels(store, P + "CustomerRepository#findByZipStartingWith(String)", Rel.REFERENCES)
     # constant view name resolves to the template
-    assert "tpl:customers/customerForm" in rels(store, P + "CustomerController#initForm()", Rel.RENDERS)
+    assert TPL in rels(store, P + "CustomerController#initForm()", Rel.RENDERS)
     # endpoint -> handler, and a test exercising the endpoint by URL
     assert P + "CustomerController#initForm()" in rels(store, "ep:GET /customers/new", Rel.HANDLES)
     assert "ep:GET /customers/new" in rels(store, P + "CustomerControllerTests#initForm()", Rel.TESTS)
@@ -52,7 +53,7 @@ def test_run_finds_impact_and_gates_approval(indexed):
     st = eng.state(rid)
     assert st["status"] == "done", st.get("error")
     cands = st["candidates"]
-    for must in (P + "Customer.zip", "msg:zip.invalid", "tpl:customers/customerForm"):
+    for must in (P + "Customer.zip", "msg:zip.invalid", TPL):
         assert must in cands, must
     assert cands[P + "Customer.zip"]["verdict"] == "impacted"
     with pytest.raises(ValueError):
@@ -75,7 +76,7 @@ def test_add_attribute_pattern_and_reinvestigation(indexed):
     st = eng.state(rid)
     assert st["intents"][0]["pattern"] == "add-attribute"
     for must in (P + "Customer", "table:customers", "file:src/main/resources/db/schema.sql",
-                 "file:src/main/resources/db/data.sql", "tpl:customers/customerForm"):
+                 "file:src/main/resources/db/data.sql", TPL):
         assert must in st["candidates"], must
     eng.decide(rid, P + "Customer", "confirmed", "add email")
     child = eng.reinvestigate(rid, [P + "CustomerController#save(Customer)"], "テストも確認して")

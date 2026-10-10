@@ -13,8 +13,8 @@
         {"label": "schema.sql (postgres)", "any_of": ["file:src/main/resources/db/postgres/schema.sql"]},
         {"label": "data.sql (h2) 列順依存INSERT", "any_of": ["file:src/main/resources/db/h2/data.sql"]},
         {"label": "data.sql (mysql) 列順依存INSERT", "any_of": ["file:src/main/resources/db/mysql/data.sql"]},
-        {"label": "登録・更新画面テンプレート", "any_of": ["tpl:owners/createOrUpdateOwnerForm"]},
-        {"label": "詳細画面テンプレート", "any_of": ["tpl:owners/ownerDetails"]},
+        {"label": "登録・更新画面テンプレート", "any_of": ["file:src/main/resources/templates/owners/createOrUpdateOwnerForm.html"]},
+        {"label": "詳細画面テンプレート", "any_of": ["file:src/main/resources/templates/owners/ownerDetails.html"]},
         {"label": "messages.properties", "any_of": ["file:src/main/resources/messages/messages.properties"]},
         {"label": "messages_de.properties", "any_of": ["file:src/main/resources/messages/messages_de.properties"]},
         {"label": "messages_en.properties", "any_of": ["file:src/main/resources/messages/messages_en.properties"]},
@@ -71,7 +71,7 @@
       ],
       "should": [
         {"label": "VetController.showVetList", "any_of": ["java:org.springframework.samples.petclinic.vet.VetController#showVetList(int,Model,RedirectAttributes)"]},
-        {"label": "獣医一覧テンプレート（ページ表示）", "any_of": ["tpl:vets/vetList"]},
+        {"label": "獣医一覧テンプレート（ページ表示）", "any_of": ["file:src/main/resources/templates/vets/vetList.html"]},
         {"label": "獣医一覧のテスト", "any_of": ["java:org.springframework.samples.petclinic.vet.VetControllerTests#showVetListHtml()", "java:org.springframework.samples.petclinic.vet.VetControllerTests"]}
       ]
     }

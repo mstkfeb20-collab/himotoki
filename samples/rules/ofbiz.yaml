@@ -1,0 +1,137 @@
+name: ofbiz
+description: >
+  Apache OFBiz — entity engine, service engine, request controller, screen
+  widgets, UI labels and Groovy scripts. Written only as rules (no code) to show
+  how an unfamiliar in-house framework is brought into the graph.
+java:
+  literal_namespaces: [service, entity]
+xml:
+  # ---- entity engine: entities are tables, fields are columns
+  - name: entity
+    when: {root: entitymodel}
+    select: "//entity"
+    node: {kind: Table, id: "table:{@table-name|@entity-name:snake}", name: "{@entity-name}",
+           keys: ["table:{@entity-name:snake}", "entity:{@entity-name}"]}
+  - name: entity-field
+    when: {root: entitymodel}
+    select: "//entity/field"
+    node: {kind: Column, id: "col:{../@entity-name:snake}.{@col-name|@name:snake}", name: "{../@entity-name}.{@name}",
+           keys: ["column:{../@entity-name:snake}.{@name:snake}", "entityfield:{../@entity-name}.{@name}"],
+           parent: "table:{../@entity-name:snake}"}
+  - name: entity-relation
+    when: {root: entitymodel}
+    select: "//entity/relation"
+    refs:
+      - {from: "{ancestor-node}", key: "entity:{@rel-entity-name}", rel: REFERENCES, conf: 0.9}
+  - name: view-entity
+    when: {root: entitymodel}
+    select: "//view-entity"
+    node: {kind: DbObject, id: "dbobj:view:{@entity-name:snake}", name: "view {@entity-name}",
+           keys: ["entity:{@entity-name}", "table:{@entity-name:snake}"]}
+  - name: view-member
+    when: {root: entitymodel}
+    select: "//view-entity/member-entity"
+    refs:
+      - {from: "{ancestor-node}", key: "entity:{@entity-name}", rel: READS, conf: 0.95}
+  # ---- service engine
+  - name: service
+    when: {root: services}
+    select: "//service"
+    node: {kind: Service, id: "service:{@name}", name: "{@name}", keys: ["service:{@name}"], layer: code}
+  - name: service-java
+    when: {root: services}
+    select: "//service"
+    where: {"@engine": java}
+    refs:
+      - {from: "service:{@name}", key: "method:{@location}#{@invoke}", rel: RUNS, conf: 0.95}
+  - name: service-groovy
+    when: {root: services}
+    select: "//service"
+    where: {"@engine": groovy}
+    refs:
+      - {from: "service:{@name}", key: "file:{@location:nocomponent}", rel: RUNS, conf: 0.9}
+  - name: service-entity-auto
+    when: {root: services}
+    select: "//service"
+    where: {"@engine": entity-auto}
+    refs:
+      - {from: "service:{@name}", key: "entity:{@default-entity-name}", rel: WRITES, conf: 0.95}
+  - name: service-implements
+    when: {root: services}
+    select: "//service/implements"
+    refs:
+      - {from: "{ancestor-node}", key: "service:{@service}", rel: REFERENCES, conf: 0.9}
+  # ---- request controller
+  - name: request-map
+    when: {root: site-conf}
+    select: "//request-map"
+    node: {kind: Endpoint, id: "ep:ANY /{component}/{@uri}", name: "/{component}/{@uri}",
+           keys: ["url:/{@uri}", "url:/{component}/{@uri}", "request:{@uri}"], layer: feature}
+    vars: {component: "/webapp/([^/]+)/"}
+  - name: request-event-service
+    when: {root: site-conf}
+    select: "//request-map/event"
+    where: {"@type": service}
+    refs:
+      - {from: "{ancestor-node}", key: "service:{@invoke}", rel: CALLS, conf: 0.95}
+  - name: request-event-java
+    when: {root: site-conf}
+    select: "//request-map/event"
+    where: {"@type": java}
+    refs:
+      - {from: "{ancestor-node}", key: "method:{@path}#{@invoke}", rel: CALLS, conf: 0.95}
+  - name: request-response-view
+    when: {root: site-conf}
+    select: "//request-map/response"
+    where: {"@type": view}
+    refs:
+      - {from: "{ancestor-node}", key: "viewmap:{@value}", rel: RENDERS, conf: 0.9, optional: true}
+  - name: view-map
+    when: {root: site-conf}
+    select: "//view-map"
+    node: {kind: XmlElement, id: "viewmap:{file}#{@name}", name: "view {@name}", keys: ["viewmap:{@name}"]}
+    refs:
+      - {key: "screen:{@page}", rel: RENDERS, conf: 0.9}
+  # ---- screen widgets
+  - name: screen
+    when: {root: screens}
+    select: "//screen"
+    node: {kind: Template, id: "screen:component://{component}/{rel}#{@name}", name: "{@name}",
+           keys: ["screen:component://{component}/{rel}#{@name}"]}
+    vars: {component: "(?:applications|framework|plugins)/([^/]+)/", rel: "(?:applications|framework|plugins)/[^/]+/(.*)"}
+  - name: screen-service
+    when: {root: screens}
+    select: "//screen//service"
+    refs:
+      - {from: "{ancestor-node}", key: "service:{@service-name}", rel: CALLS, conf: 0.9}
+  - name: screen-entity
+    when: {root: screens}
+    select: "//screen//entity-one|//screen//entity-and|//screen//entity-condition"
+    refs:
+      - {from: "{ancestor-node}", key: "entity:{@entity-name}", rel: READS, conf: 0.9}
+  - name: screen-script
+    when: {root: screens}
+    select: "//screen//script"
+    refs:
+      - {from: "{ancestor-node}", key: "file:{@location:nocomponent}", rel: RUNS, conf: 0.85}
+  - name: screen-include
+    when: {root: screens}
+    select: "//screen//include-screen"
+    refs:
+      - {from: "{ancestor-node}", key: "screen:{@location}#{@name}", rel: INCLUDES, conf: 0.8, optional: true}
+  # ---- UI labels
+  - name: label
+    when: {root: resource}
+    select: "//property"
+    node: {kind: MessageKey, id: "msg:{@key}", name: "{@key}", keys: ["msg:{@key}"]}
+text:
+  - name: groovy
+    files: ["**/*.groovy"]
+    node: {kind: Script}
+    patterns:
+      - {regex: 'run(?:Service|Sync|Async)\s*\(\s*["'']([A-Za-z]\w+)', key: "service:{1}", rel: CALLS, conf: 0.9}
+      - {regex: 'run\s+service\s*:\s*["'']([A-Za-z]\w+)', key: "service:{1}", rel: CALLS, conf: 0.9}
+      - {regex: '\bfrom\s*\(\s*["'']([A-Z]\w+)', key: "entity:{1}", rel: READS, conf: 0.9}
+      - {regex: '(?:findOne|findList|findByAnd|findAll)\w*\s*\(\s*["'']([A-Z]\w+)', key: "entity:{1}", rel: READS, conf: 0.85}
+      - {regex: '(?:makeValue|create|store)\w*\s*\(\s*["'']([A-Z]\w+)', key: "entity:{1}", rel: WRITES, conf: 0.8}
+      - {regex: 'uiLabelMap\.(\w+)', key: "msg:{1}", rel: USES_MESSAGE, conf: 0.9}

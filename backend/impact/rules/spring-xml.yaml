@@ -1,0 +1,34 @@
+name: spring-xml
+description: Spring XML bean definitions and Spring Batch job definitions
+xml:
+  - name: bean
+    when: {root: beans}
+    select: "//bean"
+    node: {kind: Bean, id: "bean:{file}#{@id|@name|line}", name: "{@id|@name|@class}", keys: ["bean:{@id}", "bean:{@name}"]}
+    refs:
+      - {key: "class:{@class}", rel: CONFIGURES, conf: 0.95}
+  - name: bean-property-ref
+    when: {root: beans}
+    select: "//bean/property"
+    refs:
+      - {from: "{ancestor-node}", key: "bean:{@ref}", rel: INJECTS, conf: 0.9}
+  - name: batch-job
+    when: {root: beans}
+    select: "//job"
+    node: {kind: BatchJob, id: "batchjob:{@id}", name: "{@id}", keys: ["batchjob:{@id}"]}
+  - name: batch-step
+    when: {root: beans}
+    select: "//job//step"
+    node: {kind: XmlElement, id: "batchstep:{file}#{@id}", name: "step {@id}", parent: "batchjob:{ancestor::job@id}"}
+  - name: batch-tasklet
+    when: {root: beans}
+    select: "//step/tasklet"
+    refs:
+      - {from: "{ancestor-node}", key: "bean:{@ref}", rel: RUNS, conf: 0.9}
+  - name: batch-chunk
+    when: {root: beans}
+    select: "//tasklet/chunk"
+    refs:
+      - {from: "{ancestor-node}", key: "bean:{@reader}", rel: RUNS, conf: 0.9}
+      - {from: "{ancestor-node}", key: "bean:{@processor}", rel: RUNS, conf: 0.9}
+      - {from: "{ancestor-node}", key: "bean:{@writer}", rel: RUNS, conf: 0.9}

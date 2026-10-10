@@ -19,7 +19,7 @@ import time
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend"))
 
 from impact.analysis.engine import Engine  # noqa: E402
-from impact.indexer import index_repository  # noqa: E402
+from impact.pipeline.run import Pipeline  # noqa: E402
 from impact.store import LocalStore  # noqa: E402
 
 
@@ -57,7 +57,7 @@ def main():
     data_dir = tempfile.mkdtemp(prefix="impact-eval-")
     store = LocalStore(os.path.join(data_dir, "graph.json"))
     t0 = time.time()
-    stats = index_repository(args.repo, store, args.docs)
+    stats = Pipeline(data_dir).index(args.repo, store, args.docs)
     eng = Engine(store, data_dir, args.repo, args.docs)
     truth = json.load(open(args.truth, encoding="utf-8"))
     decisions = json.load(open(args.decisions, encoding="utf-8")) if args.decisions else {}

@@ -1,4 +1,4 @@
-import type { NodeDetail, RunEvent, RunState, RunSummary } from "./types";
+import type { GraphInfo, IndexReport, NodeDetail, RunEvent, RunState, RunSummary } from "./types";
 
 async function req<T>(method: string, url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
@@ -16,12 +16,20 @@ async function req<T>(method: string, url: string, body?: unknown): Promise<T> {
 }
 
 export const api = {
-  status: () => req<any>("GET", "/api/status"),
-  index: (repo: string, docs_dir?: string) => req<any>("POST", "/api/index", { repo, docs_dir: docs_dir || null }),
-  indexStatus: () => req<any>("GET", "/api/index"),
+  status: (graph?: string | null) => req<any>("GET", `/api/status${graph ? `?graph=${encodeURIComponent(graph)}` : ""}`),
+  graphs: () => req<{ default: string | null; graphs: Record<string, GraphInfo> }>("GET", "/api/graphs"),
+  index: (repo: string, docs_dir?: string, ref?: string, graph?: string) =>
+    req<{ status: string; graph: string }>("POST", "/api/index",
+      { repo, docs_dir: docs_dir || null, ref: ref || null, graph: graph || null }),
+  indexStatus: (graph?: string | null) => req<any>("GET", `/api/index${graph ? `?graph=${encodeURIComponent(graph)}` : ""}`),
+  indexReport: (graph?: string | null) =>
+    req<IndexReport>("GET", `/api/index/report${graph ? `?graph=${encodeURIComponent(graph)}` : ""}`),
+  diffRun: (base: string, head: string, graph?: string | null, title?: string) =>
+    req<{ id: string; changed_elements: number; added_files: string[] }>("POST", "/api/runs/diff", { base, head, graph, title }),
+  scope: (id: string) => req<{ groups: any; markdown: string }>("GET", `/api/runs/${id}/scope`),
   runs: () => req<RunSummary[]>("GET", "/api/runs"),
   run: (id: string) => req<RunState>("GET", `/api/runs/${id}`),
-  createRun: (requirement: string, opts: { title?: string; depth?: number; pace?: number }) =>
+  createRun: (requirement: string, opts: { title?: string; depth?: number; pace?: number; graph?: string | null }) =>
     req<{ id: string }>("POST", "/api/runs", { requirement, ...opts }),
   decide: (id: string, node_id: string, status: string, reason = "", extra: Record<string, unknown> = {}) =>
     req<any>("POST", `/api/runs/${id}/decisions`, { node_id, status, reason, ...extra }),

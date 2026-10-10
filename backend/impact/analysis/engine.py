@@ -32,27 +32,18 @@ from .estimate import Estimator
 from .llm import make_llm
 from .runstore import EventBus, RunStore
 from .search import NodeSearch
+from ..rules import load_rules
 
-# (direction, relation, weight). "in" = follow edges pointing at the impacted node,
-# i.e. find things that depend on it.
-PROPAGATION = [
-    ("in", Rel.BINDS, 0.85),
-    ("out", Rel.MAPS_TO, 0.9),
-    ("in", Rel.DEFINES, 0.9),
-    ("in", Rel.POPULATES, 0.5),      # 0.9 when inserts are positional (column order dependent)
-    ("in", Rel.TESTS, 0.8),
-    ("in", Rel.HANDLES, 0.75),
-    ("in", Rel.DESCRIBES, 0.8),
-    ("in", Rel.CALLS, 0.65),
-    ("in", Rel.REFERENCES, 0.65),
-    ("in", Rel.CONTAINS, 0.55),
-    ("in", Rel.EXTENDS, 0.5),
-    ("in", Rel.INCLUDES, 0.5),
-    ("in", Rel.MAPS_TO, 0.6),
-]
-SINKS = {Kind.TEST_CLASS, Kind.TEST_METHOD, Kind.DOC, Kind.FEATURE, Kind.SQL_FILE, Kind.CONFIG}
-SEED_KINDS = {Kind.FIELD, Kind.METHOD, Kind.CLASS, Kind.TEMPLATE, Kind.ENDPOINT, Kind.COLUMN,
-              Kind.TABLE, Kind.MESSAGE}
+SINKS = {Kind.TEST_CLASS, Kind.TEST_METHOD, Kind.DOC, Kind.DOC_ENTITY, Kind.FEATURE, Kind.SQL_FILE, Kind.CONFIG,
+         Kind.RUNTIME_SQL}
+SEED_EXCLUDE = {Kind.TEST_CLASS, Kind.TEST_METHOD, Kind.DOC, Kind.DOC_ENTITY, Kind.CONFIG, Kind.RUNTIME_SQL,
+                Kind.XML_ELEMENT, Kind.FEATURE, Kind.SQL_FILE, Kind.BEAN, Kind.REQUIREMENT, Kind.INTENT}
+
+
+def seedable(n) -> bool:
+    return n.kind not in SEED_EXCLUDE and not (n.file and ("src/test/" in n.file or "/test/" in n.file))
+
+
 STOP_TERMS = {"name", "type", "date", "list", "page", "view", "form", "find", "new", "edit", "update",
               "owner", "owners", "pet", "pets", "error", "message", "value", "data", "info", "show",
               "create", "add", "get", "set", "the", "and", "for", "with", "this", "that", "from", "string",
@@ -72,6 +63,17 @@ REL_JA = {
     Rel.CONTAINS: "を含んでいる",
     Rel.EXTENDS: "を継承している",
     Rel.INCLUDES: "を部品として読み込んでいる",
+    Rel.EXECUTES: "を実行している",
+    Rel.READS: "を読んでいる",
+    Rel.WRITES: "を書き込んでいる",
+    Rel.IMPLEMENTED_BY: "の実装",
+    Rel.RUNS: "を起動している",
+    Rel.PRECEDES: "の後続ジョブ",
+    Rel.OBSERVED_AS: "として実行時に観測されたSQL",
+    Rel.DOC_CRUD: "をCRUD表で扱っている設計書",
+    Rel.INJECTS: "を注入している",
+    Rel.CONFIGURES: "を設定している",
+    Rel.USES_MESSAGE: "を使っている",
 }
 TEXT_EXT = (".java", ".html", ".sql", ".properties", ".yml", ".yaml", ".xml", ".md", ".txt", ".js",
             ".ts", ".css", ".scss", ".json", ".kt", ".jsp", ".jmx", ".gradle")
@@ -98,7 +100,8 @@ class Engine:
     # ------------------------------------------------------------ indexes
     def reload(self) -> None:
         nodes = self.store.nodes()
-        self.search = NodeSearch(n for n in nodes if n.kind not in (Kind.REQUIREMENT, Kind.INTENT))
+        self.search = NodeSearch(n for n in nodes if n.kind not in (Kind.REQUIREMENT, Kind.INTENT, Kind.CONFIG)
+                                 or not n.file)
         vocab: dict[str, list[str]] = defaultdict(list)
         for n in nodes:
             if n.kind == Kind.MESSAGE:
@@ -107,7 +110,7 @@ class Engine:
                     if 1 < len(v) <= 20:
                         vocab[v].append(n.name)
         idents = set()
-        from ..indexer.text import split_ident
+        from ..text import split_ident
         for n in nodes:
             if n.kind in (Kind.FIELD, Kind.CLASS, Kind.METHOD, Kind.COLUMN, Kind.TABLE, Kind.MESSAGE, Kind.TEMPLATE):
                 base = n.name.split(".")[-1].replace("()", "").split("/")[-1]
@@ -115,6 +118,14 @@ class Engine:
                 idents.update(split_ident(base))
         self.llm = make_llm(dict(vocab), idents)
         self._fan_in: dict[str, int] = {}
+        self._by_file = None
+        if hasattr(self, "_runtime_present"):
+            del self._runtime_present
+        rules = load_rules()
+        self.propagation = rules.propagation
+        self.prop_by_dir = {"in": defaultdict(list), "out": defaultdict(list)}
+        for r in self.propagation:
+            self.prop_by_dir[r["dir"]][r["rel"]].append(r)
 
     def fan_in(self, node_id: str) -> int:
         if node_id not in self._fan_in:
@@ -178,17 +189,21 @@ class Engine:
                 if st["parent_id"]:
                     self._copy_parent(st)
                 self._phase(st, "structure", 0.05, "要求を構造化中")
-                self._structure(st)
-                self._phase(st, "seed", 0.15, "起点を探索中")
-                seeds = self._seed(st)
+                if st["params"].get("mode") == "diff":
+                    seeds = self._diff_seeds(st)
+                else:
+                    self._structure(st)
+                    self._phase(st, "seed", 0.15, "起点を探索中")
+                    seeds = self._seed(st)
                 self._phase(st, "expand", 0.3, "依存関係を追跡中")
                 self._expand(st, seeds, st["params"]["depth"])
                 self._phase(st, "judge", 0.5, "影響を判定中")
                 self._judge(st, list(st["candidates"]))
-                self._phase(st, "grep", 0.65, "横断検索で盲点を確認中")
-                self._grep(st)
-                self._phase(st, "shadow", 0.75, "独立した再探索と突き合わせ中")
-                self._shadow(st)
+                if st["params"].get("mode") != "diff":
+                    self._phase(st, "grep", 0.65, "横断検索で盲点を確認中")
+                    self._grep(st)
+                    self._phase(st, "shadow", 0.75, "独立した再探索と突き合わせ中")
+                    self._shadow(st)
                 self._phase(st, "crud", 0.85, "影響テーブルのCRUDを確認中")
                 self._crud(st)
                 if st["parent_id"]:
@@ -247,10 +262,12 @@ class Engine:
                 if reason:
                     c["seed_reason"] = reason
             return False
-        info = virtual or {"kind": node.kind, "name": node.name, "file": node.file, "line": node.line}
+        info = virtual or {"kind": node.kind, "name": node.name, "file": node.file, "line": node.line,
+                           "layer": node.layer, "group": node.props.get("group")}
         kind = info["kind"]
         cands[node_id] = {
-            "node_id": node_id, "kind": kind, "layer": LAYER.get(kind, "code"), "name": info["name"],
+            "node_id": node_id, "kind": kind, "layer": info.get("layer") or LAYER.get(kind, "code"),
+            "group": info.get("group"), "name": info["name"],
             "file": info.get("file"), "line": info.get("line"), "score": round(score, 3),
             "origin": origin, "intent_ids": [intent_id] if intent_id else [], "parent": parent,
             "via_rel": rel, "path": (cands[parent]["path"] if parent in cands else []) + [node_id],
@@ -259,7 +276,7 @@ class Engine:
             "comments": [], "found_at": _now(),
         }
         self.emit(st, "candidate", {k: cands[node_id][k] for k in
-                                    ("node_id", "kind", "layer", "name", "score", "origin", "parent",
+                                    ("node_id", "kind", "layer", "group", "name", "score", "origin", "parent",
                                      "via_rel", "intent_ids", "seed_reason")})
         return True
 
@@ -279,8 +296,9 @@ class Engine:
                 pass
             seeds.append((fid, 0.95))
         by_name = defaultdict(list)
-        for n in self.store.nodes(SEED_KINDS):
-            by_name[n.name.split(".")[-1].replace("()", "").lower()].append(n)
+        for n in self.store.nodes():
+            if seedable(n):
+                by_name[n.name.split(".")[-1].replace("()", "").split("/")[-1].lower()].append(n)
         for it in st["intents"]:
             # (a) exact identifier matches from the intent's keywords
             for kw in it.get("keywords", []):
@@ -313,8 +331,9 @@ class Engine:
             olds = (it.get("values") or {}).get("old") or []
             if olds:
                 sims = self.search.scores(" ".join([it["summary"]] + it.get("keywords", [])))
-                for n in self.store.nodes([Kind.METHOD, Kind.FIELD, Kind.MESSAGE, Kind.DOC, Kind.TEMPLATE, Kind.CONFIG]):
-                    if n.file and "src/test/" in n.file:
+                for n in self.store.nodes([Kind.METHOD, Kind.FIELD, Kind.MESSAGE, Kind.DOC, Kind.TEMPLATE, Kind.CONFIG,
+                                           Kind.SQL_STATEMENT, Kind.DB_OBJECT, Kind.DOC_ENTITY, Kind.SCRIPT, Kind.JOB]):
+                    if n.file and ("src/test/" in n.file or "/test/" in n.file):
                         continue
                     blob = " ".join([n.text, " ".join(n.props.get("validations", [])),
                                      " ".join(n.props.get("values", {}).values()) if isinstance(n.props.get("values"), dict) else ""])
@@ -332,65 +351,159 @@ class Engine:
             if it.get("instruction") and not it.get("keywords"):
                 continue
             q = " ".join([it["summary"]] + it.get("keywords", []) * 2 + it.get("new_terms", []))
-            for n, s in self.search.query(q, k=k + 10, kinds=SEED_KINDS, min_score=0.15):
-                if n.file and "src/test/" in n.file:
-                    continue  # tests are reached through what they test, not as starting points
+            for n, s in self.search.query(q, k=k + 30, min_score=0.15):
+                if not seedable(n):
+                    continue  # tests and documents are reached through what they describe
                 score = min(0.8, 0.3 + s)
                 if self._add_candidate(st, n.id, score, "seed", it["id"],
                                        reason=f"要求文との類似度 {s:.2f}"):
                     seeds.append((n.id, score))
         return seeds
 
+    def _diff_seeds(self, st):
+        """Change-set mode: the changed lines are the starting points."""
+        p = st["params"]
+        it = {"id": "I1", "summary": st["requirement"], "change_type": "modify", "keywords": [], "new_terms": [],
+              "values": {}, "pattern": "diff"}
+        st["intents"] = [it]
+        self.emit(st, "intent", it)
+        seeds = []
+        for d in p.get("diff_nodes", []):
+            if self._add_candidate(st, d["node_id"], 0.95, "diff", "I1", reason=d["reason"]):
+                c = st["candidates"][d["node_id"]]
+                c["decision"] = {"status": "confirmed", "reason": "変更差分に含まれる", "actor": "git", "at": _now()}
+                seeds.append((d["node_id"], 0.95))
+        return seeds
+
+    def diff_nodes(self, hunks: dict) -> tuple[list[dict], list[str]]:
+        """Map changed line ranges to the smallest indexed elements containing them."""
+        out, added = [], []
+        for path, ranges in hunks.items():
+            if path.startswith("+"):
+                added.append(path[1:])
+                continue
+            seen = set()
+            for a, b in ranges:
+                best = None
+                for n in self._file_nodes().get(path, []):
+                    if n.line and n.end_line and n.line <= b and a <= n.end_line and n.kind not in (Kind.CONFIG,):
+                        if best is None or (n.end_line - n.line) < (best.end_line - best.line):
+                            best = n
+                nid = best.id if best else (f"file:{path}" if self.store.get(f"file:{path}") else None)
+                if nid and nid not in seen:
+                    seen.add(nid)
+                    out.append({"node_id": nid, "reason": f"{path}:{a}-{b} を変更"})
+        return out, added
+
+    def regression_scope(self, st, min_conf: float = 0.3) -> dict:
+        """What a change set reaches, grouped for test planning."""
+        groups = {"entry": [], "screen": [], "batch": [], "data": [], "test": [], "doc": []}
+        for c in sorted(st["candidates"].values(), key=lambda c: -(c.get("confidence") or c["score"])):
+            if c.get("decision") and c["decision"]["status"] == "excluded":
+                continue
+            if (c.get("confidence") or c["score"]) < min_conf:
+                continue
+            k = c["kind"]
+            row = {"node_id": c["node_id"], "name": c["name"], "conf": round(c.get("confidence") or c["score"], 2)}
+            if k == Kind.ENDPOINT:
+                groups["entry"].append(row)
+            elif k in (Kind.JOB, Kind.JOBNET, Kind.CRON, Kind.BATCH_JOB, Kind.SCRIPT):
+                groups["batch"].append(row)
+            elif k == Kind.TEMPLATE:
+                groups["screen"].append(row)
+            elif k in (Kind.TABLE, Kind.DB_OBJECT, Kind.DATA_FILE, Kind.RUNTIME_SQL):
+                groups["data"].append(row)
+            elif k in (Kind.TEST_METHOD, Kind.TEST_CLASS):
+                groups["test"].append(row)
+            elif k in (Kind.DOC, Kind.DOC_ENTITY):
+                groups["doc"].append(row)
+        return groups
+
+    def scope_markdown(self, st, title: str = "") -> str:
+        g = self.regression_scope(st)
+        label = {"entry": "画面・APIの入口", "screen": "画面テンプレート", "batch": "バッチ・ジョブ", "data": "テーブル・DBオブジェクト",
+                 "test": "実行すべきテスト", "doc": "見直す設計書"}
+        out = [f"### 影響分析 {title}".rstrip(), "", f"変更起点 {sum(1 for c in st['candidates'].values() if c['origin'] == 'diff')} 要素から"
+               f" {len(st['candidates'])} 要素を追跡しました（判定: {st['llm']}）。", ""]
+        for k, rows in g.items():
+            if rows:
+                out.append(f"**{label[k]}**（{len(rows)}）")
+                out += [f"- {r['name']}（確度 {r['conf']}）" for r in rows[:12]]
+                if len(rows) > 12:
+                    out.append(f"- ほか {len(rows) - 12} 件")
+                out.append("")
+        return "\n".join(out)
+
     # ------------------------------------------------------------ phase 3
     def _expand(self, st, seeds, depth, origin="graph"):
+        """Breadth-first closure over the propagation rules. Neighbours of a whole
+        frontier are fetched in one call per direction, so graph-database stores
+        answer each level with a single query."""
         boost = set(st["params"].get("boost") or [])
         min_score = st["params"]["min_score"]
         frontier = list(seeds)
-        for d in range(depth):
-            nxt = []
+        in_rels = list(self.prop_by_dir["in"])
+        out_rels = list(self.prop_by_dir["out"])
+        for _ in range(depth):
+            ids = []
             for nid, score in frontier:
-                node = self.store.get(nid)
-                if node is None or node.kind in SINKS:
-                    continue
                 c = st["candidates"].get(nid)
                 if c and c.get("decision") and c["decision"]["status"] == "excluded":
                     continue
+                ids.append(nid)
+            if not ids:
+                break
+            nodes = self.store.get_many(ids)
+            # sinks (documents, tests, SQL files...) end a path, except that whatever *runs*
+            # them (a job script running a SQL file) is still affected
+            sinks = [i for i in ids if i in nodes and nodes[i].kind in SINKS]
+            ids = [i for i in ids if i in nodes and nodes[i].kind not in SINKS]
+            score_of = dict(frontier)
+            ins = self.store.neighbors_many(ids, "in", in_rels)
+            outs = self.store.neighbors_many(ids, "out", out_rels)
+            if sinks and Rel.RUNS in self.prop_by_dir["in"]:
+                ins.update(self.store.neighbors_many(sinks, "in", [Rel.RUNS]))
+                ids += sinks
+            others = {e.src for es in ins.values() for e in es} | {e.dst for es in outs.values() for e in es}
+            onodes = self.store.get_many(others)
+            nxt = []
+            for nid in ids:
+                node = nodes[nid]
+                score = score_of[nid]
+                c = st["candidates"].get(nid)
                 iid = (c["intent_ids"] or [None])[0] if c else None
-                for direction, rel, w in PROPAGATION:
-                    edges = self.store.in_edges(nid, [rel]) if direction == "in" else self.store.out_edges(nid, [rel])
+                hub = self.fan_in(nid) > 15
+                for direction, edges in (("in", ins.get(nid, [])), ("out", outs.get(nid, []))):
                     for e in edges:
                         other = e.src if direction == "in" else e.dst
-                        on = self.store.get(other)
+                        on = onodes.get(other)
                         if on is None or on.kind in (Kind.FEATURE,):
                             continue
-                        weight = w
-                        if rel == Rel.POPULATES and e.props.get("positional"):
-                            weight = 0.9
-                        if rel == Rel.CONTAINS and not (node.kind in (Kind.FIELD, Kind.COLUMN, Kind.MESSAGE)):
-                            continue
-                        if rel == Rel.REFERENCES and node.kind == Kind.CLASS:
-                            weight = 0.5
-                            if on.kind == Kind.TEMPLATE:
-                                weight = 0.85
-                        if rel == Rel.REFERENCES and node.kind == Kind.MESSAGE:
-                            continue
-                        if self.fan_in(nid) > 15 and rel in (Rel.CALLS, Rel.REFERENCES):
-                            weight *= 0.8
-                        if ("doc" in boost and on.kind == Kind.DOC) or \
-                           ("test" in boost and on.kind in (Kind.TEST_CLASS, Kind.TEST_METHOD)) or \
-                           ("data" in boost and on.kind in (Kind.TABLE, Kind.COLUMN, Kind.SQL_FILE)):
-                            weight = min(0.95, weight * 1.2)
-                        s2 = score * weight
-                        if s2 < min_score:
-                            continue
-                        added = self._add_candidate(st, other, s2, origin, iid, parent=nid, rel=rel)
-                        if added:
-                            nxt.append((other, s2))
-                # design docs usually describe the class, not each member
+                        for rule in self.prop_by_dir[direction].get(e.rel, []):
+                            if rule.get("from_kinds") and node.kind not in rule["from_kinds"]:
+                                continue
+                            weight = rule["weight"]
+                            if e.props.get("positional") and rule.get("positional_weight"):
+                                weight = rule["positional_weight"]
+                            if e.rel == Rel.REFERENCES and node.kind == Kind.CLASS:
+                                weight = 0.85 if on.kind == Kind.TEMPLATE else 0.5
+                            if hub and e.rel in (Rel.CALLS, Rel.REFERENCES):
+                                weight *= 0.8
+                            if ("doc" in boost and on.kind in (Kind.DOC, Kind.DOC_ENTITY)) or \
+                               ("test" in boost and on.kind in (Kind.TEST_CLASS, Kind.TEST_METHOD)) or \
+                               ("data" in boost and on.layer == "data"):
+                                weight = min(0.95, weight * 1.2)
+                            s2 = score * weight * e.conf
+                            if s2 < min_score:
+                                continue
+                            if self._add_candidate(st, other, s2, origin, iid, parent=nid, rel=e.rel):
+                                nxt.append((other, s2))
+                            break
+                # design documents usually describe the class, not each member
                 if node.kind in (Kind.METHOD, Kind.FIELD):
                     for ce in self.store.in_edges(nid, [Rel.CONTAINS]):
                         for de in self.store.in_edges(ce.src, [Rel.DESCRIBES]):
-                            s2 = score * 0.6 * (1.2 if "doc" in boost else 1.0)
+                            s2 = score * 0.6 * de.conf * (1.2 if "doc" in boost else 1.0)
                             if s2 >= min_score:
                                 self._add_candidate(st, de.src, s2, origin, iid, parent=nid, rel=Rel.DESCRIBES)
             frontier = nxt
@@ -500,29 +613,24 @@ class Engine:
         return self._by_file
 
     def _grep(self, st):
+        from ..sources.codesearch import make_search
         terms = self._grep_terms(st)
-        hits = []
-        if not self.repo or not terms:
-            st["grep"] = {"terms": terms, "hits": []}
+        searcher = make_search(self.repo)
+        if searcher is None or not terms:
+            st["grep"] = {"terms": terms, "hits": [], "backend": None}
             return
-        rx = re.compile(r"(?<![A-Za-z0-9])(" + "|".join(re.escape(t) for t in terms) + r")(?![A-Za-z0-9])", re.I)
-        from ..indexer import list_files
-        for rel in list_files(self.repo):
-            if not rel.endswith(TEXT_EXT):
-                continue
-            try:
-                lines = open(os.path.join(self.repo, rel), encoding="utf-8", errors="replace").read().splitlines()
-            except OSError:
-                continue
-            for i, line in enumerate(lines, 1):
-                m = rx.search(line)
-                if not m:
-                    continue
-                node = self._locate(rel, i)
-                nid = node.id if node else f"file:{rel}"
-                hits.append({"file": rel, "line": i, "term": m.group(1), "node_id": nid,
-                             "text": line.strip()[:160]})
-        st["grep"] = {"terms": terms, "hits": hits}
+        try:
+            raw = searcher.search(terms)
+        except Exception as e:  # remote search down: record it, the check stays open
+            st["grep"] = {"terms": terms, "hits": [], "backend": searcher.name, "error": str(e)}
+            self.emit(st, "grep.done", {"terms": terms, "hits": 0, "new_candidates": 0, "error": str(e)})
+            return
+        hits = []
+        for h in raw:
+            node = self._locate(h["file"], h["line"])
+            h["node_id"] = node.id if node else f"file:{h['file']}"
+            hits.append(h)
+        st["grep"] = {"terms": terms, "hits": hits[:3000], "backend": searcher.name, "total": len(hits)}
         new = 0
         for h in hits:
             nid = h["node_id"]
@@ -535,7 +643,7 @@ class Engine:
                                    f"（{h['file']}:{h['line']}）。依存グラフからは未到達", virtual=virtual):
                 new += 1
                 self._judge(st, [nid])
-        self.emit(st, "grep.done", {"terms": terms, "hits": len(hits), "new_candidates": new})
+        self.emit(st, "grep.done", {"terms": terms, "hits": len(hits), "new_candidates": new, "backend": searcher.name})
 
     # ------------------------------------------------------------ phase 6
     def _shadow(self, st):
@@ -544,7 +652,7 @@ class Engine:
         q = st["requirement"] + " " + (st.get("instruction") or "")
         found = {}
         for n, s in self.search.query(q, k=25, min_score=0.1):
-            if n.kind in SEED_KINDS or n.kind in (Kind.TEST_METHOD, Kind.DOC, Kind.SQL_FILE):
+            if seedable(n) or n.kind in (Kind.TEST_METHOD, Kind.DOC, Kind.DOC_ENTITY, Kind.SQL_FILE):
                 found[n.id] = s
         only = [nid for nid in found if nid not in st["candidates"]]
         for nid in only:
@@ -556,7 +664,10 @@ class Engine:
 
     # ------------------------------------------------------------ phase 7
     def _crud(self, st):
+        """Everything that defines, loads, maps, reads or writes an affected table —
+        code, SQL statements, stored code, design-doc CRUD rows and SQL seen at runtime."""
         tables = {}
+        rels = [Rel.DEFINES, Rel.POPULATES, Rel.MAPS_TO, Rel.READS, Rel.WRITES, Rel.DOC_CRUD]
         for c in list(st["candidates"].values()):
             if c["kind"] != Kind.TABLE:
                 continue
@@ -564,18 +675,25 @@ class Engine:
                 continue
             tid = c["node_id"]
             touch = set()
-            for e in self.store.in_edges(tid, [Rel.DEFINES, Rel.POPULATES, Rel.MAPS_TO]):
+            for e in self.store.in_edges(tid, rels):
                 touch.add(e.src)
-                if e.rel == Rel.MAPS_TO:  # entity -> repositories / queries using it
-                    for r in self.store.in_edges(e.src, [Rel.REFERENCES]):
-                        rn = self.store.get(r.src)
-                        if rn and r.props.get("via") in ("repository", "query", "type-arg"):
-                            touch.add(r.src)
+            cols = [e.dst for e in self.store.out_edges(tid, [Rel.CONTAINS])]
+            for col in cols:
+                for e in self.store.in_edges(col, [Rel.WRITES]):
+                    touch.add(e.src)
+            for sid in list(touch):
+                n = self.store.get(sid)
+                if n and n.kind == Kind.SQL_STATEMENT:
+                    for e in self.store.in_edges(sid, [Rel.EXECUTES]):
+                        touch.add(e.src)
             tables[tid] = sorted(touch)
-            for nid in touch:
+            for nid in sorted(touch):
                 if nid not in st["candidates"]:
-                    self._add_candidate(st, nid, 0.4, "crud", (c["intent_ids"] or [None])[0], parent=tid,
-                                        reason=f"{c['name']} を読み書きしている箇所（CRUD確認）")
+                    n = self.store.get(nid)
+                    origin = "runtime" if n and n.kind == Kind.RUNTIME_SQL else "crud"
+                    reason = (f"{c['name']} に実行時に触れたSQL（コード上の出所が不明）" if origin == "runtime" and
+                              not n.props.get("matched") else f"{c['name']} を読み書きしている箇所（CRUD確認）")
+                    self._add_candidate(st, nid, 0.4, origin, (c["intent_ids"] or [None])[0], parent=tid, reason=reason)
                     self._judge(st, [nid])
         st["crud"] = {"tables": tables}
         self.emit(st, "crud.done", {"tables": {k: len(v) for k, v in tables.items()}})
@@ -626,7 +744,17 @@ class Engine:
         # 5 independent re-exploration
         shadow_nodes = st.get("shadow", {}).get("node_ids", [])
         open5 = [nid for nid in shadow_nodes if not decided(nid)]
-        return [
+        # 6 runtime evidence: SQL observed on affected tables whose origin is unknown
+        runtime_nodes = sorted(nid for nid, c in cands.items() if c["kind"] == Kind.RUNTIME_SQL)
+        open6 = [nid for nid in runtime_nodes if not decided(nid)]
+        has_runtime = self._has_runtime()
+        extra = []
+        if has_runtime:
+            extra.append({"key": "runtime", "title": "実行時SQLとの突き合わせ",
+                          "detail": f"影響テーブルに実行時に触れたSQL {len(runtime_nodes)} 件のうち未判定 {len(open6)} 件"
+                                    f"（コードに対応が無いものは動的SQLや外部ツールの可能性）",
+                          "ok": not open6, "open": open6})
+        base = [
             {"key": "intents", "title": "変更意図ごとの起点",
              "detail": f"変更意図 {len(per_intent)} 件のうち、確定した修正箇所があるもの {sum(p['ok'] for p in per_intent)} 件",
              "ok": c1, "open": [p["intent"] for p in per_intent if not p["ok"]], "items": per_intent},
@@ -645,6 +773,12 @@ class Engine:
                        f"{len(st.get('shadow', {}).get('only', []))} 件）のうち未判定 {len(open5)} 件",
              "ok": not open5, "open": open5},
         ]
+        return base + extra
+
+    def _has_runtime(self) -> bool:
+        if not hasattr(self, "_runtime_present"):
+            self._runtime_present = bool(self.store.nodes([Kind.RUNTIME_SQL]))
+        return self._runtime_present
 
     def estimate(self, st) -> dict:
         lines, pending = [], []
@@ -811,12 +945,14 @@ class Engine:
             o = self.store.get(e.dst)
             if o:
                 neighbors.append({"dir": "out", "rel": e.rel, "id": o.id, "name": o.name, "kind": o.kind,
-                                  "line": e.props.get("line"), "via": e.props.get("via")})
+                                  "line": e.props.get("line"), "via": e.props.get("via"),
+                                  "src": e.props.get("src"), "conf": e.conf})
         for e in self.store.in_edges(node_id):
             o = self.store.get(e.src)
             if o:
                 neighbors.append({"dir": "in", "rel": e.rel, "id": o.id, "name": o.name, "kind": o.kind,
-                                  "line": e.props.get("line"), "via": e.props.get("via")})
+                                  "line": e.props.get("line"), "via": e.props.get("via"),
+                                  "src": e.props.get("src"), "conf": e.conf})
         docs = [x for x in neighbors if x["rel"] == Rel.DESCRIBES and x["dir"] == "in"]
         docs_full = []
         for d in docs[:6]:

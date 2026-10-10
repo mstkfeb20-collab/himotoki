@@ -1,0 +1,32 @@
+name: java-common
+description: >
+  Annotation vocabulary shared by most Java stacks (Spring, Jakarta EE / Java EE,
+  JUnit). Roles are generic; the engine knows what an endpoint, a bean or an
+  injection point means, this pack says which annotations play those roles.
+java:
+  annotations:
+    endpoint:
+      class_prefix: [RequestMapping, Path]
+      method:
+        RequestMapping: ANY
+        GetMapping: GET
+        PostMapping: POST
+        PutMapping: PUT
+        DeleteMapping: DELETE
+        PatchMapping: PATCH
+        GET: GET
+        POST: POST
+        PUT: PUT
+        DELETE: DELETE
+        Path: ANY
+      path_attrs: [value, path]
+      verb_attr: method
+    bean: [Controller, RestController, Service, Component, Repository, Named, Stateless, Stateful,
+           ApplicationScoped, RequestScoped, Configuration]
+    inject: [Autowired, Inject, Resource, EJB]
+    test: [Test, ParameterizedTest, RepeatedTest, TestFactory]
+    test_class_suffixes: [Test, Tests, IT, ITCase, TestCase]
+    # any annotation argument of the form "{some.key}" refers to a message key
+    message_placeholders: true
+  # string literals in Java are probed against these key namespaces (only matches become edges)
+  literal_namespaces: [view, msg, url, batchjob, config]

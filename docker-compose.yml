@@ -24,9 +24,16 @@ services:
       NEO4J_PASSWORD: ${NEO4J_PASSWORD:-impact-dev-password}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       IMPACT_LLM_MODEL: ${IMPACT_LLM_MODEL:-claude-sonnet-5-5}
+      IMPACT_RULES: /rules                       # site-specific rule packs (YAML)
+      IMPACT_CODESEARCH: ${IMPACT_CODESEARCH:-}  # e.g. zoekt:http://zoekt:6070 or gitlab:https://gitlab.example/api/v4:<project id>
+      IMPACT_WEBHOOK_SECRET: ${IMPACT_WEBHOOK_SECRET:-}
+      GITLAB_API: ${GITLAB_API:-}
+      GITLAB_TOKEN: ${GITLAB_TOKEN:-}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
     ports: ["8765:8765"]
     volumes:
       - ${REPOS_DIR:-./repos}:/repos:ro
+      - ${RULES_DIR:-./samples/rules}:/rules:ro
       - analyzer-data:/data
 
 volumes:

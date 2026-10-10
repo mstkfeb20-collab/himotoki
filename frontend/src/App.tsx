@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, openRunSocket } from "./api";
-import Graph, { Filters } from "./Graph";
+import Graph, { AGGREGATE_ABOVE, Filters } from "./Graph";
 import Inspector from "./Inspector";
-import { ChecksPanel, DiffPanel, EstimatePanel, LogPanel } from "./Panels";
+import { ChecksPanel, DiffPanel, EstimatePanel, IndexPanel, LogPanel } from "./Panels";
 import type { Candidate, RunEvent, RunState, RunSummary } from "./types";
 
 const LAYERS: [string, string][] = [["feature", "機能"], ["code", "コード"], ["data", "データ"], ["test", "テスト"], ["doc", "設計書"]];
-type Side = "checks" | "estimate" | "log" | "diff";
+type Side = "checks" | "estimate" | "log" | "diff" | "index";
 
 export default function App() {
   const [status, setStatus] = useState<any>(null);
@@ -19,6 +19,8 @@ export default function App() {
   const [side, setSide] = useState<Side>("checks");
   const [showNew, setShowNew] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [grouping, setGrouping] = useState(true);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [filters, setFilters] = useState<Filters>({
     layers: { feature: true, code: true, data: true, test: true, doc: true }, onlyOpen: false, minConf: 0, query: "",
   });
@@ -41,7 +43,7 @@ export default function App() {
   useEffect(() => {
     if (!runId) return;
     const url = new URL(location.href); url.searchParams.set("run", runId); history.replaceState(null, "", url);
-    setSelected([]); setEvents([]); lastSeq.current = -1;
+    setSelected([]); setEvents([]); setExpanded(new Set()); lastSeq.current = -1;
     let alive = true;
     api.run(runId).then((r) => { if (alive) setRun(r); });
     const close = openRunSocket(runId, (ev) => {
@@ -88,6 +90,9 @@ export default function App() {
     };
   }, [run]);
 
+  const runGraph = useMemo(() => runs.find((r) => r.id === runId)?.graph ?? status?.graph ?? null, [runs, runId, status]);
+  const nCands = run ? Object.keys(run.candidates).length : 0;
+
   const changed = useCallback(() => { if (runId) refetch(runId); }, [runId, refetch]);
 
   const openReport = async () => {
@@ -103,7 +108,7 @@ export default function App() {
       <header className="top">
         <div className="brand"><span className="logo mono">IMPACT</span>
           <select className="runsel" aria-label="解析を選択" value={runId || ""} onChange={(e) => setRunId(e.target.value)}>
-            {runs.map((r) => <option key={r.id} value={r.id}>{r.parent_id ? "↳ " : ""}{r.title}（{r.id.slice(0, 4)}）</option>)}
+            {runs.map((r) => <option key={r.id} value={r.id}>{r.parent_id ? "↳ " : ""}{r.title}（{r.graph ? `${r.graph}・` : ""}{r.id.slice(0, 4)}）</option>)}
           </select>
           <button className="btn small" onClick={() => setShowNew(true)}>新しい解析</button>
         </div>
@@ -129,6 +134,13 @@ export default function App() {
               ))}
               <button className={filters.onlyOpen ? "chip on amber" : "chip"} aria-pressed={filters.onlyOpen}
                 onClick={() => setFilters((f) => ({ ...f, onlyOpen: !f.onlyOpen }))}>未判定だけ</button>
+              {nCands > AGGREGATE_ABOVE && (
+                <>
+                  <button className={grouping ? "chip on" : "chip"} aria-pressed={grouping} title="確度の低い候補をモジュール単位にまとめる"
+                    onClick={() => setGrouping((g) => !g)}>まとめ表示</button>
+                  {grouping && expanded.size > 0 && <button className="chip" onClick={() => setExpanded(new Set())}>畳み直す</button>}
+                </>
+              )}
               <label className="slider"><span className="k">確度</span>
                 <input type="range" min={0} max={0.9} step={0.05} value={filters.minConf}
                   onChange={(e) => setFilters((f) => ({ ...f, minConf: Number(e.target.value) }))} />
@@ -144,11 +156,13 @@ export default function App() {
                 }
               }} />
           </div>
-          <Graph run={run} filters={filters} selected={selected} onSelect={select} focusId={focusId?.split("|")[0]} />
+          <Graph run={run} filters={filters} selected={selected} onSelect={select} focusId={focusId?.split("|")[0]}
+            expanded={expanded} grouping={grouping} onExpand={(k) => setExpanded((e) => new Set(e).add(k))} />
           <div className="legend">
             <span><i className="dot cyan" />確定</span><span><i className="dot amber" />影響あり(AI)</span>
             <span><i className="dot amber dashed" />要確認(AI)</span><span><i className="dot" />影響低・未判定</span>
-            <span><i className="dot violet" />人が追加</span><span className="muted">内側から 機能 / コード / データ / テスト / 設計書</span>
+            <span><i className="dot violet" />人が追加</span>
+            {nCands > AGGREGATE_ABOVE && grouping && <span><i className="dot agg" />まとめ（クリックで展開）</span>}<span className="muted">内側から 機能 / コード / データ / テスト / 設計書</span>
           </div>
         </section>
 
@@ -157,7 +171,7 @@ export default function App() {
           {run && (
             <div className="pane sidepanel">
               <div className="tabs">
-                {([["checks", "全数判定"], ["estimate", "規模"], ["log", "ログ"], ["diff", "差分"]] as [Side, string][]).map(([k, l]) => (
+                {([["checks", "全数判定"], ["estimate", "規模"], ["log", "ログ"], ["diff", "差分"], ["index", "取込状況"]] as [Side, string][]).map(([k, l]) => (
                   <button key={k} className={side === k ? "tab on" : "tab"} aria-selected={side === k} role="tab" onClick={() => setSide(k)}>{l}</button>
                 ))}
               </div>
@@ -166,6 +180,7 @@ export default function App() {
                 {side === "estimate" && <EstimatePanel run={run} onSelect={select} />}
                 {side === "log" && <LogPanel events={events} onSelect={select} />}
                 {side === "diff" && <DiffPanel run={run} onOpenRun={setRunId} />}
+                {side === "index" && <IndexPanel graph={runGraph} />}
               </div>
             </div>
           )}
@@ -239,8 +254,15 @@ function CommandBar({ run, selected, setBusy, onRun, onChanged, onSelect }: {
 }
 
 function NewRun({ status, onClose, onCreated, onIndexed }: { status: any; onClose: () => void; onCreated: (id: string) => void; onIndexed: () => void }) {
-  const [repo, setRepo] = useState(status?.repo || "");
-  const [docs, setDocs] = useState(status?.docs_dir || "");
+  const graphs: Record<string, any> = status?.graphs || {};
+  const [graph, setGraph] = useState<string>(status?.graph || "");
+  const g = graphs[graph] || {};
+  const [repo, setRepo] = useState(g.repo || status?.repo || "");
+  const [docs, setDocs] = useState(g.docs_dir || status?.docs_dir || "");
+  const [ref, setRef] = useState(g.ref || "");
+  const [mode, setMode] = useState<"req" | "diff">("req");
+  const [base, setBase] = useState(g.ref || "main");
+  const [head, setHead] = useState("");
   const [req, setReq] = useState("");
   const [title, setTitle] = useState("");
   const [depth, setDepth] = useState(3);
@@ -250,9 +272,10 @@ function NewRun({ status, onClose, onCreated, onIndexed }: { status: any; onClos
   const reindex = async () => {
     setErr(null);
     try {
-      await api.index(repo, docs);
+      const r = await api.index(repo, docs, ref);
+      setGraph(r.graph);
       const poll = async () => {
-        const s = await api.indexStatus();
+        const s = await api.indexStatus(r.graph);
         setIdx(s);
         if (s.status === "running") setTimeout(poll, 500); else onIndexed();
       };
@@ -261,7 +284,12 @@ function NewRun({ status, onClose, onCreated, onIndexed }: { status: any; onClos
   };
   const create = async () => {
     setErr(null);
-    try { const r = await api.createRun(req, { title: title || undefined, depth, pace }); onCreated(r.id); }
+    try {
+      const r = mode === "diff"
+        ? await api.diffRun(base, head, graph || null, title || undefined)
+        : await api.createRun(req, { title: title || undefined, depth, pace, graph: graph || null });
+      onCreated(r.id);
+    }
     catch (e: any) { setErr(e.message); }
   };
   return (
@@ -270,16 +298,39 @@ function NewRun({ status, onClose, onCreated, onIndexed }: { status: any; onClos
         <div className="row between"><h2>新しい解析</h2><button className="icon" aria-label="閉じる" onClick={onClose}>×</button></div>
         <fieldset>
           <legend className="k">対象リポジトリ</legend>
+          {Object.keys(graphs).length > 0 && (
+            <label className="field"><span className="k">インデックス済みのグラフ</span>
+              <select className="input mono graphsel" value={graph} onChange={(e) => {
+                const n = e.target.value; setGraph(n); const x = graphs[n] || {};
+                setRepo(x.repo || ""); setDocs(x.docs_dir || ""); setRef(x.ref || ""); setBase(x.ref || "main"); setIdx(null);
+              }}>
+                {Object.entries(graphs).map(([n, x]) => <option key={n} value={n}>{n}（{x.nodes ?? "?"} ノード）</option>)}
+              </select></label>
+          )}
           <label className="field"><span className="k">リポジトリのパス</span><input className="input mono" value={repo} onChange={(e) => setRepo(e.target.value)} placeholder="/path/to/repo" /></label>
-          <label className="field"><span className="k">設計書フォルダ（任意・Markdown/テキスト）</span><input className="input mono" value={docs} onChange={(e) => setDocs(e.target.value)} placeholder="/path/to/design-docs" /></label>
+          <label className="field"><span className="k">設計書・運用資産フォルダ（任意・Excel/Word/Markdown、ジョブ定義、シェル）</span><input className="input mono" value={docs} onChange={(e) => setDocs(e.target.value)} placeholder="/path/to/design-docs" /></label>
+          <label className="field"><span className="k">ブランチ・タグ（任意。指定するとその時点のスナップショットを別グラフとして作成）</span><input className="input mono" value={ref} onChange={(e) => setRef(e.target.value)} placeholder="main / release/1.2" /></label>
           <div className="row between">
             <span className="muted small">{idx?.status === "running" ? "インデックス作成中…" : idx?.stats ? `ノード ${idx.stats.nodes}・関係 ${idx.stats.edges}（${idx.stats.seconds}秒）` : "未インデックス"}</span>
             <button className="btn small" disabled={!repo || idx?.status === "running"} onClick={reindex}>インデックス作成</button>
           </div>
         </fieldset>
-        <label className="field"><span className="k">要求（仕様書の該当箇所やチャットの内容を貼り付け）</span>
-          <textarea className="input" rows={5} value={req} onChange={(e) => setReq(e.target.value)}
-            placeholder="例: オーナーに電話番号に加えてメールアドレスを登録できるようにする。メールアドレスはオーナー詳細画面に表示する。" /></label>
+        <div className="modes" role="radiogroup" aria-label="解析の起点">
+          {([["req", "要求から"], ["diff", "変更差分から"]] as const).map(([k, l]) => (
+            <button type="button" key={k} role="radio" aria-checked={mode === k} className={mode === k ? "mode on" : "mode"} onClick={() => setMode(k)}>{l}</button>
+          ))}
+        </div>
+        {mode === "req" ? (
+          <label className="field"><span className="k">要求（仕様書の該当箇所やチャットの内容を貼り付け）</span>
+            <textarea className="input" rows={5} value={req} onChange={(e) => setReq(e.target.value)}
+              placeholder="例: 予約の備考欄の文字数上限を80文字から200文字に変更する。" /></label>
+        ) : (
+          <div className="grid3">
+            <label className="field"><span className="k">比較元（グラフの時点）</span><input className="input mono" value={base} onChange={(e) => setBase(e.target.value)} /></label>
+            <label className="field"><span className="k">変更後（ブランチ・コミット）</span><input className="input mono" value={head} onChange={(e) => setHead(e.target.value)} placeholder="feature/xxx" /></label>
+            <p className="muted small">変更された行を含む要素を起点に、回帰確認の範囲（テスト・画面・ジョブ・設計書）を出します。</p>
+          </div>
+        )}
         <div className="grid3">
           <label className="field"><span className="k">タイトル</span><input className="input" value={title} onChange={(e) => setTitle(e.target.value)} /></label>
           <label className="field"><span className="k">探索の深さ</span><input className="input" type="number" min={1} max={6} value={depth} onChange={(e) => setDepth(Number(e.target.value))} /></label>
@@ -288,7 +339,7 @@ function NewRun({ status, onClose, onCreated, onIndexed }: { status: any; onClos
         <p className="muted small">判定方式: {status?.llm === "claude" ? "Claude API" : "ルールベース（ANTHROPIC_API_KEY を設定するとClaudeで判定）"}・ストア: {status?.store}</p>
         {err && <p className="warn small">{err}</p>}
         <div className="actions end"><button className="btn ghost" onClick={onClose}>閉じる</button>
-          <button className="btn primary" disabled={!req.trim() || !status?.repo && !idx?.stats} onClick={create}>解析を開始</button></div>
+          <button className="btn primary" disabled={(mode === "req" ? !req.trim() : !head.trim()) || (!status?.repo && !idx?.stats)} onClick={create}>解析を開始</button></div>
       </div>
     </div>
   );

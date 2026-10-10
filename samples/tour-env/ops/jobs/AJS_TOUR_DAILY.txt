@@ -1,0 +1,34 @@
+unit=/TOUR,,jp1admin,;
+{
+    ty=n;
+    cm="ツアー予約 夜間処理";
+    unit=DAILY,,jp1admin,;
+    {
+        ty=n;
+        cm="予約データ連携と案内メール";
+        el=J010_EXPORT,j,+80+48;
+        el=J020_REMIND,j,+240+48;
+        el=J030_CLEANUP,j,+400+48;
+        ar=(f=J010_EXPORT,t=J020_REMIND);
+        ar=(f=J020_REMIND,t=J030_CLEANUP,relation=ab);
+        unit=J010_EXPORT,,jp1admin,;
+        {
+            ty=j;
+            cm="当日予約を連携ファイルへ出力";
+            sc=/opt/tour/batch/export_reserve.sh;
+            prm="$AJSPREFIX";
+        }
+        unit=J020_REMIND,,jp1admin,;
+        {
+            ty=j;
+            cm="出発前日の予約者へ案内メール";
+            sc=/opt/tour/batch/send_reminder.sh;
+        }
+        unit=J030_CLEANUP,,jp1admin,;
+        {
+            ty=j;
+            cm="取消済み予約の削除";
+            sc=/opt/tour/batch/cleanup_reserve.sh;
+        }
+    }
+}

@@ -1,0 +1,46 @@
+name: mybatis
+description: >
+  MyBatis / iBATIS style XML mappers. The mapper namespace names a Java interface,
+  each statement id names one of its methods, and resultMaps map properties to columns.
+java:
+  # every interface method may be bound to an externally defined statement with this key
+  interface_binding: ["sql:{fqn}.{method}"]
+xml:
+  - name: mapper
+    when: {root: mapper, attr: namespace}
+    select: /mapper
+    node: {kind: SqlMapper, id: "mapper:{/@namespace}", name: "{/@namespace}", keys: ["mapper:{/@namespace}"]}
+    refs:
+      - {key: "class:{/@namespace}", rel: CONFIGURES, conf: 0.95}
+  - name: statement
+    when: {root: mapper, attr: namespace}
+    select: "/mapper/select|/mapper/insert|/mapper/update|/mapper/delete"
+    node:
+      kind: SqlStatement
+      id: "sql:{/@namespace}.{@id}"
+      name: "{@id}"
+      keys: ["sql:{/@namespace}.{@id}"]
+      sql: body
+      sql_skip: [selectKey]
+      parent: "mapper:{/@namespace}"
+  - name: fragment
+    when: {root: mapper, attr: namespace}
+    select: /mapper/sql
+    node:
+      kind: SqlStatement
+      id: "sqlfrag:{/@namespace}.{@id}"
+      name: "<sql> {@id}"
+      keys: ["sqlfrag:{/@namespace}.{@id}"]
+      sql: body
+      parent: "mapper:{/@namespace}"
+  - name: include
+    when: {root: mapper, attr: namespace}
+    select: "//include"
+    refs:
+      - {from: "{ancestor-node}", key: "sqlfrag:{/@namespace}.{@refid}", rel: INCLUDES, conf: 0.95}
+  - name: resultmap
+    when: {root: mapper, attr: namespace}
+    select: "//resultMap/result|//resultMap/id|//resultMap/association|//resultMap/collection"
+    links:
+      # property path on the result type <-> column (resolved against all tables that have it)
+      - {from: "propath:{../@type}.{@property}", to: "colany:{@column}", rel: MAPS_TO, conf: 0.85}

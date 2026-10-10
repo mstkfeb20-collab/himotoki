@@ -1,0 +1,22 @@
+name: office
+description: >
+  How to read Office design documents. A table is recognised wherever a row
+  contains at least two of these header labels; each following row becomes a
+  document entity linked to the code elements it names. CRUD matrices (functions
+  x tables with C/R/U/D marks) are detected separately.
+office:
+  headers:
+    table: [テーブル名(物理), 物理テーブル名, テーブルID, テーブル物理名, テーブル名, table, table_name, エンティティ名]
+    column: [項目名(物理), 物理名, カラム名, カラムID, 列名, 項目ID, column, column_name, 物理項目名]
+    logical: [論理名, 項目名, 項目名(論理), 論理項目名, 名称]
+    type: [データ型, 型, type]
+    misc: [No, 項番, 必須, 備考, NULL, PK, 主キー, 説明, 入力チェック, 桁数, 長さ, 初期値, デフォルト, 摘要]
+    screen: [画面ID, 画面名, 画面]
+    function: [機能ID, 機能名, 処理ID, 処理名, 機能]
+    job: [ジョブ名, ジョブID, ジョブネット, ジョブネット名]
+    program: [プログラムID, プログラム名, クラス名, モジュール名]
+    file: [ファイル名, ファイルID, IFファイル]
+    message: [メッセージID, メッセージコード, メッセージキー]
+    url: [URL, パス, リクエストパス]
+  crud_marks: [C, R, U, D, CR, CU, CD, RU, RD, UD, CRU, CRD, CUD, RUD, CRUD]
+  min_header_hits: 2

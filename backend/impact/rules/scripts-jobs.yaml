@@ -1,0 +1,20 @@
+name: scripts-jobs
+description: >
+  Shell / batch scripts started by job schedulers. Finds the Java main classes,
+  batch jobs, SQL scripts and other scripts they start, and the data files they
+  read or write, so that jobs, programs and files chain together.
+text:
+  - name: shell
+    files: ["**/*.sh", "**/*.ksh", "**/*.bash", "**/*.csh", "**/*.bat", "**/*.cmd"]
+    node: {kind: Script, keys: ["file:{path}", "script:{basename}"]}
+    patterns:
+      - {regex: '\bjava\b[^\n]*?\s((?:[a-z_][\w]*\.)+[A-Z]\w+)(?:\s|$)', key: "class:{1}", rel: RUNS, conf: 0.9}
+      - {regex: 'CommandLineJobRunner\s+(\S+)\s+([\w\-]+)', key: "batchjob:{2}", rel: RUNS, conf: 0.95}
+      - {regex: '(?:sqlplus|sqlcl)\b[^\n]*@\s*"?([\w./${}\-]+\.sql)', key: "file:{1}", rel: RUNS, conf: 0.85}
+      - {regex: '\bpsql\b[^\n]*\s-f\s+"?([\w./${}\-]+\.sql)', key: "file:{1}", rel: RUNS, conf: 0.85}
+      - {regex: '(?:^|[\s;&|(`])(?:sh|bash|ksh|\.)?\s*"?([\w./${}\-]+\.(?:sh|ksh|bash))\b', key: "file:{1}", rel: RUNS, conf: 0.8}
+      - {regex: '>>?\s*"?([\w./${}\-]+\.(?:dat|csv|tsv|txt|fix|out))\b', key: "datafile:{1}", rel: WRITES, conf: 0.8}
+      - {regex: '(?:<|\bcat\b|\bcp\b|\bmv\b|-i\s|--input[= ]|IN_FILE=|INPUT=)\s*"?([\w./${}\-]+\.(?:dat|csv|tsv|txt|fix))\b', key: "datafile:{1}", rel: READS, conf: 0.7}
+      - {regex: '\b(?:psql|sqlplus)\b[^\n]*?\s-c\s+"([^"]+)"', key: "{1}", sql: true, conf: 0.85}
+      - {regex: '<<\s*-?\s*[''"]?(?:EOF|EOS|SQL|END)[''"]?\n([\s\S]*?)\n\s*(?:EOF|EOS|SQL|END)\b', key: "{1}", sql: true, conf: 0.8}
+      - {regex: '(?:OUT_FILE=|OUTPUT=|-o\s|--output[= ])\s*"?([\w./${}\-]+\.(?:dat|csv|tsv|txt|fix))\b', key: "datafile:{1}", rel: WRITES, conf: 0.75}

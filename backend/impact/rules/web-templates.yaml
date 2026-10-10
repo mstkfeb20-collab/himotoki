@@ -1,0 +1,41 @@
+name: web-templates
+description: >
+  Server-side templates (JSP, Thymeleaf, FreeMarker, Velocity). Patterns are plain
+  regular expressions; `set` stores a capture in the file context (e.g. the form
+  object) and `{ctx.name}` reuses it in later keys.
+text:
+  - name: jsp
+    files: ["**/*.jsp", "**/*.jspf", "**/*.tag", "**/*.tagx"]
+    node: {kind: Template}
+    view_roots: ["WEB-INF/views/", "WEB-INF/jsp/", "WEB-INF/", "webapp/"]
+    patterns:
+      - {regex: 'modelAttribute\s*=\s*"(\w+)"', set: form}
+      - {regex: 'commandName\s*=\s*"(\w+)"', set: form}
+      - {regex: '<form:\w+[^>]*\bpath\s*=\s*"([\w.]+)"', key: "prop:{ctx.form}.{1}", rel: BINDS, conf: 0.9}
+      - {regex: '<spring:message[^>]*\bcode\s*=\s*"([^"]+)"', key: "msg:{1}", rel: USES_MESSAGE}
+      - {regex: '<fmt:message[^>]*\bkey\s*=\s*"([^"]+)"', key: "msg:{1}", rel: USES_MESSAGE}
+      - {regex: '<bean:message[^>]*\bkey\s*=\s*"([^"]+)"', key: "msg:{1}", rel: USES_MESSAGE}
+      - {regex: '\$\{\s*(?:f:h\()?\s*(\w+(?:\.\w+)+)', key: "prop:{1}", rel: BINDS, conf: 0.7}
+      - {regex: '<(?:jsp:include|%@\s*include)[^>]*(?:page|file)\s*=\s*"([^"]+)"', key: "view:{1}", rel: INCLUDES}
+      - {regex: '(?:action|href|url)\s*=\s*"\$\{pageContext\.request\.contextPath\}(/[\w/{}.\-]*)', key: "url:{1}", rel: REFERENCES, conf: 0.8}
+      - {regex: '<(?:form:form|form)[^>]*\baction\s*=\s*"(/[\w/{}.\-]*)', key: "url:{1}", rel: REFERENCES, conf: 0.8}
+  - name: thymeleaf
+    files: ["**/templates/**/*.html"]
+    node: {kind: Template}
+    view_roots: ["templates/"]
+    patterns:
+      - {regex: 'th:object\s*=\s*"\$\{\s*(\w+)\s*\}"', set: form}
+      - {regex: 'th:field\s*=\s*"\*\{\s*([\w.]+)\s*\}"', key: "prop:{ctx.form}.{1}", rel: BINDS, conf: 0.9}
+      - {regex: '\*\{\s*(\w+)\s*\}', key: "prop:{ctx.form}.{1}", rel: BINDS, conf: 0.8}
+      - {regex: '\$\{\s*(\w+(?:\.\w+)+)', key: "prop:{1}", rel: BINDS, conf: 0.7}
+      - {regex: '#\{\s*([\w.\-]+)', key: "msg:{1}", rel: USES_MESSAGE}
+      - {regex: '~\{\s*([\w/\-]+)\s*::', key: "view:{1}", rel: INCLUDES}
+      - {regex: '@\{\s*(/[\w/{}.\-]*)', key: "url:{1}", rel: REFERENCES, conf: 0.8}
+  - name: freemarker
+    files: ["**/*.ftl", "**/*.ftlh"]
+    node: {kind: Template}
+    view_roots: ["templates/", "webapp/"]
+    patterns:
+      - {regex: '\$\{\s*(\w+(?:\.\w+)+)', key: "prop:{1}", rel: BINDS, conf: 0.6}
+      - {regex: '<#include\s+"([^"]+)"', key: "view:{1}", rel: INCLUDES}
+      - {regex: 'uiLabelMap\.(\w+)', key: "msg:{1}", rel: USES_MESSAGE, conf: 0.9}

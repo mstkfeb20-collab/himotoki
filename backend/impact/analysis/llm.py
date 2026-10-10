@@ -76,7 +76,7 @@ class RuleBasedLLM:
             known += ascii_terms
             quoted = re.findall(r"「([^」]+)」", c)
             values = {"old": OLD_VALUE_RX.findall(c), "new": NEW_VALUE_RX.findall(c)}
-            value_change = bool(values["old"]) or bool(CHANGE_VALUE_RX.search(c))
+            value_change = bool(values["old"]) or bool(values["new"]) or bool(CHANGE_VALUE_RX.search(c))
             if value_change and not re.search(r"追加|新設|新た|登録できる", c):
                 change = "modify"   # "AからBに変更": an existing value or rule changes
                 new_terms = []

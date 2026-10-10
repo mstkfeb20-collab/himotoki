@@ -1,0 +1,3 @@
+# ツアー予約 補助処理（JP1管理外）
+MAILTO=ops@example.com
+30 6 * * * /opt/tour/batch/send_reminder.sh >> /var/log/tour/reminder.log 2>&1

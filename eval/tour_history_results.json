@@ -1,0 +1,349 @@
+{
+ "summary": {
+  "commits": 25,
+  "changed_files": 92,
+  "recall_any": 0.739,
+  "recall_impacted": 0.228,
+  "commits_with_any_hit": 23,
+  "median_candidates": 114,
+  "median_seconds_index": 0.26
+ },
+ "rows": [
+  {
+   "sha": "579f088c",
+   "message": "remove log4jdbc-remix",
+   "changed": 3,
+   "found_any": 2,
+   "found_impacted": 0,
+   "candidates": 18,
+   "candidate_files": 16,
+   "seconds_index": 0.68,
+   "seconds_total": 1.2,
+   "missed": [
+    "terasoluna-tourreservation-env/src/main/resources/logback.xml"
+   ]
+  },
+  {
+   "sha": "b25a07da",
+   "message": "Change password encoder for bcrypt to pbkdf2",
+   "changed": 3,
+   "found_any": 2,
+   "found_impacted": 0,
+   "candidates": 151,
+   "candidate_files": 79,
+   "seconds_index": 0.23,
+   "seconds_total": 0.9,
+   "missed": [
+    "terasoluna-tourreservation-initdb/src/main/sqls/postgres/00110_create_all_tables.sql"
+   ]
+  },
+  {
+   "sha": "0b646436",
+   "message": "move property value to constant value",
+   "changed": 2,
+   "found_any": 1,
+   "found_impacted": 0,
+   "candidates": 75,
+   "candidate_files": 40,
+   "seconds_index": 0.35,
+   "seconds_total": 0.9,
+   "missed": [
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/application.properties"
+   ]
+  },
+  {
+   "sha": "15d66c40",
+   "message": "modify font size deciding process",
+   "changed": 2,
+   "found_any": 1,
+   "found_impacted": 0,
+   "candidates": 114,
+   "candidate_files": 45,
+   "seconds_index": 0.19,
+   "seconds_total": 0.8,
+   "missed": [
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/application.properties"
+   ]
+  },
+  {
+   "sha": "7d8fe966",
+   "message": "set PDF name in mergePDFDocument",
+   "changed": 2,
+   "found_any": 2,
+   "found_impacted": 2,
+   "candidates": 61,
+   "candidate_files": 26,
+   "seconds_index": 0.21,
+   "seconds_total": 0.8,
+   "missed": []
+  },
+  {
+   "sha": "695f2bc4",
+   "message": "override prepareResponse and set header and encoding",
+   "changed": 2,
+   "found_any": 1,
+   "found_impacted": 0,
+   "candidates": 114,
+   "candidate_files": 84,
+   "seconds_index": 0.32,
+   "seconds_total": 0.9,
+   "missed": [
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ManageReservationController.java"
+   ]
+  },
+  {
+   "sha": "76adee4b",
+   "message": "change to be determined extension by View",
+   "changed": 2,
+   "found_any": 1,
+   "found_impacted": 0,
+   "candidates": 56,
+   "candidate_files": 37,
+   "seconds_index": 0.21,
+   "seconds_total": 0.7,
+   "missed": [
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/application.properties"
+   ]
+  },
+  {
+   "sha": "0f060745",
+   "message": "adjust property name rule",
+   "changed": 3,
+   "found_any": 1,
+   "found_impacted": 0,
+   "candidates": 165,
+   "candidate_files": 63,
+   "seconds_index": 0.2,
+   "seconds_total": 0.9,
+   "missed": [
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ManageReservationController.java",
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/application.properties"
+   ]
+  },
+  {
+   "sha": "d54031cd",
+   "message": "change to add PDF name to model in Controller class processing",
+   "changed": 4,
+   "found_any": 4,
+   "found_impacted": 1,
+   "candidates": 398,
+   "candidate_files": 161,
+   "seconds_index": 0.25,
+   "seconds_total": 1.5,
+   "missed": []
+  },
+  {
+   "sha": "309d0cc4",
+   "message": "modify naming rule Path -> Url",
+   "changed": 2,
+   "found_any": 2,
+   "found_impacted": 0,
+   "candidates": 19,
+   "candidate_files": 14,
+   "seconds_index": 0.24,
+   "seconds_total": 0.8,
+   "missed": []
+  },
+  {
+   "sha": "b34a7dcf",
+   "message": "rename ReservationReportPdfView -> ReservationReportPdfStamperView",
+   "changed": 2,
+   "found_any": 2,
+   "found_impacted": 2,
+   "candidates": 235,
+   "candidate_files": 65,
+   "seconds_index": 0.29,
+   "seconds_total": 1.2,
+   "missed": []
+  },
+  {
+   "sha": "87d61a9e",
+   "message": "dropped JasperReports support",
+   "changed": 5,
+   "found_any": 2,
+   "found_impacted": 0,
+   "candidates": 57,
+   "candidate_files": 38,
+   "seconds_index": 0.25,
+   "seconds_total": 0.9,
+   "missed": [
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/DownloadPDFOutput.java",
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ManageReservationHelper.java",
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/application.properties"
+   ]
+  },
+  {
+   "sha": "78a58e41",
+   "message": "findOne -> findById delete -> deleteById",
+   "changed": 7,
+   "found_any": 7,
+   "found_impacted": 5,
+   "candidates": 100,
+   "candidate_files": 39,
+   "seconds_index": 0.22,
+   "seconds_total": 0.8,
+   "missed": []
+  },
+  {
+   "sha": "242c1d78",
+   "message": "findOne -> findById delete -> deleteById",
+   "changed": 11,
+   "found_any": 11,
+   "found_impacted": 8,
+   "candidates": 101,
+   "candidate_files": 39,
+   "seconds_index": 0.3,
+   "seconds_total": 0.9,
+   "missed": []
+  },
+  {
+   "sha": "1a800ce2",
+   "message": "fix fallbackTo property to codelist difinition",
+   "changed": 2,
+   "found_any": 2,
+   "found_impacted": 0,
+   "candidates": 114,
+   "candidate_files": 47,
+   "seconds_index": 0.21,
+   "seconds_total": 0.9,
+   "missed": []
+  },
+  {
+   "sha": "3fb91829",
+   "message": "apply hibernate-validator 6.x (Bean Validation 2.0)",
+   "changed": 4,
+   "found_any": 4,
+   "found_impacted": 0,
+   "candidates": 144,
+   "candidate_files": 46,
+   "seconds_index": 0.39,
+   "seconds_total": 1.1,
+   "missed": []
+  },
+  {
+   "sha": "3af28f9f",
+   "message": "merge 5.5.0.RC2 development branch to master branch",
+   "changed": 9,
+   "found_any": 0,
+   "found_impacted": 0,
+   "candidates": 24,
+   "candidate_files": 21,
+   "seconds_index": 0.31,
+   "seconds_total": 0.7,
+   "missed": [
+    "terasoluna-tourreservation-domain/src/main/java/org/terasoluna/tourreservation/domain/service/reserve/ReserveServiceImpl.java",
+    "terasoluna-tourreservation-domain/src/main/resources/META-INF/dozer/domain-mapping.xml",
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managecustomer/ManageCustomerController.java",
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ManageReservationController.java",
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ManageReservationHelper.java",
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/reservetour/ReserveTourHelper.java",
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/searchtour/SearchTourController.java",
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/applicationContext.xml",
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/spring-mvc.xml"
+   ]
+  },
+  {
+   "sha": "c8c77a98",
+   "message": "Apply changes of Spring Security 4 terasolunaorg/terasoluna-tourreservation",
+   "changed": 9,
+   "found_any": 9,
+   "found_impacted": 3,
+   "candidates": 272,
+   "candidate_files": 169,
+   "seconds_index": 0.4,
+   "seconds_total": 1.3,
+   "missed": []
+  },
+  {
+   "sha": "3e2989aa",
+   "message": "add settings that DataSourceTransactionManager#setRollbackOnCommitFaillure=true in xml files what using DataSourceTransactionManager.",
+   "changed": 2,
+   "found_any": 2,
+   "found_impacted": 0,
+   "candidates": 93,
+   "candidate_files": 62,
+   "seconds_index": 0.26,
+   "seconds_total": 1.1,
+   "missed": []
+  },
+  {
+   "sha": "4b102c77",
+   "message": "added error controller.",
+   "changed": 2,
+   "found_any": 0,
+   "found_impacted": 0,
+   "candidates": 218,
+   "candidate_files": 67,
+   "seconds_index": 0.3,
+   "seconds_total": 1.3,
+   "missed": [
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/spring-security.xml",
+    "terasoluna-tourreservation-web/src/main/webapp/WEB-INF/web.xml"
+   ]
+  },
+  {
+   "sha": "42ebb534",
+   "message": "remove view-controller because enable to apply post request",
+   "changed": 3,
+   "found_any": 2,
+   "found_impacted": 0,
+   "candidates": 117,
+   "candidate_files": 44,
+   "seconds_index": 0.22,
+   "seconds_total": 0.9,
+   "missed": [
+    "terasoluna-tourreservation-web/src/main/webapp/WEB-INF/web.xml"
+   ]
+  },
+  {
+   "sha": "2bae4291",
+   "message": "Remove RedirectAuthenticationHandler",
+   "changed": 2,
+   "found_any": 1,
+   "found_impacted": 0,
+   "candidates": 31,
+   "candidate_files": 15,
+   "seconds_index": 0.42,
+   "seconds_total": 0.9,
+   "missed": [
+    "terasoluna-tourreservation-web/src/main/webapp/WEB-INF/views/reservetour/reserveForm.jsp"
+   ]
+  },
+  {
+   "sha": "6cfd1c93",
+   "message": "Add functionality to switch a language using UI terasolunaorg/terasoluna-tourreservation",
+   "changed": 4,
+   "found_any": 4,
+   "found_impacted": 0,
+   "candidates": 257,
+   "candidate_files": 164,
+   "seconds_index": 0.39,
+   "seconds_total": 1.2,
+   "missed": []
+  },
+  {
+   "sha": "4a174b3f",
+   "message": "Implement access control for other owner resource. terasolunaorg/terasoluna-tourreservation",
+   "changed": 3,
+   "found_any": 3,
+   "found_impacted": 0,
+   "candidates": 235,
+   "candidate_files": 143,
+   "seconds_index": 0.35,
+   "seconds_total": 1.1,
+   "missed": []
+  },
+  {
+   "sha": "600c030f",
+   "message": "Modify execution timing of SessionStatus#complete. terasolunaorg/terasoluna-tourreservation",
+   "changed": 2,
+   "found_any": 2,
+   "found_impacted": 0,
+   "candidates": 252,
+   "candidate_files": 148,
+   "seconds_index": 0.25,
+   "seconds_total": 1.0,
+   "missed": []
+  }
+ ]
+}

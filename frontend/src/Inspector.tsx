@@ -241,6 +241,12 @@ function Single({ run, c, onSelect, onChanged, busy }: {
   );
 }
 
+/** where an edge came from: the parser, a rule pack, the DB dictionary, production
+ * SQL, a design document, or a name-based guess */
+const SRC_JA: Record<string, string> = {
+  parser: "構文", catalog: "DB辞書", runtime: "実行時", doc: "設計書", heuristic: "推定",
+};
+
 function NeighborList({ title, items, run, onPick }: {
   title: string; items: NodeDetail["neighbors"]; run: RunState; onPick: (id: string, name: string) => void;
 }) {
@@ -256,6 +262,8 @@ function NeighborList({ title, items, run, onPick }: {
               <button className="link" onClick={() => onPick(n.id, n.name)} title={inRun ? "グラフで表示" : "影響ありとして追加"}>
                 {n.name}</button>
               <span className="mono dim small">{n.rel.toLowerCase()}{n.line ? ` L${n.line}` : ""}</span>
+              {n.src && <span className={`prov ${n.src}`} title={`根拠: ${SRC_JA[n.src] || n.src}${n.via ? `（${n.via}）` : ""}・確度 ${(n.conf ?? 1).toFixed(2)}`}>
+                {SRC_JA[n.src] || (n.src.startsWith("rule:") ? `規則 ${n.src.slice(5)}` : n.src)}{(n.conf ?? 1) < 0.95 ? ` ${(n.conf ?? 1).toFixed(2)}` : ""}</span>}
               {!inRun && <span className="tag violet">＋追加</span>}
             </li>
           );

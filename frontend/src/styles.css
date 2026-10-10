@@ -140,3 +140,15 @@ fieldset { border: 1px solid var(--line2); border-radius: 12px; padding: 12px 14
   .main { flex-direction: column; } .side { width: 100%; flex: none; } .graph-pane { min-height: 520px; }
   .app { height: auto; min-height: 100%; }
 }
+
+.prov { font-size: 10px; padding: 0 5px; border-radius: 3px; border: 1px solid #2A3548; color: #9AA6B8; margin-left: 6px; white-space: nowrap; }
+.prov.runtime { border-color: #6FE3E8; color: #6FE3E8; }
+.prov.catalog { border-color: #7FB3F5; color: #7FB3F5; }
+.prov.doc { border-color: #A78BFA; color: #A78BFA; }
+.prov.heuristic { border-style: dashed; color: #D9B37A; border-color: #B98A3E; }
+.report-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.report-table td { padding: 2px 4px; border-bottom: 1px solid #1C2636; vertical-align: top; }
+.report-table td.num { text-align: right; font-family: "JetBrains Mono", monospace; }
+.sample { font-family: "JetBrains Mono", monospace; font-size: 11px; color: #9AA6B8; word-break: break-all; }
+.graphsel { max-width: 220px; }
+.dot.agg { border: 3px double #6B7A92; background: #141B27; }

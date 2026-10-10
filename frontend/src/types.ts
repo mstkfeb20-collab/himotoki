@@ -4,6 +4,7 @@ export interface Candidate {
   node_id: string;
   kind: string;
   layer: string;
+  group?: string | null;
   name: string;
   file?: string | null;
   line?: number | null;
@@ -77,6 +78,20 @@ export interface RunSummary {
   status: string;
   phase: string;
   progress: number;
+  graph?: string;
+}
+
+export interface GraphInfo { repo: string; ref?: string | null; snapshot?: string; docs_dir?: string | null; commit?: string; nodes?: number; edges?: number }
+
+export interface IndexReport {
+  nodes: number; edges: number; files: number; parsed: number; cached: number; seconds: number;
+  seconds_extract?: number; seconds_link?: number; commit?: string;
+  by_kind: Record<string, number>; by_extractor?: Record<string, number>; rules?: string[];
+  unresolved: Record<string, number>; unresolved_samples: Record<string, { key: string; via: string; file: string }[]>;
+  external?: Record<string, number>;
+  runtime?: { statements: number; matched: number; unmatched: number; unmatched_samples?: { id: string; sql: string; calls?: number }[] };
+  drift?: { columns_only_in_db?: string[]; columns_only_in_ddl?: string[]; tables_not_in_catalog?: string[]; counts?: Record<string, number>; note?: string };
+  errors: number; error_samples?: { file: string; error: string }[];
 }
 
 export interface RunEvent {
@@ -90,7 +105,7 @@ export interface NodeDetail {
   node: { id: string; kind: string; name: string; file?: string; line?: number; end_line?: number; layer: string; props: any; text?: string };
   code: { n: number; text: string }[];
   highlight?: number[];
-  neighbors: { dir: string; rel: string; id: string; name: string; kind: string; line?: number; via?: string }[];
+  neighbors: { dir: string; rel: string; id: string; name: string; kind: string; line?: number; via?: string; src?: string; conf?: number }[];
   callers?: NodeDetail["neighbors"];
   callees?: NodeDetail["neighbors"];
   docs: { id: string; name: string; file: string; line: number; text: string }[];

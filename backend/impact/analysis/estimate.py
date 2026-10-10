@@ -27,6 +27,15 @@ DEFAULT_COEF = {
         Kind.TEST_METHOD: {"add": 1.0, "modify": 0.75, "delete": 0.25, "test": 0.75},
         Kind.TEST_CLASS: {"add": 2.0, "modify": 0.5, "delete": 0.5, "test": 0.5},
         Kind.DOC: {"add": 1.0, "modify": 0.5, "delete": 0.25, "doc": 0.5},
+        Kind.DOC_ENTITY: {"add": 0.25, "modify": 0.25, "delete": 0.1, "doc": 0.25},
+        Kind.SQL_STATEMENT: {"add": 1.5, "modify": 0.75, "delete": 0.25},
+        Kind.DB_OBJECT: {"add": 3.0, "modify": 1.5, "delete": 0.5},
+        Kind.SCRIPT: {"add": 2.0, "modify": 0.75, "delete": 0.25},
+        Kind.JOB: {"add": 1.0, "modify": 0.5, "delete": 0.25},
+        Kind.JOBNET: {"add": 2.0, "modify": 0.5, "delete": 0.5},
+        Kind.CRON: {"add": 0.5, "modify": 0.25, "delete": 0.1},
+        Kind.BEAN: {"add": 0.5, "modify": 0.25, "delete": 0.1},
+        Kind.XML_ELEMENT: {"add": 0.5, "modify": 0.25, "delete": 0.1},
     },
     "complexity_step": 0.15,       # +15% per cyclomatic point above 1
     "loc_step": 0.01,              # +1% per line above 20
@@ -65,7 +74,7 @@ class Estimator:
         kind = cand["kind"]
         table = self.coef["hours"].get(kind)
         if not table:
-            return 0.0, []
+            return 0.0, []    # kinds without a coefficient (endpoints, runtime SQL...) are not edited directly
         ct = cand.get("change_type") or "modify"
         base = table.get(ct, table.get("modify", 0.5))
         notes = [f"基準 {base}h（{kind}・{ct}）"]

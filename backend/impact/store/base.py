@@ -33,6 +33,20 @@ class GraphStore(ABC):
     @abstractmethod
     def edge_count(self) -> int: ...
 
+    def neighbors_many(self, ids, direction: str, rels=None) -> dict[str, list[Edge]]:
+        """Edges of many nodes in one call (stores backed by a server override this
+        to avoid one round trip per node)."""
+        get = self.in_edges if direction == "in" else self.out_edges
+        return {i: get(i, rels) for i in ids}
+
+    def get_many(self, ids) -> dict[str, Node]:
+        out = {}
+        for i in ids:
+            n = self.get(i)
+            if n is not None:
+                out[i] = n
+        return out
+
     def flush(self) -> None:
         """Persist pending changes (no-op for stores that write through)."""
 

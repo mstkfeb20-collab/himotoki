@@ -7,10 +7,15 @@ export type Filters = { layers: Record<string, boolean>; onlyOpen: boolean; minC
 const RING: Record<string, number> = { feature: 2, code: 3, data: 4, test: 5, doc: 6 };
 const BASE_R = [0, 70, 150, 250, 350, 440, 520];
 
+function radialPositionsVisible(cy: Core) {
+  return radialPositions(cy, true);
+}
+
 /** Radial layout: rings by layer; within a ring, nodes keep the circular order of a
  * depth-first walk from the requirement so each subtree stays in one sector. */
-function radialPositions(cy: Core): Record<string, { x: number; y: number }> {
+function radialPositions(cy: Core, visibleOnly = false): Record<string, { x: number; y: number }> {
   const children: Record<string, string[]> = {};
+  const nodesAll = visibleOnly ? cy.nodes().filter((n) => !n.hasClass("folded")) : cy.nodes();
   cy.edges().forEach((e) => { (children[e.source().id()] ||= []).push(e.target().id()); });
   const order: Record<string, number> = {};
   let seq = 0;
@@ -21,9 +26,9 @@ function radialPositions(cy: Core): Record<string, { x: number; y: number }> {
     for (const c of children[id] || []) walk(c);
   };
   walk("__req");
-  cy.nodes().forEach((n) => { if (!(n.id() in order)) order[n.id()] = seq++; });
+  nodesAll.forEach((n) => { if (!(n.id() in order)) order[n.id()] = seq++; });
   const rings: Record<number, string[]> = {};
-  cy.nodes().forEach((n) => {
+  nodesAll.forEach((n) => {
     const r = n.hasClass("requirement") ? 0 : n.hasClass("intent") ? 1 : (RING[n.data("layer")] ?? 3);
     (rings[r] ||= []).push(n.id());
   });
@@ -90,15 +95,48 @@ const STYLE: any[] = [
       "target-arrow-shape": "none" } },
   { selector: "edge.path", style: { width: 1.6, "line-color": "#F5B451", opacity: 1, "z-index": 50,
       "target-arrow-shape": "triangle", "target-arrow-color": "#F5B451", "arrow-scale": 0.6 } },
+  { selector: "node.agg", style: { shape: "round-octagon", "background-color": "#141B27", "border-color": "#6B7A92",
+      "border-style": "double", "border-width": 3, width: "mapData(count, 3, 120, 18, 46)", height: "mapData(count, 3, 120, 18, 46)",
+      color: "#9AA6B8", "font-size": 9, "min-zoomed-font-size": 3 } },
+  { selector: "edge.agg", style: { "line-style": "dashed", "line-color": "#2A3548" } },
   { selector: ".hidden", style: { display: "none" } },
+  { selector: ".folded", style: { display: "none" } },
 ];
 
-export default function Graph({ run, filters, selected, onSelect, focusId }: {
+/** Above this many candidates, low-signal members of the same module/area are drawn as
+ * one aggregate node ("domain:reserve ×42"); clicking it expands the group. Candidates that
+ * matter on their own (high score, decided, selected) always stay visible. */
+export const AGGREGATE_ABOVE = 150;
+
+export function groupKey(c: Candidate) {
+  return `${c.layer}|${c.group || (c.file ? c.file.split("/").slice(0, -1).slice(-2).join("/") : c.kind)}`;
+}
+
+export function aggregation(run: RunState, expanded: Set<string>, selected: string[], enabled: boolean) {
+  const cands = Object.values(run.candidates);
+  const members: Record<string, string[]> = {};
+  if (!enabled || cands.length <= AGGREGATE_ABOVE) return { collapsed: new Set<string>(), members };
+  const keep = (c: Candidate) => c.score >= 0.6 || !!c.decision || selected.includes(c.node_id) ||
+    c.verdict === "impacted" || c.origin === "seed";
+  for (const c of cands) {
+    if (keep(c)) continue;
+    const k = groupKey(c);
+    if (expanded.has(k)) continue;
+    (members[k] ||= []).push(c.node_id);
+  }
+  for (const k of Object.keys(members)) if (members[k].length < 3) delete members[k];
+  return { collapsed: new Set(Object.values(members).flat()), members };
+}
+
+export default function Graph({ run, filters, selected, onSelect, focusId, expanded, grouping, onExpand }: {
   run: RunState | null;
   filters: Filters;
   selected: string[];
   onSelect: (ids: string[]) => void;
   focusId?: string | null;
+  expanded: Set<string>;
+  grouping: boolean;
+  onExpand: (key: string) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const cyRef = useRef<Core | null>(null);
@@ -107,15 +145,18 @@ export default function Graph({ run, filters, selected, onSelect, focusId }: {
   const runIdRef = useRef<string | null>(null);
   const selectCb = useRef(onSelect);
   selectCb.current = onSelect;
+  const expandCb = useRef(onExpand);
+  expandCb.current = onExpand;
 
   useEffect(() => {
     const cy = cytoscape({
       container: ref.current!, style: STYLE, minZoom: 0.15, maxZoom: 3.5,
       boxSelectionEnabled: true, selectionType: "additive",
     });
-    const emit = () => selectCb.current(cy.$("node:selected").filter((n) => !n.hasClass("requirement") && !n.hasClass("intent")).map((n) => n.id()));
+    const emit = () => selectCb.current(cy.$("node:selected").filter((n) => !n.hasClass("requirement") && !n.hasClass("intent") && !n.hasClass("agg")).map((n) => n.id()));
     cy.on("tap", "node", (e) => {
       const n = e.target;
+      if (n.hasClass("agg")) { expandCb.current(n.data("key")); return; }
       const multi = (e.originalEvent as MouseEvent)?.shiftKey || (e.originalEvent as MouseEvent)?.metaKey;
       if (!multi) { cy.$("node:selected").unselect(); }
       if (multi && n.selected()) n.unselect(); else n.select();
@@ -169,18 +210,49 @@ export default function Graph({ run, filters, selected, onSelect, focusId }: {
     }
     cy.add([...add.filter((a) => a.group === "edges" && cy.$id(a.data.id!).empty()), ...edges]);
 
-    if (cy.nodes().length !== countRef.current) {
-      countRef.current = cy.nodes().length;
+    if (cy.nodes(":visible").length !== countRef.current) {
+      countRef.current = cy.nodes(":visible").length;
       if (!layoutTimer.current) {
         layoutTimer.current = window.setTimeout(() => {
           layoutTimer.current = null;
-          const pos = radialPositions(cy);
-          cy.layout({ name: "preset", positions: (n: any) => pos[n.id()], animate: true, animationDuration: 500,
+          const pos = radialPositions(cy, true);
+          cy.layout({ name: "preset", positions: (n: any) => pos[n.id()] || n.position(), animate: true, animationDuration: 500,
             fit: true, padding: 50 } as any).run();
         }, 350);
       }
     }
   }, [run]);
+
+  // aggregation: fold low-signal members into one node per module/area
+  useEffect(() => {
+    const cy = cyRef.current;
+    if (!cy || !run) return;
+    const { collapsed, members } = aggregation(run, expanded, selected, grouping);
+    cy.batch(() => {
+      cy.nodes().forEach((n) => { if (run.candidates[n.id()]) n.toggleClass("folded", collapsed.has(n.id())); });
+      const want = new Set(Object.keys(members).map((k) => `agg:${k}`));
+      cy.nodes(".agg").forEach((n) => { if (!want.has(n.id())) cy.remove(n); });
+      for (const [k, ids] of Object.entries(members)) {
+        const id = `agg:${k}`;
+        const [layer, group] = k.split("|");
+        const label = `${group.split(":").pop()} ×${ids.length}`;
+        const node = cy.$id(id);
+        if (node.nonempty()) { node.data({ label, count: ids.length }); continue; }
+        const first = run.candidates[ids[0]];
+        const parents = ids.map((i) => run.candidates[i]?.parent).filter((p): p is string => !!p && !collapsed.has(p));
+        const src = parents[0] && cy.$id(parents[0]).nonempty() ? parents[0]
+          : first?.intent_ids[0] ? `intent:${first.intent_ids[0]}` : "__req";
+        cy.add({ group: "nodes", data: { id, key: k, label, count: ids.length, layer, score: 0.5 }, classes: `agg layer-${layer}` });
+        if (cy.$id(src).nonempty()) cy.add({ group: "edges", data: { id: `e:${src}:${id}`, source: src, target: id }, classes: "agg" });
+      }
+    });
+    if (cy.nodes(":visible").length !== countRef.current) {
+      countRef.current = cy.nodes(":visible").length;
+      const pos = radialPositionsVisible(cy);
+      cy.layout({ name: "preset", positions: (n: any) => pos[n.id()] || n.position(), animate: true, animationDuration: 400,
+        fit: true, padding: 50 } as any).run();
+    }
+  }, [run, expanded, grouping, selected]);
 
   // filters
   useEffect(() => {
@@ -190,6 +262,7 @@ export default function Graph({ run, filters, selected, onSelect, focusId }: {
     cy.batch(() => {
       cy.nodes().forEach((n) => {
         const c = run.candidates[n.id()];
+        if (n.hasClass("agg")) { n.toggleClass("hidden", !filters.layers[n.data("layer")]); return; }
         if (!c) return;
         let hidden = !filters.layers[c.layer];
         if (filters.onlyOpen && c.decision) hidden = true;
@@ -198,7 +271,7 @@ export default function Graph({ run, filters, selected, onSelect, focusId }: {
         n.toggleClass("hit", !!q && (c.name.toLowerCase().includes(q) || (c.file || "").toLowerCase().includes(q)));
       });
     });
-  }, [filters, run]);
+  }, [filters, run, expanded, grouping]);
 
   // selection + path highlight
   useEffect(() => {

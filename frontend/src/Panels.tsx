@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
-import type { RunEvent, RunState } from "./types";
+import type { IndexReport, RunEvent, RunState } from "./types";
 
 export function ChecksPanel({ run, onSelect, onChanged }: {
   run: RunState; onSelect: (ids: string[], focus?: boolean) => void; onChanged: () => void;
@@ -140,6 +140,64 @@ export function DiffPanel({ run, onOpenRun }: { run: RunState; onOpenRun: (id: s
       <span className="k">判定が変わった {diff.changed.length}</span>
       <ul className="list">{diff.changed.map((x: any) => <li key={x.node_id}>{x.name} <span className="dim small">{x.from} → {x.to}</span></li>)}</ul>
       <span className="k">前回のみ {diff.removed.length}</span>
+    </div>
+  );
+}
+
+/** What the graph itself knows it is missing. Shown next to the run so that a
+ * reviewer judging "is this complete?" sees the blind spots of the index too. */
+export function IndexPanel({ graph }: { graph?: string | null }) {
+  const [r, setR] = useState<IndexReport | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  useEffect(() => { setR(null); api.indexReport(graph).then(setR).catch((e) => setErr(e.message)); }, [graph]);
+  if (err) return <p className="warn small">{err}</p>;
+  if (!r) return <p className="muted small">読み込み中…</p>;
+  const unresolved = Object.entries(r.unresolved || {}).sort((a, b) => b[1] - a[1]);
+  const drift = r.drift || {};
+  const rt = r.runtime;
+  return (
+    <div className="stack">
+      <div className="row between"><span className="k">取込</span>
+        <span className="mono small">{r.files} ファイル・ノード {r.nodes}・関係 {r.edges}</span></div>
+      <p className="muted small">再抽出 {r.parsed}・キャッシュ {r.cached}・{r.seconds}秒{r.commit ? `・${r.commit.slice(0, 8)}` : ""}
+        {r.rules?.length ? `・ルール ${r.rules.join(", ")}` : ""}</p>
+
+      <span className="k">解決できなかった参照 {unresolved.length ? "" : "（なし）"}</span>
+      {unresolved.length > 0 && (
+        <table className="report-table"><tbody>
+          {unresolved.map(([ns, n]) => (
+            <tr key={ns}><td>{ns}</td><td className="num">{n}</td>
+              <td className="sample">{(r.unresolved_samples?.[ns] || []).slice(0, 2).map((x) => `${x.key}（${x.file.split("/").pop()}）`).join(" / ")}</td></tr>
+          ))}
+        </tbody></table>
+      )}
+      {r.external && Object.keys(r.external).length > 0 && (
+        <p className="muted small">ライブラリへの参照（グラフ外・漏れではない）: {Object.entries(r.external).map(([k, v]) => `${k} ${v}`).join("・")}</p>
+      )}
+
+      <span className="k">DB辞書とDDLのずれ</span>
+      {drift.counts ? (
+        <>
+          <p className="small">DBにのみ {drift.counts.only_db ?? 0}・DDLにのみ {drift.counts.only_ddl ?? 0}・一致 {drift.counts.both ?? 0}
+            {drift.counts.tables_not_in_catalog ? `・辞書に無いテーブル ${drift.counts.tables_not_in_catalog}` : ""}</p>
+          {(drift.columns_only_in_db || []).length > 0 &&
+            <p className="sample">DBにのみ: {(drift.columns_only_in_db || []).slice(0, 12).map((c) => c.replace("col:", "")).join(", ")}</p>}
+        </>
+      ) : <p className="muted small">{drift.note || "DB辞書が未取込です（impact catalog で取り込めます）"}</p>}
+
+      <span className="k">実行時SQLとの照合</span>
+      {rt ? (
+        <>
+          <p className="small">実行時SQL {rt.statements} 件中、コードと対応 {rt.matched}・対応なし {rt.unmatched}</p>
+          {(rt.unmatched_samples || []).slice(0, 8).map((x) => (
+            <p key={x.id} className="sample">{x.calls ? `${x.calls}回 ` : ""}{x.sql}</p>
+          ))}
+          {rt.unmatched > 0 && <p className="muted small">対応なしのSQLは、動的SQL・他システム・運用ツールなど、静的解析の死角を示します。</p>}
+        </>
+      ) : <p className="muted small">実行時SQLが未取込です（impact runtime で取り込めます）</p>}
+
+      {r.errors > 0 && <><span className="k">抽出エラー {r.errors}</span>
+        {(r.error_samples || []).slice(0, 5).map((e, i) => <p key={i} className="sample">{e.file}: {e.error}</p>)}</>}
     </div>
   );
 }
