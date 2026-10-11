@@ -78,6 +78,7 @@ export interface RunState {
   grep: { terms?: string[]; hits?: { file: string; line: number; term: string; node_id: string; text: string }[] };
   shadow: { node_ids?: string[]; only?: string[] };
   approved: { actor: string; at: number; estimate_days: number } | null;
+  verification?: Verification | null;
   llm_usage?: { ai_items: number; reused: number; rule_low_score: number; rule_cap: number; rule: number;
     fallback: number; calls: number; input_tokens: number; output_tokens: number;
     cost_usd?: number; cost_jpy?: number; unpriced_calls?: number; model?: string | null; jpy_per_usd?: number | null };
@@ -133,4 +134,19 @@ export interface NodeDetail {
   docs: { id: string; name: string; file: string; line: number; text: string }[];
   tests: NodeDetail["neighbors"];
   history: { hash: string; date: string; author: string; subject: string }[];
+}
+
+export interface VerifyRow { node_id: string; name: string; kind: string; file?: string | null; change?: string; why?: string; why_ja?: string; candidate_reason?: string | null }
+export interface Verification {
+  base: string; head: string; at: number; changed_elements: number; added_files: string[];
+  hit: VerifyRow[]; missed: VerifyRow[]; untouched: VerifyRow[];
+  recall: number | null; precision: number | null; missed_by_reason: Record<string, number>;
+  calibration?: { calibration: number; samples: number }; predicted_days?: number; actual_days?: number;
+  markdown?: string;
+}
+export interface Handoff {
+  run_id: string; title: string; requirement: string; approved: RunState["approved"]; warnings: string[];
+  estimate_days?: number; files: { file: string; items: { node_id: string; name: string }[] }[];
+  other_targets: { node_id: string; name: string }[]; pending: { node_id: string; name: string }[];
+  excluded: { node_id: string; name: string }[]; tests_to_run: { name: string }[]; markdown: string;
 }

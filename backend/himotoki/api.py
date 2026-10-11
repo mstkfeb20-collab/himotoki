@@ -139,6 +139,13 @@ class RunReq(BaseModel):
     llm_max_items: int | str | None = None          # number, or "unlimited"
 
 
+class VerifyReq(BaseModel):
+    base: str = Field(max_length=NAME)
+    head: str = Field(max_length=NAME)
+    repo: str | None = Field(None, max_length=NAME)        # repository of a system graph
+    actual_days: float | None = Field(None, ge=0, le=100_000)
+
+
 class DiffReq(BaseModel):
     base: str = Field(max_length=NAME)
     head: str = Field(max_length=NAME)
@@ -218,7 +225,7 @@ def status(graph: str | None = None):
     e = ws_root.engine(name) if name else None
     st = ws_root.stats(name) if name else {}
     return {"graph": name, "graphs": ws_root.meta["graphs"], "repo": e.repo if e else None,
-            "repos": e.repos if e else None,
+            "repos": e.repos if e else None, "workspace": ws_root.root,
             "docs_dir": e.docs_dir if e else None, "llm": e.llm.name if e else None,
             "store": type(e.store).__name__ if e else None,
             "index": {"status": ws_root.index_state.get(name, {}).get("status", "done" if st else "idle"),
@@ -553,6 +560,31 @@ def diff(a: str, b: str):
 def ask(run_id: str, req: AskReq):
     e = run_engine(run_id)
     return {"answer": e.ask(run_id, req.node_ids, req.question), "llm": e.llm.name}
+
+
+@app.get("/api/runs/{run_id}/handoff")
+def handoff(run_id: str, pending: bool = True):
+    """Work order for development (JSON + Markdown): the reviewed scope per file."""
+    from .analysis.handoff import build_handoff, handoff_markdown
+    h = build_handoff(run_engine(run_id), run_id, pending)
+    return dict(h, markdown=handoff_markdown(h))
+
+
+@app.post("/api/runs/{run_id}/verify")
+def verify(run_id: str, req: VerifyReq):
+    """Compare the actual change (base..head) with the analysis."""
+    from .analysis.handoff import verification_markdown, verify_change
+    e = run_engine(run_id)
+    name = next((n for n in ws_root.meta["graphs"] if ws_root.engine(n) is e), None)
+    try:
+        hunks = ws_root.change_hunks(name, check_ref(req.base, "base"), check_ref(req.head, "head"), req.repo)
+    except ValueError as ex:
+        raise HTTPException(400, str(ex))
+    except Exception:
+        log.exception("verify diff failed")
+        raise HTTPException(400, "could not compute the diff between the given refs")
+    v = verify_change(e, run_id, hunks, req.base, req.head, req.actual_days)
+    return dict(v, markdown=verification_markdown(v))
 
 
 @app.get("/api/runs/{run_id}/report", response_class=PlainTextResponse)

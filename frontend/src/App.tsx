@@ -1,3 +1,4 @@
+import HandoffDialog from "./Handoff";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, openRunSocket } from "./api";
 import Graph, { AGGREGATE_ABOVE, Filters } from "./Graph";
@@ -22,6 +23,7 @@ export default function App() {
   const [focusId, setFocusId] = useState<string | null>(null);
   const [side, setSide] = useState<Side>("checks");
   const [showNew, setShowNew] = useState(false);
+  const [showHandoff, setShowHandoff] = useState(false);
   const [busy, setBusy] = useState(false);
   const [grouping, setGrouping] = useState(true);
   // null = automatic: the graph while a run is in progress (to watch it grow), the list once it is done
@@ -165,6 +167,8 @@ export default function App() {
           <AiCost run={run} ws={wsUsage} />
         </div>
         <button className="btn small" disabled={!run} onClick={openReport}>レポート</button>
+        <button className="btn small primary" disabled={!run} onClick={() => setShowHandoff(true)}
+          title="確定した影響範囲を作業指示にして、開発（Claude Code など）へ渡します">開発へ渡す</button>
         <button className="btn small ghost" onClick={() => setTour(true)} title="画面の使い方を順に案内します">使い方</button>
       </header>
 
@@ -261,6 +265,8 @@ export default function App() {
       {showNew && <NewRun status={status} initialReq={practice ?? undefined} onClose={() => { setShowNew(false); setPractice(null); }}
         onIndexed={() => api.status().then(setStatus)}
         onCreated={(id) => { setShowNew(false); loadRuns(); setRunId(id); }} />}
+      {showHandoff && run && <HandoffDialog run={run} status={status} graphName={runs.find((r) => r.id === run.id)?.graph}
+        onClose={() => setShowHandoff(false)} onChanged={changed} />}
       {!run && !showNew && <div className="empty">解析がありません。「新しい解析」から要求を投入してください。</div>}
     </div>
   );

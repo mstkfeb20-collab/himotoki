@@ -1,4 +1,4 @@
-import type { GraphInfo, IndexReport, NodeDetail, RunEvent, RunState, RunSummary, WorkspaceUsage } from "./types";
+import type { GraphInfo, Handoff, IndexReport, NodeDetail, RunEvent, RunState, RunSummary, Verification, WorkspaceUsage } from "./types";
 
 async function req<T>(method: string, url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
@@ -60,6 +60,9 @@ export const api = {
   ask: (id: string, node_ids: string[], question: string) =>
     req<{ answer: string; llm: string }>("POST", `/api/runs/${id}/ask`, { node_ids, question }),
   report: (id: string) => req<string>("GET", `/api/runs/${id}/report`),
+  handoff: (id: string, pending = true) => req<Handoff>("GET", `/api/runs/${id}/handoff?pending=${pending}`),
+  verify: (id: string, body: { base: string; head: string; repo?: string | null; actual_days?: number | null }) =>
+    req<Verification>("POST", `/api/runs/${id}/verify`, body),
   node: (nodeId: string, runId?: string) =>
     req<NodeDetail>("GET", `/api/nodes/${encodeURIComponent(nodeId)}${runId ? `?run_id=${runId}` : ""}`),
   search: (q: string) => req<{ id: string; name: string; kind: string; file?: string; score: number }[]>(

@@ -54,6 +54,14 @@ def main(argv=None):
     p.add_argument("--json", action="store_true")
     p = sub.add_parser("diff"); p.add_argument("--base", required=True); p.add_argument("--head", required=True)
     p.add_argument("--graph"); p.add_argument("--repo", help="repository of a system graph that changed")
+    p = sub.add_parser("runs", help="これまでの解析の一覧（run ID・承認・確定件数）"); p.add_argument("--graph")
+    p = sub.add_parser("handoff", help="確定した影響範囲を開発向けの作業指示（Markdown）にする")
+    p.add_argument("run_id"); p.add_argument("--out", help="書き出すファイル（省略時は画面に表示）")
+    p.add_argument("--no-pending", action="store_true", help="未判定の候補を載せない")
+    p = sub.add_parser("verify", help="実装後の差分を予測と突き合わせる")
+    p.add_argument("run_id"); p.add_argument("--base", required=True); p.add_argument("--head", required=True)
+    p.add_argument("--repo", help="システム単位のグラフで変更したリポジトリ")
+    p.add_argument("--actual-days", type=float, help="実績の人日（規模の補正に使う）")
     p = sub.add_parser("serve"); p.add_argument("--port", type=int, default=8765); p.add_argument("--host", default="127.0.0.1")
     p.add_argument("--open", action="store_true", help="ブラウザでビュワーを開く")
     sub.add_parser("mcp")
@@ -132,6 +140,8 @@ def main(argv=None):
                                                  "external", "runtime", "drift", "transactions", "errors", "error_samples")},
                          ensure_ascii=False, indent=1))
         return
+    if a.cmd in ("runs", "handoff", "verify"):
+        return _handoff_cmds(a, ws)
     e = ws.engine(a.graph)
     if e is None:
         sys.exit("index a repository first")
@@ -220,3 +230,35 @@ def _demo(a):
     if a.no_serve:
         return
     _serve("127.0.0.1", a.port, not a.no_open, f"?run={rid}")
+
+
+def _handoff_cmds(a, ws):
+    from .analysis.handoff import build_handoff, handoff_markdown, verification_markdown, verify_change
+    if a.cmd == "runs":
+        names = [a.graph] if a.graph else list(ws.meta["graphs"])
+        for n in names:
+            e = ws.engine(n)
+            for r in (e.runs.list() if e else []):
+                st = e.state(r["id"]) or {}
+                conf = sum(1 for c in st.get("candidates", {}).values() if (c.get("decision") or {}).get("status") == "confirmed")
+                print(f"{r['id']}  {n:<16} {'承認済' if st.get('approved') else '未承認'}  確定 {conf:>3}  "
+                      f"{(r.get('title') or r.get('requirement') or '')[:50]}")
+        return
+    e = ws.find_run(a.run_id)
+    if e is None:
+        sys.exit(f"run {a.run_id} が見つかりません（himotoki runs で一覧）")
+    if a.cmd == "handoff":
+        md = handoff_markdown(build_handoff(e, a.run_id, not a.no_pending))
+        if a.out:
+            with open(a.out, "w", encoding="utf-8") as f:
+                f.write(md)
+            print(f"作業指示を書き出しました: {a.out}", file=sys.stderr)
+        else:
+            print(md)
+        return
+    name = next(n for n in ws.meta["graphs"] if ws.engine(n) is e)
+    try:
+        hunks = ws.change_hunks(name, a.base, a.head, a.repo)
+    except ValueError as ex:
+        sys.exit(str(ex))
+    print(verification_markdown(verify_change(e, a.run_id, hunks, a.base, a.head, a.actual_days)))

@@ -20,7 +20,7 @@ pip install ./backend && himotoki demo                  # サンプルを取り�
 
 ## このツールがやること・やらないこと
 
-修整プロセス全体のうち、このツールが受け持つのは「影響範囲と規模を確定させる」ところまでです。
+修整プロセス全体のうち、このツールが受け持つのは「影響範囲と規模を確定させる」ところまでです。コードは書き換えませんが、確定した範囲を開発（人・Claude Code）へ渡し、実装後の差分を予測と突き合わせるところまでをつないでいます。
 
 | # | 工程 | 担当 | 成果物 |
 |---|---|---|---|
@@ -28,9 +28,9 @@ pip install ./backend && himotoki demo                  # サンプルを取り�
 | 2 | 影響候補の洗い出し | **このツール（解析エンジン）** | 影響候補の一覧（根拠・確度つき） |
 | 3 | 候補の確認・判断の訂正・再調査 | **このツール（ビュワー）を使って人またはエージェント（MCP経由）** | 確定・除外の判断（理由つき） |
 | 4 | 全数判定の条件を満たしたうえでの承認 | **このツール（ビュワー）を使って人** | 確定した影響範囲・規模・レポート |
-| 5 | コードの修整 | 対象外（開発者、または Claude Code など） | 変更差分 |
+| 5 | コードの修整 | 開発者、または Claude Code など。**このツールは作業指示を渡す**（ビュワーの「開発へ渡す」、MCP の `get_handoff`、CLI `handoff`） | 変更差分 |
 | 6 | テスト・レビュー | 対象外。ただし MR/PR には回帰確認の範囲をコメントで返す | テスト結果 |
-| 7 | 実績の振り返り（予測と実際の差分・工数） | 一部のみ（規模の補正係数APIで実績工数を登録できる） | 見積もり係数の補正 |
+| 7 | 実績の振り返り（予測と実際の差分・工数） | **このツール**（「実績と照合」、MCP の `verify_change`、CLI `verify`）。予測漏れを「判断の見直し」と「グラフの欠け」に分け、実績工数で規模を補正 | 照合結果・見積もり係数の補正 |
 
 3 の「訂正」は、AIが出した影響候補の**判断を直す**こと（確定・除外・変更種別や難易度の補正・漏れの追加）を指します。ソースコードの修整ではありません。
 
@@ -211,6 +211,9 @@ himotoki diff --graph sor --repo order-web --base main --head feature/x   # 変�
 - **MCP サーバ**（`himotoki mcp`、stdio）: Claude Code などのエージェントが次のツールでグラフを使えます。
   - `list_graphs`・`search_elements`・`get_element`・`neighbors`
   - `analyze_requirement`・`analyze_change`・`index_gaps`
+  - 開発への引き渡し: `list_runs`（解析の一覧）・`get_handoff`（確定した影響範囲の作業指示）・`verify_change`（実装後の差分と予測の照合）
+
+  Claude Code への登録: `claude mcp add --transport stdio --env HIMOTOKI_DATA_DIR=<ワークスペース> himotoki -- himotoki mcp`
 
   リポジトリの近くで動かせば、コードをネットワーク外に出さずに構造だけを渡せます。
 
@@ -244,6 +247,9 @@ himotoki runtime --csv sql_stats.csv --name ora-rt               # V$SQL など�
 himotoki report                       # 取込状況（未解決・ずれ・実行時SQLの対応）
 himotoki analyze "要求文"            # 要求から
 himotoki diff --base main --head feature/x   # 差分から（回帰確認の範囲）
+himotoki runs                          # 解析の一覧（run ID・承認・確定件数）
+himotoki handoff <run ID> --out 作業指示.md   # 確定した影響範囲を開発向けの作業指示に
+himotoki verify <run ID> --base main --head feature/x [--repo order-web] [--actual-days 3]  # 実装後に予測と照合
 himotoki serve --port 8765            # ビュワー http://localhost:8765
 himotoki mcp                          # MCP サーバ（stdio）
 ```
@@ -293,6 +299,7 @@ docker compose up --build     # http://localhost:8765/?token=<HIMOTOKI_API_TOKEN
 | 差分から始める | 「新しい解析」→「変更差分から」で比較元・変更後を指定 |
 | 全数として確定する | 全数判定タブの条件をすべて満たすと承認できる。判断を変えると承認は自動で外れる |
 | 規模を見る・報告する | 規模タブ、レポート（Markdown） |
+| 開発へ渡す | 右上の「開発へ渡す」: 確定した要素をファイルごとにまとめた作業指示（理由・コメント・トランザクションの注意・関連する設計書・呼び出し元・テスト・除外・未判定）をコピー／ダウンロード。Claude Code に MCP で登録するコマンドと依頼文もここから。実装後は「実績と照合」で作業前・作業後のブランチを指定し、予測が当たった割合・予測漏れ（候補にあったが判断が違った／候補に無かった）・変更されなかった予測を確認、実績の人日で規模を補正 |
 
 ## 「これで全数」の判断
 
@@ -374,6 +381,8 @@ AI（Claude）を使うのは「要求の構造化」と「候補の判定」と
 | GET | /api/index/report | 取込状況（未解決参照・ずれ・実行時SQLの対応・エラー） |
 | POST | /api/sources/catalog・/api/sources/runtime | DB辞書・実行時SQLの取込 |
 | POST | /api/runs | 要求から解析（`llm_max_items`・`llm_min_score` で今回だけAIの上限・閾値を変更） |
+| GET | /api/runs/{id}/handoff | 開発向けの作業指示（JSON と Markdown。`pending=false` で未判定を除く） |
+| POST | /api/runs/{id}/verify | 実装後の差分と予測の照合（base, head、システム単位では repo、任意で actual_days） |
 | POST | /api/runs/diff | 差分から解析（base, head。システム単位のグラフでは repo も） |
 | GET | /api/runs/{id}・/api/runs/{id}/scope | 状態・回帰確認の範囲（Markdown 付き） |
 | WS | /ws/runs/{id} | イベントストリーム |
@@ -431,7 +440,7 @@ AI（Claude）を使うのは「要求の構造化」と「候補の判定」と
 **差分モード・Webhook・MCP**:
 
 - フォームの `@Size(max = 80)` を 200 にしたブランチの GitLab MR イベントを送り、署名検証 → ベースブランチのグラフ作成 → 回帰確認の範囲（画面 2・テスト 10・設計書の節）の生成までを確認しました。
-- MCP は stdio の実クライアントから 7 ツールすべてを呼び出して確認しました。
+- MCP は stdio の実クライアントから呼び出して確認しました（当初の 7 ツールすべてと、開発への引き渡しの list_runs・get_handoff・verify_change）。
 
 ### Apache OFBiz（規模・未知のフレームワーク）
 
@@ -456,11 +465,12 @@ v1 からの回帰確認です。正解リストは `eval/ground_truth.json`、�
 
 ### テスト
 
-`backend/tests`（51 件、すべてオフライン）:
+`backend/tests`（54 件、すべてオフライン）:
 
 - 小さな固定リポジトリでの一連の操作
 - 一時リポジトリでの仕組みの検証: 社内フレームワークのルールパック、JP1→シェル→データファイル→後続ジョブ、Excel の見出し検出と CRUD 表、DB辞書のずれと実行時SQLの対応、キャッシュの増分、差分モード、Webhook の解釈、SQL の端のケース
 - サーバ間連携とトランザクション（`test_sor_system.py`）: 3 リポジトリのシステム単位のインデックス、SOAP・REST・JMS・JNDI・DB リンク・ファイル連携のつながり、トランザクション境界と注意点、NOTE 拡張が出荷サーバまで届くこと、API
+- 開発への引き渡し（`test_handoff.py`）: 作業指示の内容（ファイルごと・コメント・トランザクションの注意・定義場所・除外・未判定）、実装後の照合（当たり・判断の見直し・グラフの欠け・変更されなかった予測・規模の補正）、MCP と API
 - 利用開始（`test_getting_started.py`）: 同梱ビュワーがソースと一致していること、ワークスペースの作成と検出、引数なしの取り込み、デモ、環境確認、Shift_JIS のソース
 - AI判定の予算（`test_llm_budget.py`）: 再調査での再利用、閾値、上限、上限なし、設定ファイル・環境変数・解析ごとの指定の優先順位
 - 攻撃が失敗することの確認（`test_security.py`）: ファイル読み取りの迂回、CORS・Host 偽装・クロスサイト WebSocket、認証、パス制限、Webhook 偽装、シンボリックリンク、XXE、zip 爆弾
@@ -477,7 +487,7 @@ Oracle 辞書の CSV 取込（`samples/tour-env/db/oracle_catalog`）は、パ�
 - **設計書**: 表の見出し行を語彙で探す方式です。結合セルが多い帳票型や図だけの設計書からは取り出せません。`.xls` / `.doc` には LibreOffice が必要です。
 - **静的解析の限界**: リフレクション・動的SQL・外部システム連携は依存グラフでは追えません。横断検索・独立再探索・実行時SQLとの突き合わせで補う形です。
 - **規模の係数は初期値**です。実績の登録による補正が前提です。
-- **修整工程とは未接続**（上の表の工程 5〜7）: 承認済みの影響一覧を MCP 経由で Claude Code などに渡して修整案を作り、実際の差分を予測と突き合わせて係数に戻す、という接続が次の拡張候補です。
+- **予測と実績の照合は要素の単位**です。差分の行を含む最小の要素で数えるため、同じ要素の中の別の箇所を直した場合も「当たり」になります。設計書の更新は差分に出ないため、照合の対象外です。
 
 ## ディレクトリ
 

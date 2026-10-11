@@ -5,6 +5,12 @@ server):  python -m himotoki.cli mcp   — stdio transport.
 Agents get structured answers (who calls this, which tables, which jobs, what a
 requirement or a change set reaches) instead of reading whole files, and the
 code itself never has to leave the network.
+
+Hand-off to development: `list_runs` → `get_handoff` (the reviewed scope as a
+work order) → implement → `verify_change` (the actual diff against the
+prediction).
+
+Claude Code:  claude mcp add --transport stdio --env HIMOTOKI_DATA_DIR=<workspace> himotoki -- himotoki mcp
 """
 from __future__ import annotations
 
@@ -24,8 +30,16 @@ _ws: Workspace | None = None
 def ws() -> Workspace:
     global _ws
     if _ws is None:
-        _ws = Workspace(os.environ.get("HIMOTOKI_DATA_DIR", "./data"))
+        from .setup_cmds import find_workspace
+        _ws = Workspace(os.environ.get("HIMOTOKI_DATA_DIR") or find_workspace() or "./data")
     return _ws
+
+
+def _run_engine(run_id: str):
+    e = ws().find_run(run_id)
+    if e is None:
+        raise ValueError(f"run {run_id} not found (list_runs shows the analyses)")
+    return e
 
 
 def _engine(graph: str | None):
@@ -97,7 +111,8 @@ def analyze_requirement(requirement: str, graph: str | None = None, top: int = 4
     cands = sorted(st["candidates"].values(), key=lambda c: -(c.get("confidence") or c["score"]))
     return {"run_id": rid, "intents": st["intents"],
             "candidates": [{k: c.get(k) for k in ("node_id", "kind", "name", "file", "line", "verdict", "confidence",
-                                                  "reason", "origin")} for c in cands[:top]],
+                                                  "reason", "origin", "tx_risks") if c.get(k) is not None}
+                           for c in cands[:top]],
             "total_candidates": len(cands),
             "checks": [{k: c[k] for k in ("key", "title", "ok", "detail")} for c in st["checks"]],
             "estimate_days": st["estimate"].get("days"), "llm_usage": st.get("llm_usage"),
@@ -117,6 +132,55 @@ def analyze_change(base: str, head: str, graph: str | None = None, repo: str | N
     st = e.state(rid)
     return {"run_id": rid, "changed_elements": len(nodes), "added_files": added, "scope": e.regression_scope(st),
             "markdown": e.scope_markdown(st, f"{base}..{head}")}
+
+
+@mcp.tool()
+def list_runs(graph: str | None = None, limit: int = 20) -> list[dict]:
+    """Impact analyses done so far (newest first), with whether they are approved and how
+    many elements were confirmed. Pick the run_id to hand off with get_handoff."""
+    out = []
+    names = [graph] if graph else list(ws().meta["graphs"])
+    for n in names:
+        e = ws().engine(n)
+        if not e:
+            continue
+        for r in e.runs.list():
+            st = e.state(r["id"]) or {}
+            cands = st.get("candidates", {}).values()
+            out.append({"run_id": r["id"], "graph": n, "title": r.get("title"), "requirement": (r.get("requirement") or "")[:200],
+                        "created_at": r.get("created_at"), "status": r.get("status"),
+                        "approved": bool(st.get("approved")),
+                        "confirmed": sum(1 for c in cands if (c.get("decision") or {}).get("status") == "confirmed"),
+                        "verified": bool(st.get("verification"))})
+    return sorted(out, key=lambda r: -(r.get("created_at") or 0))[:limit]
+
+
+@mcp.tool()
+def get_handoff(run_id: str, include_pending: bool = True) -> dict:
+    """The reviewed impact scope of an analysis as a work order for implementation:
+    files and elements to change (with the reviewers' reasons and comments), transaction /
+    integration risks, design documents to update, callers to re-check, tests to run,
+    elements excluded by reviewers (do not change them), undecided candidates, and the
+    rules to follow. `markdown` is the same content as a document. Stay within this scope;
+    ask a human before changing anything outside it."""
+    from .analysis.handoff import build_handoff, handoff_markdown
+    h = build_handoff(_run_engine(run_id), run_id, include_pending)
+    return dict(h, markdown=handoff_markdown(h))
+
+
+@mcp.tool()
+def verify_change(run_id: str, base: str, head: str, repo: str | None = None,
+                  actual_days: float | None = None) -> dict:
+    """After implementing: compare the actual change between two git refs with the
+    analysis. Returns hits, missed changes (with whether the analysis had found them and a
+    reviewer judged otherwise, or never reached them) and predicted elements left unchanged.
+    `repo` names the repository in a system graph; `actual_days` (person-days spent)
+    recalibrates the effort estimate. The result is stored on the run and shown in the viewer."""
+    from .analysis.handoff import verification_markdown, verify_change as _verify
+    e = _run_engine(run_id)
+    name = next(n for n in ws().meta["graphs"] if ws().engine(n) is e)
+    v = _verify(e, run_id, ws().change_hunks(name, base, head, repo), base, head, actual_days)
+    return dict(v, markdown=verification_markdown(v))
 
 
 @mcp.tool()

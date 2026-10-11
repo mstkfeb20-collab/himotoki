@@ -252,3 +252,18 @@ fieldset { border: 1px solid var(--line2); border-radius: 12px; padding: 12px 14
 .txbox li.tx-high { border-left-color: var(--red); }
 .txbox li.tx-medium { border-left-color: var(--amber); }
 .txcode { font-weight: 600; margin-right: 4px; color: var(--text); }
+
+/* hand-off to development */
+.handoff { width: min(860px, 100%); }
+.hs-sum { flex-wrap: wrap; gap: 6px 14px; }
+.hs-badge { font-size: 11px; border: 1px solid var(--amber); color: var(--amber); border-radius: 999px; padding: 1px 10px; }
+.hs-badge.ok { border-color: var(--cyan); color: var(--cyan); }
+.md-preview { max-height: 46vh; overflow: auto; background: var(--bg); border: 1px solid var(--line2); border-radius: 6px;
+  padding: 12px 14px; font-family: var(--mono); font-size: 12px; line-height: 1.6; white-space: pre-wrap; color: var(--text2); margin: 0; }
+.steps { display: grid; gap: 14px; padding-left: 18px; margin: 0; }
+.steps .hcmd { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; }
+.steps .hcmd code, .steps .hcmd pre { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--line2); border-radius: 6px;
+  padding: 8px 10px; font-family: var(--mono); font-size: 12px; white-space: pre-wrap; word-break: break-all; margin: 0; }
+.vlist { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.handoff p { margin: 0; }
+.handoff .stack { gap: 8px; }
