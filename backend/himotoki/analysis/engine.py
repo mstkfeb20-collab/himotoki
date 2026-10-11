@@ -19,13 +19,14 @@ condition holds.
 from __future__ import annotations
 
 import logging
+import math
 from functools import lru_cache
 import os
 import re
 import threading
 import time
 import uuid
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 from ..model import EDITABLE, Kind, LAYER, Rel
 from ..security import max_file_bytes, safe_join
@@ -56,6 +57,29 @@ STOP_TERMS = {"name", "type", "date", "list", "page", "view", "form", "find", "n
               "create", "add", "get", "set", "the", "and", "for", "with", "this", "that", "from", "string",
               "integer", "id", "description", "field", "column", "validation", "required", "address",
               "first", "last", "test", "tests", "main", "java", "html"}
+
+SPEC_RARE = 10            # a word used by at most this many elements is fully specific
+SPEC_COMMON = 0.02        # ... and one used by this share of the elements says nothing
+SPEC_FLOOR = 0.35         # share of a seed / sweep score kept for a word that says nothing
+GREP_MIN_SPEC = 0.3       # words below this specificity are left out of the keyword sweep
+GREP_MAX_TERMS = 12
+GREP_MAX_NEW = 300        # new candidates one sweep may add
+COMPOUND_SKIP = {"a", "an", "the", "as", "to", "of", "for", "in", "on", "and", "or", "with", "by", "from", "is", "be"}
+
+
+def compounds(text: str, by_name: dict) -> list[str]:
+    """Runs of 2-4 adjacent English words that name an existing identifier
+    ("mark as fraud" -> markAsFraud / markFraud, "working capital loan" -> WorkingCapitalLoan)."""
+    words = re.findall(r"[A-Za-z][A-Za-z0-9]*", text)
+    out = []
+    for seq in (words, [w for w in words if w.lower() not in COMPOUND_SKIP]):
+        for size in (4, 3, 2):
+            for i in range(len(seq) - size + 1):
+                key = "".join(w.lower() for w in seq[i:i + size])
+                if key in by_name and key not in out:
+                    out.append(key)
+    return out
+
 
 from .knowledge import LEARNED_REL  # noqa: E402
 
@@ -182,6 +206,7 @@ class Engine:
         self.llm = make_llm(dict(vocab), idents)
         self._fan_in: dict[str, int] = {}
         self._by_file = None
+        self._terms = None
         if hasattr(self, "_runtime_present"):
             del self._runtime_present
         rules = load_rules()
@@ -194,6 +219,51 @@ class Engine:
         if node_id not in self._fan_in:
             self._fan_in[node_id] = len(self.store.in_edges(node_id, [Rel.CALLS, Rel.REFERENCES]))
         return self._fan_in[node_id]
+
+    # ------------------------------------------------------------ term specificity
+    def _term_stats(self):
+        """How many seedable elements use each identifier word (and their lower-cased names)."""
+        if self._terms is None:
+            from ..text import split_ident
+            df, names = Counter(), []
+            for n in self.store.nodes():
+                if not seedable(n):
+                    continue
+                base = n.name.split(".")[-1].replace("()", "").split("/")[-1]
+                names.append(base.lower())
+                df.update(set(split_ident(base)))
+            self._terms = {"n": len(names), "df": df, "names": names, "sub": {}}
+        return self._terms
+
+    def term_df(self, term: str) -> int:
+        """Elements whose name contains the word (one word) or the run of words (a compound)."""
+        from ..text import split_ident
+        t = self._term_stats()
+        toks = split_ident(term)
+        if len(toks) == 1 and toks[0] in t["df"]:
+            return t["df"][toks[0]]
+        key = "".join(toks) or term.lower()
+        if key not in t["sub"]:
+            t["sub"][key] = sum(1 for nm in t["names"] if key in nm)
+        return t["sub"][key]
+
+    def specificity(self, term: str) -> float:
+        """1.0 for a word few elements use, 0.0 for one used everywhere (an IDF on identifier
+        words). In a large system "loan", "note" or "amount" say little about where a change is;
+        in a small one the same word can be decisive, so the bounds follow the system's size."""
+        return self._spec_of_count(self.term_df(term))
+
+    def _spec_of_count(self, d: int) -> float:
+        t = self._term_stats()
+        if d <= 0:
+            return 1.0
+        hi = SPEC_RARE
+        lo = max(SPEC_RARE * 5, t["n"] * SPEC_COMMON)
+        if d <= hi:
+            return 1.0
+        if d >= lo:
+            return 0.0
+        return round(math.log(lo / d) / math.log(lo / hi), 3)
 
     # ------------------------------------------------------------- state io
     def state(self, run_id: str) -> dict | None:
@@ -398,16 +468,23 @@ class Engine:
             if seedable(n):
                 by_name[n.name.split(".")[-1].replace("()", "").split("/")[-1].lower()].append(n)
         for it in st["intents"]:
-            # (a) exact identifier matches from the intent's keywords
-            for kw in it.get("keywords", []):
+            # (a) exact identifier matches from the intent's keywords, and from runs of
+            # adjacent words ("working capital loan" -> WorkingCapitalLoan), weighted by how
+            # specific the word is in this system
+            comp = compounds(it["summary"], by_name)
+            for kw in it.get("keywords", []) + comp:
                 if kw.lower() in STOP_TERMS:
                     continue
+                # a run of words is judged by how many elements carry exactly that name
+                spec = self._spec_of_count(len(by_name.get(kw, []))) if kw in comp else self.specificity(kw)
                 for n in by_name.get(kw.lower(), []):
                     if n.kind in (Kind.CLASS,) and it["change_type"] == "add":
                         continue  # handled by the entity pattern below
                     score = 0.9 if n.kind in (Kind.FIELD, Kind.COLUMN, Kind.MESSAGE) else 0.75
+                    score = round(score * (SPEC_FLOOR + (1 - SPEC_FLOOR) * spec), 3)
+                    note = "" if spec >= 0.99 else f"（システム内でよく使われる語のため確度を下げた: 特異度 {spec:.2f}）"
                     if self._add_candidate(st, n.id, score, "seed", it["id"],
-                                           reason=f"要求の語「{kw}」と識別子が一致"):
+                                           reason=f"要求の語「{kw}」と識別子が一致{note}"):
                         seeds.append((n.id, score))
             # (b) change pattern: add an attribute to an entity
             if it["change_type"] == "add" and it.get("new_terms") and not (it.get("values") or {}).get("old"):
@@ -867,7 +944,14 @@ class Engine:
             for kw in it.get("keywords", []) + it.get("new_terms", []):
                 if re.fullmatch(r"[A-Za-z_]\w{3,}", kw):
                     terms.add(kw)
-        return sorted(t for t in terms if t.lower() not in STOP_TERMS and len(t) >= 4)
+        terms = {t for t in terms if t.lower() not in STOP_TERMS and len(t) >= 4}
+        # words used all over the system match thousands of lines and hide the few that
+        # matter; they are left out of the sweep (and reported), the specific ones kept
+        spec = {t: self.specificity(t) for t in terms}
+        keep = sorted((t for t in terms if spec[t] >= GREP_MIN_SPEC), key=lambda t: (-spec[t], t))[:GREP_MAX_TERMS]
+        st["_grep_spec"] = {t: spec[t] for t in keep}
+        st["_grep_skipped"] = sorted(t for t in terms if t not in keep)
+        return sorted(keep)
 
     def _locate(self, file: str, line: int):
         """Smallest indexed element that contains file:line."""
@@ -905,17 +989,26 @@ class Engine:
             node = self._locate(h["file"], h["line"])
             h["node_id"] = node.id if node else f"file:{h['file']}"
             hits.append(h)
-        st["grep"] = {"terms": terms, "hits": hits[:3000], "backend": searcher.name, "total": len(hits)}
+        spec = st.pop("_grep_spec", {})
+        skipped = st.pop("_grep_skipped", [])
+        # the most specific words first, so the bound on new candidates keeps the telling hits
+        hits.sort(key=lambda h: (-spec.get(h["term"], 0.0), "/test/" in h["file"], h["file"], h["line"]))
+        st["grep"] = {"terms": terms, "hits": hits[:3000], "backend": searcher.name, "total": len(hits),
+                      "skipped_terms": skipped}
         new = 0
         added = []
         for h in hits:
             nid = h["node_id"]
             if nid in st["candidates"]:
                 continue
+            if new >= GREP_MAX_NEW:
+                st["grep"]["truncated"] = True
+                break
             virtual = None
             if not self.store.get(nid):
                 virtual = {"kind": Kind.CONFIG, "name": h["file"].split("/")[-1], "file": h["file"], "line": h["line"]}
-            if self._add_candidate(st, nid, 0.35, "grep", None, reason=f"キーワード「{h['term']}」が出現"
+            score = round(0.35 * (SPEC_FLOOR + (1 - SPEC_FLOOR) * spec.get(h["term"], 1.0)), 3)
+            if self._add_candidate(st, nid, score, "grep", None, reason=f"キーワード「{h['term']}」が出現"
                                    f"（{h['file']}:{h['line']}）。依存グラフからは未到達", virtual=virtual):
                 new += 1
                 added.append(nid)
@@ -1043,7 +1136,10 @@ class Engine:
              "ok": not open2, "open": open2},
             {"key": "grep", "title": "キーワード・SQL文字列の横断検索",
              "detail": f"語 {len(st.get('grep', {}).get('terms', []))} 個・ヒット {len(st.get('grep', {}).get('hits', []))} 行"
-                       f"（{len(hit_nodes)} 要素）のうち未判定 {len(open3)} 件",
+                       f"（{len(hit_nodes)} 要素）のうち未判定 {len(open3)} 件"
+                       + (f"。システム内で一般的すぎる語は除外: {', '.join(st['grep']['skipped_terms'][:8])}"
+                          if st.get("grep", {}).get("skipped_terms") else "")
+                       + ("。新しい候補は上限で打ち切り" if st.get("grep", {}).get("truncated") else ""),
              "ok": not open3, "open": open3},
             {"key": "crud", "title": "影響テーブルのCRUD全箇所",
              "detail": f"{len(st.get('crud', {}).get('tables', {}))} テーブルに触れる {len(crud_nodes)} 箇所のうち未判定 {len(open4)} 件",
