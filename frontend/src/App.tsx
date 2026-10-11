@@ -6,6 +6,7 @@ import Inspector from "./Inspector";
 import ListView from "./ListView";
 import ReqAid from "./ReqAid";
 import Tour from "./Tour";
+import { Hint, Term } from "./ui";
 import { isFiltered, sizeOf, visibleCandidates } from "./sizing";
 import { ChecksPanel, DiffPanel, EstimatePanel, IndexPanel, LogPanel, KnowledgePanel } from "./Panels";
 import type { Candidate, RunEvent, RunState, RunSummary, WorkspaceUsage } from "./types";
@@ -23,6 +24,8 @@ export default function App() {
   const [focusId, setFocusId] = useState<string | null>(null);
   const [side, setSide] = useState<Side>("checks");
   const [showNew, setShowNew] = useState(false);
+  const [showIndex, setShowIndex] = useState(false);
+  const [headErr, setHeadErr] = useState<string | null>(null);
   const [showHandoff, setShowHandoff] = useState(false);
   const [busy, setBusy] = useState(false);
   const [grouping, setGrouping] = useState(true);
@@ -31,12 +34,7 @@ export default function App() {
   const TOUR_KEY = "himotoki.tour.v1";
   const [tour, setTour] = useState(false);
   const [practice, setPractice] = useState<string | null>(null);
-  useEffect(() => {
-    // first visit: offer the walkthrough (browser storage may be unavailable; then it simply shows once per load)
-    let seen = false;
-    try { seen = localStorage.getItem(TOUR_KEY) === "1"; } catch { /* storage blocked */ }
-    if (!seen) setTour(true);
-  }, []);
+  // the full walkthrough is opened from "?" only; first-time help appears in place as one-line hints (ui.tsx Hint)
   const closeTour = () => { setTour(false); try { localStorage.setItem(TOUR_KEY, "1"); } catch { /* ignore */ } };
   const startPractice = async () => {
     closeTour();
@@ -69,7 +67,7 @@ export default function App() {
 
   const loadRuns = useCallback(() => api.runs().then(setRuns).catch(() => {}), []);
   useEffect(() => {
-    api.status().then((s) => { setStatus(s); if (!s.repo && !s.repos) setShowNew(true); }).catch(() => {});
+    api.status().then((s) => { setStatus(s); if (!s.repo && !s.repos) setShowIndex(true); }).catch(() => {});
     loadRuns();
   }, [loadRuns]);
   useEffect(() => { if (!runId && runs.length) setRunId(runs[0].id); }, [runs, runId]);
@@ -139,6 +137,30 @@ export default function App() {
 
   const changed = useCallback(() => { if (runId) refetch(runId); }, [runId, refetch]);
 
+  // where the review stands, and the one thing to do next
+  const checksOk = !!run && run.checks.length > 0 && run.checks.every((c) => c.ok);
+  const stage: 0 | 1 | 2 | 3 | 4 = !run || run.status === "running" ? 0 : stats.open > 0 ? 1 : !checksOk ? 2 : !run.approved ? 3 : 4;
+  const nextOpen = () => {
+    if (!run) return;
+    const rank = (c: Candidate) => (c.verdict === "impacted" ? 0 : c.verdict === "not_impacted" ? 2 : 1);
+    const open = Object.values(run.candidates).filter((c) => !c.decision)
+      .sort((a, b) => rank(a) - rank(b) || (b.confidence ?? b.score) - (a.confidence ?? a.score));
+    const cur = selected[0] && !run.candidates[selected[0]]?.decision ? selected[0] : null;
+    const target = open.find((c) => c.node_id !== cur) || open[0];
+    if (target) { setView("list"); select([target.node_id]); }
+  };
+  const approve = async () => {
+    if (!run) return;
+    setHeadErr(null);
+    try { await api.approve(run.id); changed(); } catch (e: any) { setHeadErr(e.message); setSide("checks"); }
+  };
+  const primary: { label: string; title: string; act: () => void } | null =
+    stage === 1 ? { label: `次の未判定へ ${stats.open}`, title: "確認する順で、まだ判断していない候補を選びます", act: nextOpen }
+    : stage === 2 ? { label: "全数判定を確認", title: "承認の前に満たす条件を確認します", act: () => setSide("checks") }
+    : stage === 3 ? { label: "承認する", title: "影響範囲と規模を確定します", act: approve }
+    : stage === 4 ? { label: "開発へ渡す", title: "確定した影響範囲を作業指示にして渡します", act: () => setShowHandoff(true) }
+    : null;
+
   const openReport = async () => {
     if (!run) return;
     const md = await api.report(run.id);
@@ -156,20 +178,31 @@ export default function App() {
           </select>
           <button className="btn small" onClick={() => setShowNew(true)}>新しい解析</button>
         </div>
-        <div className="progress">
-          <div className="bar"><div className="fill amber" style={{ width: `${(run?.progress ?? 0) * 100}%` }} /></div>
-          <span className="mono small amber-t">{run ? (run.status === "done" ? "完了" : run.status === "error" ? "エラー" : `${phaseLabel(run.phase)} ${Math.round(run.progress * 100)}%`) : "—"}</span>
-        </div>
-        <div className="stats">
-          <Stat k="確定" v={stats.ok} cls="cyan-t" /><Stat k="未判定" v={stats.open} cls="amber-t" />
-          <Stat k="除外" v={stats.ex} cls="dim" />
-          <Stat k="規模" v={run?.estimate?.days ?? "—"} unit="人日" />
+        {run && run.status !== "done" ? (
+          <div className="runbar">
+            <div className="bar"><div className="fill run" style={{ width: `${(run.progress ?? 0) * 100}%` }} /></div>
+            <span className="small">{run.status === "error" ? "エラー" : `${phaseLabel(run.phase)} ${Math.round(run.progress * 100)}%`}</span>
+          </div>
+        ) : (
+          <ol className="stages" aria-label="作業の段階">
+            {(["候補を判断", "全数判定", "承認", "開発へ渡す"]).map((l, i) => (
+              <li key={l} className={`stg${stage > i + 1 || (i === 3 && run?.verification) ? " done" : ""}${stage === i + 1 ? " now" : ""}`}
+                aria-current={stage === i + 1 ? "step" : undefined}>
+                <span className="n">{stage > i + 1 ? "✓" : i + 1}</span><span className="lbl">{i === 1 ? <Term k="全数判定" /> : l}</span>
+              </li>
+            )).flatMap((el, i) => (i ? [<span key={`s${i}`} className="sep" aria-hidden="true" />, el] : [el]))}
+          </ol>
+        )}
+        <div className="stats compact">
+          <Stat k={<Term k="規模" />} v={run?.estimate?.days ?? "—"} unit="人日" />
           <AiCost run={run} ws={wsUsage} />
         </div>
-        <button className="btn small" disabled={!run} onClick={openReport}>レポート</button>
-        <button className="btn small primary" disabled={!run} onClick={() => setShowHandoff(true)}
-          title="確定した影響範囲を作業指示にして、開発（Claude Code など）へ渡します">開発へ渡す</button>
-        <button className="btn small ghost" onClick={() => setTour(true)} title="画面の使い方を順に案内します">使い方</button>
+        {headErr && <span className="warn small" role="alert">{headErr}</span>}
+        {primary && <button className="btn small primary next-btn" onClick={primary.act} title={primary.title}>{primary.label}</button>}
+        {stage !== 4 && <button className="btn small ghost" disabled={!run} onClick={() => setShowHandoff(true)}
+          title="確定した影響範囲を作業指示にして、開発（Claude Code など）へ渡します">開発へ渡す</button>}
+        <button className="btn small ghost" disabled={!run} onClick={openReport}>レポート</button>
+        <button className="icon help" onClick={() => setTour(true)} title="画面の使い方を順に案内します" aria-label="使い方">?</button>
       </header>
 
       <main className="main">
@@ -195,7 +228,7 @@ export default function App() {
                   {grouping && expanded.size > 0 && <button className="chip" onClick={() => setExpanded(new Set())}>畳み直す</button>}
                 </>
               )}
-              <label className="slider"><span className="k">確度</span>
+              <label className="slider"><span className="k"><Term k="確度" /></span>
                 <input type="range" min={0} max={0.9} step={0.05} value={filters.minConf}
                   onChange={(e) => setFilters((f) => ({ ...f, minConf: Number(e.target.value) }))} />
                 <span className="mono small">{filters.minConf.toFixed(2)}+</span></label>
@@ -220,9 +253,8 @@ export default function App() {
             expanded={expanded} grouping={grouping} onExpand={(k) => setExpanded((e) => new Set(e).add(k))} />
           )}
           {shownView === "graph" && <div className="legend">
-            <span><i className="dot cyan" />確定</span><span><i className="dot amber" />影響あり(AI)</span>
-            <span><i className="dot amber dashed" />要確認(AI)</span><span><i className="dot" />影響低・未判定</span>
-            <span><i className="dot violet" />人が追加</span>
+            <span><i className="dot cyan" />確定・人が追加</span><span><i className="dot blue" />影響あり</span>
+            <span><i className="dot amber dashed" />要確認</span><span><i className="dot" />影響低・未判定</span>
             {nCands > AGGREGATE_ABOVE && grouping && <span><i className="dot agg" />まとめ（クリックで展開）</span>}<span className="muted">内側から 機能 / コード / データ / テスト / 設計書</span>
           </div>}
         </section>
@@ -233,7 +265,8 @@ export default function App() {
             <div className="pane sidepanel">
               <div className="tabs">
                 {([["checks", "全数判定"], ["estimate", "規模"], ["log", "ログ"], ["diff", "差分"], ["index", "取込状況"], ["learn", "学習"]] as [Side, string][]).map(([k, l]) => (
-                  <button key={k} className={side === k ? "tab on" : "tab"} aria-selected={side === k} role="tab" onClick={() => setSide(k)}>{l}</button>
+                  <button key={k} className={side === k ? "tab on" : "tab"} aria-selected={side === k} role="tab" onClick={() => setSide(k)}>
+                    {["checks", "estimate", "index", "learn"].includes(k) ? <Term k={l} /> : l}</button>
                 ))}
               </div>
               <div className="tabbody">
@@ -253,22 +286,24 @@ export default function App() {
       {run && <CommandBar run={run} selected={selected} setBusy={setBusy} onRun={(id) => { loadRuns(); setRunId(id); }} onChanged={changed} onSelect={select} />}
       {tour && <Tour onClose={closeTour} onPractice={startPractice} steps={[
         { title: "himotoki へようこそ", body: "要求（仕様書の一文やチャットの内容）から、影響するソースコード・SQL・画面・ジョブ・設計書を洗い出し、修正の規模を見積もるツールです。コードは書き換えません。画面の各部分を順に紹介します。" },
-        { sel: ".brand .btn", title: "1. 新しい解析", body: "ここから要求を入力して解析を始めます。テンプレートと書き方の確認があるので、どう書けばよいか迷ったら使ってください。" },
+        { sel: ".brand .btn", title: "1. 新しい解析", body: "ここから要求を入力して解析を始めます。テンプレートと書き方の確認があるので、どう書けばよいか迷ったら使ってください。リポジトリの取り込み・更新もここから開けます。" },
         { sel: ".runsel", title: "2. 解析の切り替え", body: "これまでの解析と再調査の結果を選べます。「↳」は再調査（前回の判断を引き継いだやり直し）です。" },
         { sel: ".viewtabs", title: "3. リストとグラフ", before: () => setView("list"), body: "リストは確認作業用、グラフは全体像や説明用です。解析中はグラフ、終わるとリストに自動で切り替わります。" },
         { sel: ".lv-rows", before: () => setView("list"), title: "4. 上から順に確認する", body: "「影響ありの可能性が高い」から順に並んでいます。行を選ぶと右に根拠・コード・設計書が出ます。確定（c キー）・除外（x キー、理由を記録）で判断すると、次の行に進みます。" },
         { sel: ".chips", title: "5. 絞り込み", body: "機能・コード・データ・テスト・設計書の層や、未判定だけ・確度で絞り込めます。絞り込むと、その範囲の件数と規模（人日）も出ます。" },
         { sel: ".side .tabs", title: "6. 全数判定・規模・取込状況", body: "全数判定タブの条件がすべて満たされると、影響範囲として承認できます。規模タブには層ごとの内訳、取込状況タブには解析の死角（読めなかった参照など）が出ます。" },
         { sel: ".cmd", title: "7. 再調査・質問・漏れの追加", body: "「設計書と照合して」「DBまで追って」などの指示で再調査したり、漏れている要素を追加したりできます。" },
-        { sel: ".stats", title: "8. 進み具合と費用", body: "確定・未判定・除外の件数、規模（人日）、AIの費用がここに出ます。AIを使うたびに費用が更新されます。" },
+        { sel: ".stages", title: "8. 段階と次にやること", body: "候補の判断 → 全数判定 → 承認 → 開発へ渡す、のどこにいるかを表示し、右のボタンがいま次にやることになります。未判定の件数・規模（人日）・AIの費用も出ます。" },
         { title: "練習してみましょう", body: "このリポジトリから作った例文で解析を始めます。結果をリストで上から確認し、確定・除外を何件か試してみてください（練習の解析はあとから無視して構いません）。" },
       ]} />}
       {showNew && <NewRun status={status} initialReq={practice ?? undefined} onClose={() => { setShowNew(false); setPractice(null); }}
-        onIndexed={() => api.status().then(setStatus)}
+        onOpenIndex={() => setShowIndex(true)}
         onCreated={(id) => { setShowNew(false); loadRuns(); setRunId(id); }} />}
+      {showIndex && <IndexDialog status={status} onClose={() => setShowIndex(false)}
+        onIndexed={() => api.status().then((s) => { setStatus(s); })} onDone={() => { setShowIndex(false); setShowNew(true); }} />}
       {showHandoff && run && <HandoffDialog run={run} status={status} graphName={runs.find((r) => r.id === run.id)?.graph}
         onClose={() => setShowHandoff(false)} onChanged={changed} />}
-      {!run && !showNew && <div className="empty">解析がありません。「新しい解析」から要求を投入してください。</div>}
+      {!run && !showNew && !showIndex && <div className="empty">解析がありません。「新しい解析」から要求を投入してください。</div>}
     </div>
   );
 }
@@ -313,7 +348,7 @@ function FilteredSize({ run, filters, onReset }: { run: RunState; filters: Filte
   );
 }
 
-function Stat({ k, v, cls = "", unit }: { k: string; v: number | string; cls?: string; unit?: string }) {
+function Stat({ k, v, cls = "", unit }: { k: React.ReactNode; v: number | string; cls?: string; unit?: string }) {
   return <div className="stat"><span className="k">{k}</span><span className={`mono val ${cls}`}>{v}{unit && <small> {unit}</small>}</span></div>;
 }
 
@@ -381,17 +416,77 @@ function parseRepos(lines: string[]): Record<string, string> {
   return out;
 }
 
-function NewRun({ status, onClose, onCreated, onIndexed, initialReq }: { status: any; onClose: () => void; onCreated: (id: string) => void; onIndexed: () => void; initialReq?: string }) {
+/** Bringing repositories in (or refreshing them) — set-up work, kept apart from starting an analysis. */
+function IndexDialog({ status, onClose, onIndexed, onDone }: { status: any; onClose: () => void; onIndexed: () => void; onDone: () => void }) {
   const graphs: Record<string, any> = status?.graphs || {};
   const [graph, setGraph] = useState<string>(status?.graph || "");
   const g = graphs[graph] || {};
   const [repo, setRepo] = useState(repoText(g) || status?.repo || "");
   const [sysName, setSysName] = useState(g.repos ? graph : "system");
-  const [changedRepo, setChangedRepo] = useState("");
   const repoLines = repo.split("\n").map((l: string) => l.trim()).filter(Boolean);
   const isSystem = repoLines.length > 1 || !!g.repos;
   const [docs, setDocs] = useState(g.docs_dir || status?.docs_dir || "");
   const [ref, setRef] = useState(g.ref || "");
+  const [idx, setIdx] = useState<any>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const reindex = async () => {
+    setErr(null);
+    try {
+      const r = isSystem ? await api.indexSystem(parseRepos(repoLines), sysName.trim(), docs)
+        : await api.index(repo.trim(), docs, ref);
+      setGraph(r.graph);
+      const poll = async () => {
+        const st = await api.indexStatus(r.graph);
+        setIdx(st);
+        if (st.status === "running") setTimeout(poll, 500); else onIndexed();
+      };
+      poll();
+    } catch (e: any) { setErr(e.message); }
+  };
+  const first = Object.keys(graphs).length === 0;
+  return (
+    <div className="modal-bg" role="dialog" aria-modal="true" aria-label="リポジトリの取り込み">
+      <div className="modal pane">
+        <div className="row between"><h2>{first ? "はじめに: リポジトリを取り込む" : "リポジトリの取り込み・更新"}</h2>
+          <button className="icon" aria-label="閉じる" onClick={onClose}>×</button></div>
+        <p className="muted small">解析の前に一度だけ行う準備です。ソースや設計書を更新したら、ここから取り込み直します（変わったファイルだけ読み直すので速く終わります）。
+          コマンドで行う場合は <span className="mono">himotoki index</span>。</p>
+        {!first && (
+          <label className="field"><span className="k">取り込み済みのシステム</span>
+            <select className="input mono graphsel" value={graph} onChange={(e) => {
+              const n = e.target.value; setGraph(n); const x = graphs[n] || {};
+              setRepo(repoText(x)); setSysName(x.repos ? n : "system"); setDocs(x.docs_dir || ""); setRef(x.ref || ""); setIdx(null);
+            }}>
+              {Object.entries(graphs).map(([n, x]) => <option key={n} value={n}>{n}（{x.nodes ?? "?"} 要素）</option>)}
+            </select></label>
+        )}
+        <label className="field"><span className="k">リポジトリのパス（複数サーバで1つの業務を構成する場合は1行に1つ。<span className="mono">名前=パス</span> も可）</span>
+          <textarea className="input mono" rows={Math.min(5, Math.max(1, repoLines.length + (repo.endsWith("\n") ? 1 : 0)))} value={repo}
+            onChange={(e) => setRepo(e.target.value)} placeholder="/path/to/repo" /></label>
+        {isSystem && <label className="field"><span className="k">システム名（複数リポジトリを1つのグラフにまとめます）</span>
+          <input className="input mono" value={sysName} onChange={(e) => setSysName(e.target.value)} placeholder="sor" /></label>}
+        <label className="field"><span className="k">設計書・運用資産フォルダ（任意・Excel/Word/Markdown、ジョブ定義、シェル）</span><input className="input mono" value={docs} onChange={(e) => setDocs(e.target.value)} placeholder="/path/to/design-docs" /></label>
+        <details className="details"><summary>ブランチ・タグを指定する（任意）</summary>
+          <label className="field"><span className="k">指定するとその時点のスナップショットを別のグラフとして作成します</span><input className="input mono" value={ref} onChange={(e) => setRef(e.target.value)} placeholder="main / release/1.2" /></label>
+        </details>
+        <p className="small muted">{idx?.status === "running" ? "取り込み中…" : idx?.status === "error" ? "" : idx?.stats ? `取り込みました: 要素 ${idx.stats.nodes}・関係 ${idx.stats.edges}（${idx.stats.seconds}秒）` : ""}</p>
+        {(err || idx?.status === "error") && <p className="warn small">{err || idx?.error}</p>}
+        <div className="actions end">
+          <button className="btn ghost" onClick={onClose}>閉じる</button>
+          {idx?.status === "done"
+            ? <button className="btn primary" onClick={onDone}>解析を始める</button>
+            : <button className="btn primary" disabled={!repo.trim() || idx?.status === "running"} onClick={reindex}>取り込む</button>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function NewRun({ status, onClose, onCreated, onOpenIndex, initialReq }: { status: any; onClose: () => void; onCreated: (id: string) => void; onOpenIndex: () => void; initialReq?: string }) {
+  const graphs: Record<string, any> = status?.graphs || {};
+  const [graph, setGraph] = useState<string>(status?.graph || "");
+  const g = graphs[graph] || {};
+  const [changedRepo, setChangedRepo] = useState("");
   const [mode, setMode] = useState<"req" | "diff">("req");
   const [base, setBase] = useState(g.ref || "main");
   const [head, setHead] = useState("");
@@ -404,22 +499,7 @@ function NewRun({ status, onClose, onCreated, onIndexed, initialReq }: { status:
   const [learning, setLearning] = useState(true);
   const [aiDefault, setAiDefault] = useState<{ min_score: number; max_items: number | "unlimited" } | null>(null);
   useEffect(() => { api.llmSettings().then((r) => setAiDefault(r.effective)).catch(() => {}); }, []);
-  const [idx, setIdx] = useState<any>(status?.index);
   const [err, setErr] = useState<string | null>(null);
-  const reindex = async () => {
-    setErr(null);
-    try {
-      const r = isSystem ? await api.indexSystem(parseRepos(repoLines), sysName.trim(), docs)
-        : await api.index(repo.trim(), docs, ref);
-      setGraph(r.graph);
-      const poll = async () => {
-        const s = await api.indexStatus(r.graph);
-        setIdx(s);
-        if (s.status === "running") setTimeout(poll, 500); else onIndexed();
-      };
-      poll();
-    } catch (e: any) { setErr(e.message); }
-  };
   const create = async () => {
     setErr(null);
     try {
@@ -432,33 +512,22 @@ function NewRun({ status, onClose, onCreated, onIndexed, initialReq }: { status:
     }
     catch (e: any) { setErr(e.message); }
   };
+  const none = Object.keys(graphs).length === 0;
   return (
     <div className="modal-bg" role="dialog" aria-modal="true" aria-label="新しい解析">
       <div className="modal pane">
         <div className="row between"><h2>新しい解析</h2><button className="icon" aria-label="閉じる" onClick={onClose}>×</button></div>
-        <fieldset>
-          <legend className="k">対象リポジトリ</legend>
-          {Object.keys(graphs).length > 0 && (
-            <label className="field"><span className="k">インデックス済みのグラフ</span>
-              <select className="input mono graphsel" value={graph} onChange={(e) => {
-                const n = e.target.value; setGraph(n); const x = graphs[n] || {};
-                setRepo(repoText(x)); setSysName(x.repos ? n : "system"); setChangedRepo(""); setDocs(x.docs_dir || ""); setRef(x.ref || ""); setBase(x.ref || "main"); setIdx(null);
-              }}>
-                {Object.entries(graphs).map(([n, x]) => <option key={n} value={n}>{n}（{x.nodes ?? "?"} ノード）</option>)}
-              </select></label>
-          )}
-          <label className="field"><span className="k">リポジトリのパス（複数サーバで1つの業務を構成する場合は1行に1つ。<span className="mono">名前=パス</span> も可）</span>
-            <textarea className="input mono" rows={Math.min(5, Math.max(1, repoLines.length + (repo.endsWith("\n") ? 1 : 0)))} value={repo}
-              onChange={(e) => setRepo(e.target.value)} placeholder="/path/to/repo" /></label>
-          {isSystem && <label className="field"><span className="k">システム名（複数リポジトリを1つのグラフにまとめます）</span>
-            <input className="input mono" value={sysName} onChange={(e) => setSysName(e.target.value)} placeholder="sor" /></label>}
-          <label className="field"><span className="k">設計書・運用資産フォルダ（任意・Excel/Word/Markdown、ジョブ定義、シェル）</span><input className="input mono" value={docs} onChange={(e) => setDocs(e.target.value)} placeholder="/path/to/design-docs" /></label>
-          <label className="field"><span className="k">ブランチ・タグ（任意。指定するとその時点のスナップショットを別グラフとして作成）</span><input className="input mono" value={ref} onChange={(e) => setRef(e.target.value)} placeholder="main / release/1.2" /></label>
-          <div className="row between">
-            <span className="muted small">{idx?.status === "running" ? "インデックス作成中…" : idx?.stats ? `ノード ${idx.stats.nodes}・関係 ${idx.stats.edges}（${idx.stats.seconds}秒）` : "未インデックス"}</span>
-            <button className="btn small" disabled={!repo || idx?.status === "running"} onClick={reindex}>インデックス作成</button>
-          </div>
-        </fieldset>
+        {none ? (
+          <div className="stack"><p className="small">まだリポジトリが取り込まれていません。先に取り込んでください。</p>
+            <div><button className="btn primary" onClick={() => { onClose(); onOpenIndex(); }}>リポジトリを取り込む</button></div></div>
+        ) : (<>
+        <div className="target-row">
+          <label className="field"><span className="k">対象のシステム</span>
+            <select className="input mono graphsel" value={graph} onChange={(e) => { setGraph(e.target.value); setChangedRepo(""); setBase(graphs[e.target.value]?.ref || "main"); }}>
+              {Object.entries(graphs).map(([n, x]) => <option key={n} value={n}>{n}（{x.nodes ?? "?"} 要素）</option>)}
+            </select></label>
+          <button className="btn small ghost" onClick={() => { onClose(); onOpenIndex(); }}>取り込み・更新…</button>
+        </div>
         <div className="modes" role="radiogroup" aria-label="解析の起点">
           {([["req", "要求から"], ["diff", "変更差分から"]] as const).map(([k, l]) => (
             <button type="button" key={k} role="radio" aria-checked={mode === k} className={mode === k ? "mode on" : "mode"} onClick={() => setMode(k)}>{l}</button>
@@ -482,28 +551,33 @@ function NewRun({ status, onClose, onCreated, onIndexed, initialReq }: { status:
             <p className="muted small">変更された行を含む要素を起点に、回帰確認の範囲（テスト・画面・ジョブ・設計書）を出します。</p>
           </div>
         )}
-        <div className="grid3">
-          <label className="field"><span className="k">タイトル</span><input className="input" value={title} onChange={(e) => setTitle(e.target.value)} /></label>
-          <label className="field"><span className="k">探索の深さ</span><input className="input" type="number" min={1} max={6} value={depth} onChange={(e) => setDepth(Number(e.target.value))} /></label>
-          <label className="field"><span className="k">表示ウェイト(秒)</span><input className="input" type="number" min={0} max={1} step={0.01} value={pace} onChange={(e) => setPace(Number(e.target.value))} /></label>
-        </div>
-        {status?.llm === "claude" && mode === "req" && (
-          <div className="grid3">
-            <label className="field"><span className="k">AI判定の上限件数</span>
-              <input className="input mono" value={aiMax} onChange={(e) => setAiMax(e.target.value)}
-                placeholder={aiDefault ? `既定 ${aiDefault.max_items}（unlimited で上限なし）` : "unlimited で上限なし"} /></label>
-            <label className="field"><span className="k">AIに回す最低スコア</span>
-              <input className="input mono" type="number" min={0} max={1} step={0.05} value={aiMin}
-                onChange={(e) => setAiMin(e.target.value)} placeholder={aiDefault ? `既定 ${aiDefault.min_score}` : ""} /></label>
-            <p className="muted small">上限を超えた候補と低スコアの候補はルールで判定し、要確認として残ります。</p>
+        <details className="details"><summary>詳細設定（タイトル・探索の深さ・AI判定・学習）</summary>
+          <div className="stack">
+            <div className="grid3">
+              <label className="field"><span className="k">タイトル</span><input className="input" value={title} onChange={(e) => setTitle(e.target.value)} /></label>
+              <label className="field"><span className="k">探索の深さ</span><input className="input" type="number" min={1} max={6} value={depth} onChange={(e) => setDepth(Number(e.target.value))} /></label>
+              <label className="field"><span className="k">表示ウェイト(秒)</span><input className="input" type="number" min={0} max={1} step={0.01} value={pace} onChange={(e) => setPace(Number(e.target.value))} /></label>
+            </div>
+            {status?.llm === "claude" && mode === "req" && (
+              <div className="grid3">
+                <label className="field"><span className="k">AI判定の上限件数</span>
+                  <input className="input mono" value={aiMax} onChange={(e) => setAiMax(e.target.value)}
+                    placeholder={aiDefault ? `既定 ${aiDefault.max_items}（unlimited で上限なし）` : "unlimited で上限なし"} /></label>
+                <label className="field"><span className="k">AIに回す最低スコア</span>
+                  <input className="input mono" type="number" min={0} max={1} step={0.05} value={aiMin}
+                    onChange={(e) => setAiMin(e.target.value)} placeholder={aiDefault ? `既定 ${aiDefault.min_score}` : ""} /></label>
+                <p className="muted small">上限を超えた候補と低スコアの候補はルールで判定し、要確認として残ります。</p>
+              </div>
+            )}
+            {mode === "req" && <label className="row small learnopt"><input type="checkbox" checked={learning} onChange={(e) => setLearning(e.target.checked)} />
+              過去の判断・実績から学んだ補正を使う（このシステムで確定・除外した経路や要素、実装の照合結果）</label>}
           </div>
-        )}
-        {mode === "req" && <label className="row small learnopt"><input type="checkbox" checked={learning} onChange={(e) => setLearning(e.target.checked)} />
-          過去の判断・実績から学んだ補正を使う（このシステムで確定・除外した経路や要素、実装の照合結果）</label>}
-        <p className="muted small">判定方式: {status?.llm === "claude" ? "Claude API" : "ルールベース（ANTHROPIC_API_KEY を設定するとClaudeで判定）"}・ストア: {status?.store}</p>
+        </details>
+        <p className="muted small">判定方式: {status?.llm === "claude" ? "Claude API" : "ルールベース（ANTHROPIC_API_KEY を設定するとClaudeで判定）"}</p>
+        </>)}
         {err && <p className="warn small">{err}</p>}
         <div className="actions end"><button className="btn ghost" onClick={onClose}>閉じる</button>
-          <button className="btn primary" disabled={(mode === "req" ? !req.trim() : !head.trim()) || (!status?.repo && !idx?.stats)} onClick={create}>解析を開始</button></div>
+          {!none && <button className="btn primary" disabled={mode === "req" ? !req.trim() : !head.trim()} onClick={create}>解析を開始</button>}</div>
       </div>
     </div>
   );

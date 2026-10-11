@@ -1,12 +1,18 @@
 import { TX_LABEL } from "./ListView";
+import { Hint, judgedSuffix } from "./ui";
 import { useEffect, useRef, useState } from "react";
 import { api } from "./api";
 import { statusOf } from "./Graph";
 import type { Candidate, NodeDetail, RunState } from "./types";
 
 const STATUS_LABEL: Record<string, string> = {
-  confirmed: "確定", human: "人が追加", excluded: "除外", impacted: "影響あり（AI）", uncertain: "要確認（AI）",
-  low: "影響低（AI）", pending: "未判定",
+  confirmed: "確定", human: "人が追加", excluded: "除外", impacted: "影響あり", uncertain: "要確認",
+  low: "影響低", pending: "未判定",
+};
+/** The verdict with how it was reached: rule-based judgement is never shown as AI. */
+const statusText = (c: Candidate) => {
+  const st = statusOf(c);
+  return STATUS_LABEL[st] + (["impacted", "uncertain", "low"].includes(st) ? judgedSuffix(c) : "");
 };
 const ORIGIN_LABEL: Record<string, string> = {
   seed: "要求から直接", pattern: "変更パターン", graph: "依存の追跡", grep: "横断検索", shadow: "独立再探索",
@@ -76,7 +82,7 @@ function Multi({ run, ids, onChanged, onSelect }: { run: RunState; ids: string[]
       <span className="k">{cs.length} 件を選択中</span>
       <ul className="list scroll">
         {cs.map((c) => <li key={c.node_id}><button className="link" onClick={() => onSelect([c.node_id], true)}>{c.name}</button>
-          <span className={`badge s-${statusOf(c)}`}>{STATUS_LABEL[statusOf(c)]}</span></li>)}
+          <span className={`badge s-${statusOf(c)}`}>{statusText(c)}</span></li>)}
       </ul>
       <label className="k" htmlFor="bulk-reason">理由（除外時は必須）</label>
       <input id="bulk-reason" className="input" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="例: 表示専用で今回の変更対象外" />
@@ -130,13 +136,14 @@ function Single({ run, c, onSelect, onChanged, busy }: {
     <div className="pane inspector">
       <div className="row between">
         <span className="k">{LAYER_LABEL[c.layer] || c.layer} · {c.kind}</span>
-        <span className={`badge s-${st}`}>{STATUS_LABEL[st]}</span>
+        <span className={`badge s-${st}`}>{statusText(c)}</span>
       </div>
       <h2 className="mono title">{c.name}</h2>
       {c.file && <span className="mono dim small">{c.file}{c.line ? `:${c.line}` : ""}</span>}
       <div className="row conf"><div className="bar"><div style={{ width: `${conf * 100}%` }} className={`fill s-${st}`} /></div>
         <span className="mono small">確度 {conf.toFixed(2)}</span></div>
       <p className="reason">{c.reason || c.seed_reason}</p>
+      <Hint id="inspector">「根拠」は要求からこの要素までのつながり、「コード」は該当行です。設計書・テストのタブも確認できます。</Hint>
       {(c.learned?.length || 0) > 0 && (
         <section className="txbox learnbox" aria-label="過去の判断・実績">
           <div className="k">過去の判断・実績（このシステムで学んだこと）</div>
