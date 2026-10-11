@@ -3,6 +3,7 @@ import { api } from "./api";
 import type { Filters } from "./Graph";
 import { elementSize, isFiltered, sizeOf, visibleCandidates } from "./sizing";
 import type { Candidate, RunState } from "./types";
+import { Hint } from "./ui";
 
 /** What kind of thing a candidate is, in words a reviewer uses. */
 export const KIND_JA: Record<string, string> = {
@@ -17,7 +18,7 @@ const LAYER_JA: Record<string, string> = { feature: "機能", code: "コード",
 
 type Group = "todo-impacted" | "todo-uncertain" | "todo-low" | "done";
 const GROUPS: { key: Group; title: string; hint: string }[] = [
-  { key: "todo-impacted", title: "影響ありの可能性が高い", hint: "AIまたはルールで「影響あり」。中身を見て確定してください" },
+  { key: "todo-impacted", title: "影響ありの可能性が高い", hint: "判定が「影響あり」。中身を見て確定してください" },
   { key: "todo-uncertain", title: "要確認", hint: "根拠が弱い、または判定が割れたもの。開いて判断してください" },
   { key: "todo-low", title: "影響は低そう", hint: "つながりが弱いもの。問題なければまとめて除外できます" },
   { key: "done", title: "判断済み", hint: "" },
@@ -39,6 +40,19 @@ function byLabel(c: Candidate): string {
     case null: case undefined: return "";
     default: return "ルール";
   }
+}
+
+/** At most two badges, most important first (transaction risk > learned > how it was judged); the rest is in the inspector. */
+function rowBadges(c: Candidate) {
+  const out: JSX.Element[] = [];
+  if ((c.tx_risks?.length || 0) > 0 || c.tx) out.push(<TxBadge key="tx" c={c} />);
+  if ((c.learned?.length || 0) > 0) out.push(
+    <span key="ln" className="lnb" title={c.learned!.map((n) => n.message).join("\n")}>
+      学習{c.learned!.some((n) => n.type === "missed_before" || n.type === "learned_link") ? "・実績" : ""}</span>);
+  // plain rule-based judgement is the default and is said once in the inspector; only exceptions get a badge
+  const by = byLabel(c);
+  if (by && by !== "ルール") out.push(<span key="by" className="by">{by}</span>);
+  return out.slice(0, 2);
 }
 
 function where(c: Candidate): string {
@@ -156,11 +170,8 @@ export default function ListView({ run, filters, selected, onSelect, onChanged, 
             <div className="nm">{c.name}</div>
             <div className="meta">
               <span>{KIND_JA[c.kind] || c.kind}</span>
-              <TxBadge c={c} />
-              {(c.learned?.length || 0) > 0 && <span className="lnb" title={c.learned!.map((n) => n.message).join("\n")}>
-                学習{c.learned!.some((n) => n.type === "missed_before" || n.type === "learned_link") ? "・実績" : ""}</span>}
-              {where(c) && <span className="mono">{where(c)}</span>}
-              {byLabel(c) && <span className="by">{byLabel(c)}</span>}
+              {where(c) && <span className="mono loc">{where(c)}</span>}
+              {rowBadges(c)}
             </div>
           </div>
           <div className="lrow-reason">{c.decision?.reason ? `「${c.decision.reason}」` : (c.reason || c.seed_reason || "")}</div>
@@ -253,6 +264,7 @@ export default function ListView({ run, filters, selected, onSelect, onChanged, 
       )}
       {err && <p className="warn small">{err}</p>}
 
+      <Hint id="list">上から順に行を選び、右の根拠とコードを見て「確定」か「除外…」を押します（キーボードの <b>c</b>・<b>x</b>、移動は <b>↑↓</b>）。判断すると次の行に進みます。</Hint>
       <div className="lv-rows" ref={listRef} role="grid" aria-label="影響候補の一覧">
         {sort === "priority" ? GROUPS.map((g) => {
           const cs = grouped[g.key];
