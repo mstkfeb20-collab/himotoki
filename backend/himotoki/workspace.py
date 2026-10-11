@@ -1,6 +1,6 @@
 """Workspace: several graphs (one per repository / branch) sharing one fact cache.
 
-    <CODEGRAPH_DATA_DIR>/
+    <HIMOTOKI_DATA_DIR>/
       facts.db                 content-addressed extraction cache (shared)
       sources/                 DB catalogs and runtime SQL imports (shared)
       worktrees/<ref>/         git worktrees for branch snapshots
@@ -22,7 +22,7 @@ from .security import atomic_write_json
 from .store import open_store
 
 
-log = logging.getLogger("codegraph.workspace")
+log = logging.getLogger("himotoki.workspace")
 
 class Workspace:
     def __init__(self, root: str):

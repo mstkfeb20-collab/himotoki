@@ -1,8 +1,8 @@
 """Code search back-ends used by the keyword sweep (blind-spot check).
 
   local   `git grep` in the working copy (default; falls back to a Python scan)
-  zoekt   a Zoekt server's JSON API          CODEGRAPH_CODESEARCH=zoekt:http://zoekt:6070
-  gitlab  GitLab's blob search API           CODEGRAPH_CODESEARCH=gitlab:https://gitlab.example.com/api/v4:123
+  zoekt   a Zoekt server's JSON API          HIMOTOKI_CODESEARCH=zoekt:http://zoekt:6070
+  gitlab  GitLab's blob search API           HIMOTOKI_CODESEARCH=gitlab:https://gitlab.example.com/api/v4:123
           (token in GITLAB_TOKEN)
 
 Running the search on the source-control server side means the sweep covers
@@ -141,7 +141,7 @@ class MultiSearch:
 
 
 def make_search(root: str | None, repos: dict | None = None):
-    spec = os.environ.get("CODEGRAPH_CODESEARCH", "")
+    spec = os.environ.get("HIMOTOKI_CODESEARCH", "")
     if spec.startswith("zoekt:"):
         url, _, repo = spec[len("zoekt:"):].rpartition("@") if "@" in spec else (spec[len("zoekt:"):], "", None)
         return ZoektSearch(url, repo or None)

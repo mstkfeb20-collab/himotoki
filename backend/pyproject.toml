@@ -3,20 +3,20 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "codegraph"
+name = "himotoki"
 version = "2.0.0"
 description = "Requirement / change-set impact analysis over a cross-language code graph (Java, SQL, jobs, Office design documents)"
 requires-python = ">=3.11"
 dynamic = ["dependencies"]
 
 [project.scripts]
-codegraph = "codegraph.cli:main"
+himotoki = "himotoki.cli:main"
 
 [tool.setuptools.dynamic]
 dependencies = { file = ["requirements.txt"] }
 
 [tool.setuptools.packages.find]
-include = ["codegraph*"]
+include = ["himotoki*"]
 
 [tool.setuptools.package-data]
-codegraph = ["rules/*.yaml", "web/*.html", "web/*.json", "web/assets/*", "demo/**/*"]
+himotoki = ["rules/*.yaml", "web/*.html", "web/*.json", "web/assets/*", "demo/**/*"]

@@ -39,20 +39,20 @@ def safe_join(base: str, rel: str) -> str | None:
 
 
 def allowed_roots() -> list[str]:
-    raw = os.environ.get("CODEGRAPH_ALLOWED_ROOTS", "")
+    raw = os.environ.get("HIMOTOKI_ALLOWED_ROOTS", "")
     return [_real(r) for r in raw.split(os.pathsep) if r.strip()]
 
 
 def check_input_path(path: str | None, what: str = "path") -> str | None:
     """Paths supplied over the API (repository, documents, CSV exports) must lie
-    under CODEGRAPH_ALLOWED_ROOTS when it is set (it is in the container setup)."""
+    under HIMOTOKI_ALLOWED_ROOTS when it is set (it is in the container setup)."""
     if not path:
         return path
     if "\0" in path:
         raise PathNotAllowed(f"invalid {what}")
     roots = allowed_roots()
     if roots and not any(within(r, path) for r in roots):
-        raise PathNotAllowed(f"{what} is outside CODEGRAPH_ALLOWED_ROOTS")
+        raise PathNotAllowed(f"{what} is outside HIMOTOKI_ALLOWED_ROOTS")
     return path
 
 
@@ -76,14 +76,14 @@ def constant_time_equals(a: str | None, b: str | None) -> bool:
 
 # --------------------------------------------------------------- resources
 def max_file_bytes() -> int:
-    return int(float(os.environ.get("CODEGRAPH_MAX_FILE_MB", "8")) * 1024 * 1024)
+    return int(float(os.environ.get("HIMOTOKI_MAX_FILE_MB", "8")) * 1024 * 1024)
 
 
 def office_zip_ok(data: bytes, limit_mb: float | None = None) -> str | None:
     """Reject zip bombs before openpyxl / python-docx inflate the package.
     Returns an error message, or None when the archive looks sane."""
     import io
-    limit = int((limit_mb or float(os.environ.get("CODEGRAPH_MAX_OFFICE_MB", "200"))) * 1024 * 1024)
+    limit = int((limit_mb or float(os.environ.get("HIMOTOKI_MAX_OFFICE_MB", "200"))) * 1024 * 1024)
     try:
         with zipfile.ZipFile(io.BytesIO(data)) as z:
             infos = z.infolist()

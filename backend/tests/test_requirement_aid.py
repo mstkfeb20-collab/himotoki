@@ -1,9 +1,9 @@
 """Requirement writing aid: preview (rule-based, no AI, no trace) and the practice example."""
 import os
 
-from codegraph.analysis.engine import Engine
-from codegraph.pipeline.run import Pipeline
-from codegraph.store import LocalStore
+from himotoki.analysis.engine import Engine
+from himotoki.pipeline.run import Pipeline
+from himotoki.store import LocalStore
 
 FIX = os.path.join(os.path.dirname(__file__), "fixtures", "minirepo")
 

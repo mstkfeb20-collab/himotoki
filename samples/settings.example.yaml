@@ -1,5 +1,5 @@
-# codegraph settings — copy to <CODEGRAPH_DATA_DIR>/settings.yaml (or point CODEGRAPH_SETTINGS at it).
-# Environment variables (CODEGRAPH_LLM_MIN_SCORE, CODEGRAPH_LLM_MAX_ITEMS, ...) override this file,
+# himotoki settings — copy to <HIMOTOKI_DATA_DIR>/settings.yaml (or point HIMOTOKI_SETTINGS at it).
+# Environment variables (HIMOTOKI_LLM_MIN_SCORE, HIMOTOKI_LLM_MAX_ITEMS, ...) override this file,
 # and per-run parameters (API llm_max_items / llm_min_score, CLI --llm-max-items / --llm-min-score)
 # override both. Only used when the AI judgement is enabled (ANTHROPIC_API_KEY).
 llm:
@@ -19,8 +19,8 @@ llm:
 # Pricing used for the cost shown in the viewer (USD per million tokens) and the yen rate.
 # Defaults: published API prices as of 2026-10-10 (https://platform.claude.com/docs/en/about-claude/pricing)
 # and 158 JPY/USD (around 2026-10-09). Keep these current, or set your contract prices.
-# Environment overrides: CODEGRAPH_JPY_PER_USD, CODEGRAPH_PRICE_INPUT / CODEGRAPH_PRICE_OUTPUT
-# (the latter two for the model in CODEGRAPH_LLM_MODEL).
+# Environment overrides: HIMOTOKI_JPY_PER_USD, HIMOTOKI_PRICE_INPUT / HIMOTOKI_PRICE_OUTPUT
+# (the latter two for the model in HIMOTOKI_LLM_MODEL).
 pricing:
   jpy_per_usd: 158
   models:

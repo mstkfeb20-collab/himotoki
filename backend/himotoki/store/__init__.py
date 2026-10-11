@@ -5,8 +5,8 @@ from .local import LocalStore
 
 
 def open_store(data_dir: str, graph: str | None = None) -> GraphStore:
-    """Pick the store from the environment: CODEGRAPH_STORE=neo4j uses NEO4J_URI etc."""
-    if os.environ.get("CODEGRAPH_STORE", "local").lower() == "neo4j":
+    """Pick the store from the environment: HIMOTOKI_STORE=neo4j uses NEO4J_URI etc."""
+    if os.environ.get("HIMOTOKI_STORE", "local").lower() == "neo4j":
         from .neo4j_store import Neo4jStore
         return Neo4jStore(
             os.environ.get("NEO4J_URI", "bolt://localhost:7687"),

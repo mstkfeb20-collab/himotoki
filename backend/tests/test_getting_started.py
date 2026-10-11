@@ -6,19 +6,19 @@ import os
 
 import pytest
 
-from codegraph import cli
-from codegraph.setup_cmds import MARKER, doctor, find_workspace, init_workspace, prepare_demo, workspace_repos
+from himotoki import cli
+from himotoki.setup_cmds import MARKER, doctor, find_workspace, init_workspace, prepare_demo, workspace_repos
 
 
 @pytest.fixture(autouse=True)
 def _restore_env(monkeypatch):
-    # the CLI exports CODEGRAPH_DATA_DIR / CODEGRAPH_RULES for the process; undo after each test
-    for k in ("CODEGRAPH_DATA_DIR", "CODEGRAPH_RULES"):
+    # the CLI exports HIMOTOKI_DATA_DIR / HIMOTOKI_RULES for the process; undo after each test
+    for k in ("HIMOTOKI_DATA_DIR", "HIMOTOKI_RULES"):
         monkeypatch.setenv(k, "")
         monkeypatch.delenv(k)
 
 HERE = os.path.dirname(__file__)
-PKG = os.path.join(HERE, "..", "codegraph")
+PKG = os.path.join(HERE, "..", "himotoki")
 FRONT = os.path.join(HERE, "..", "..", "frontend")
 
 
@@ -44,7 +44,7 @@ def test_bundled_viewer_is_complete_and_current():
     if os.path.isdir(os.path.join(FRONT, "src")):
         info = json.load(open(os.path.join(web, "BUILD_INFO.json")))
         assert info["source_hash"] == _source_hash(FRONT), \
-            "viewer sources changed: run `npm run build` in frontend/ (it refreshes backend/codegraph/web)"
+            "viewer sources changed: run `npm run build` in frontend/ (it refreshes backend/himotoki/web)"
 
 
 def test_init_makes_a_workspace_found_from_subfolders(tmp_path):
@@ -88,8 +88,8 @@ def test_demo_runs_end_to_end(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
     cli.main(["demo", "--no-serve"])
     err = capsys.readouterr().err
-    assert "影響候補" in err and "codegraph init" in err
-    assert os.path.isfile(tmp_path / "codegraph-demo" / "workspace.json")
+    assert "影響候補" in err and "himotoki init" in err
+    assert os.path.isfile(tmp_path / "himotoki-demo" / "workspace.json")
 
 
 def test_doctor_reports_an_empty_workspace(tmp_path, capsys):
@@ -100,9 +100,9 @@ def test_doctor_reports_an_empty_workspace(tmp_path, capsys):
 
 
 def test_shift_jis_sources_are_read():
-    from codegraph.extractors import java, text
-    from codegraph.rules import load_rules
-    from codegraph.text import decode_source
+    from himotoki.extractors import java, text
+    from himotoki.rules import load_rules
+    from himotoki.text import decode_source
     rules = load_rules()
     src = "package a;\n/** 受注サービス */\npublic class Foo { }\n".encode("cp932")
     f = java.extract("a/Foo.java", src, rules)

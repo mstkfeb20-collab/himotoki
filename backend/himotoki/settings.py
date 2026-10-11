@@ -2,8 +2,8 @@
 
 Resolution order (later wins):
   1. defaults below
-  2. settings file: $CODEGRAPH_SETTINGS, else <CODEGRAPH_DATA_DIR>/settings.yaml
-  3. environment variables (CODEGRAPH_LLM_MIN_SCORE, ...)
+  2. settings file: $HIMOTOKI_SETTINGS, else <HIMOTOKI_DATA_DIR>/settings.yaml
+  3. environment variables (HIMOTOKI_LLM_MIN_SCORE, ...)
   4. per-run parameters (API `params`, CLI flags)
 
 Only the AI-judgement budget lives here for now:
@@ -98,10 +98,10 @@ def _score(v) -> float:
 
 
 def settings_path(data_dir: str | None = None) -> str | None:
-    p = os.environ.get("CODEGRAPH_SETTINGS")
+    p = os.environ.get("HIMOTOKI_SETTINGS")
     if p:
         return p
-    d = data_dir or os.environ.get("CODEGRAPH_DATA_DIR")
+    d = data_dir or os.environ.get("HIMOTOKI_DATA_DIR")
     return os.path.join(d, "settings.yaml") if d else None
 
 
@@ -114,7 +114,7 @@ def load_llm_budget(data_dir: str | None = None) -> LLMBudget:
         b = b.with_overrides(data.get("llm") or {})
     env = {}
     for k in ("min_score", "max_items", "reuse_verdicts", "rescore_delta", "batch_size"):
-        v = os.environ.get(f"CODEGRAPH_LLM_{k.upper()}")
+        v = os.environ.get(f"HIMOTOKI_LLM_{k.upper()}")
         if v is not None and v.strip() != "":
             env[k] = v
     return b.with_overrides(env)
@@ -171,8 +171,8 @@ def load_pricing(data_dir: str | None = None) -> Pricing:
            jpy_per_usd: 150
            models:
              claude-sonnet-5-5: {input: 2.0, output: 10.0}   # USD / million tokens
-       Environment: CODEGRAPH_JPY_PER_USD, CODEGRAPH_PRICE_INPUT / CODEGRAPH_PRICE_OUTPUT
-       (the latter two apply to the model in CODEGRAPH_LLM_MODEL)."""
+       Environment: HIMOTOKI_JPY_PER_USD, HIMOTOKI_PRICE_INPUT / HIMOTOKI_PRICE_OUTPUT
+       (the latter two apply to the model in HIMOTOKI_LLM_MODEL)."""
     models = {k: dict(v) for k, v in DEFAULT_PRICES.items()}
     rate, source = DEFAULT_JPY_PER_USD, "defaults (2026-10-10)"
     p = settings_path(data_dir)
@@ -185,11 +185,11 @@ def load_pricing(data_dir: str | None = None) -> Pricing:
             rate = float(data["jpy_per_usd"])
         if data:
             source = f"settings file ({p})"
-    if os.environ.get("CODEGRAPH_JPY_PER_USD", "").strip():
-        rate, source = float(os.environ["CODEGRAPH_JPY_PER_USD"]), source + " + environment"
-    model = os.environ.get("CODEGRAPH_LLM_MODEL", "claude-sonnet-5-5")
+    if os.environ.get("HIMOTOKI_JPY_PER_USD", "").strip():
+        rate, source = float(os.environ["HIMOTOKI_JPY_PER_USD"]), source + " + environment"
+    model = os.environ.get("HIMOTOKI_LLM_MODEL", "claude-sonnet-5-5")
     for side in ("input", "output"):
-        v = os.environ.get(f"CODEGRAPH_PRICE_{side.upper()}", "").strip()
+        v = os.environ.get(f"HIMOTOKI_PRICE_{side.upper()}", "").strip()
         if v:
             models.setdefault(model, {"input": 0.0, "output": 0.0})[side] = float(v)
     if rate <= 0:

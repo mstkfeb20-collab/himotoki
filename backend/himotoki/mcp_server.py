@@ -1,7 +1,7 @@
 """MCP server: lets coding agents (Claude Code and others) explore the code graph.
 
 Run on the machine that holds the repositories (e.g. next to the source-control
-server):  python -m codegraph.cli mcp   — stdio transport.
+server):  python -m himotoki.cli mcp   — stdio transport.
 Agents get structured answers (who calls this, which tables, which jobs, what a
 requirement or a change set reaches) instead of reading whole files, and the
 code itself never has to leave the network.
@@ -17,14 +17,14 @@ except ImportError:                     # mcp 1.x
 
 from .workspace import Workspace
 
-mcp = _Server("codegraph")
+mcp = _Server("himotoki")
 _ws: Workspace | None = None
 
 
 def ws() -> Workspace:
     global _ws
     if _ws is None:
-        _ws = Workspace(os.environ.get("CODEGRAPH_DATA_DIR", "./data"))
+        _ws = Workspace(os.environ.get("HIMOTOKI_DATA_DIR", "./data"))
     return _ws
 
 

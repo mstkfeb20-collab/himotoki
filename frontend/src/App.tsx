@@ -26,7 +26,7 @@ export default function App() {
   const [grouping, setGrouping] = useState(true);
   // null = automatic: the graph while a run is in progress (to watch it grow), the list once it is done
   const [view, setView] = useState<"list" | "graph" | null>(null);
-  const TOUR_KEY = "codegraph.tour.v1";
+  const TOUR_KEY = "himotoki.tour.v1";
   const [tour, setTour] = useState(false);
   const [practice, setPractice] = useState<string | null>(null);
   useEffect(() => {
@@ -142,13 +142,13 @@ export default function App() {
     const md = await api.report(run.id);
     const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob); a.download = `codegraph-${run.id}.md`; a.click();
+    a.href = URL.createObjectURL(blob); a.download = `himotoki-${run.id}.md`; a.click();
   };
 
   return (
     <div className="app">
       <header className="top">
-        <div className="brand"><span className="logo mono">CODEGRAPH</span>
+        <div className="brand"><span className="logo mono">HIMOTOKI</span>
           <select className="runsel" aria-label="解析を選択" value={runId || ""} onChange={(e) => setRunId(e.target.value)}>
             {runs.map((r) => <option key={r.id} value={r.id}>{r.parent_id ? "↳ " : ""}{r.title}（{r.graph ? `${r.graph}・` : ""}{r.id.slice(0, 4)}）</option>)}
           </select>
@@ -247,7 +247,7 @@ export default function App() {
 
       {run && <CommandBar run={run} selected={selected} setBusy={setBusy} onRun={(id) => { loadRuns(); setRunId(id); }} onChanged={changed} onSelect={select} />}
       {tour && <Tour onClose={closeTour} onPractice={startPractice} steps={[
-        { title: "codegraph へようこそ", body: "要求（仕様書の一文やチャットの内容）から、影響するソースコード・SQL・画面・ジョブ・設計書を洗い出し、修正の規模を見積もるツールです。コードは書き換えません。画面の各部分を順に紹介します。" },
+        { title: "himotoki へようこそ", body: "要求（仕様書の一文やチャットの内容）から、影響するソースコード・SQL・画面・ジョブ・設計書を洗い出し、修正の規模を見積もるツールです。コードは書き換えません。画面の各部分を順に紹介します。" },
         { sel: ".brand .btn", title: "1. 新しい解析", body: "ここから要求を入力して解析を始めます。テンプレートと書き方の確認があるので、どう書けばよいか迷ったら使ってください。" },
         { sel: ".runsel", title: "2. 解析の切り替え", body: "これまでの解析と再調査の結果を選べます。「↳」は再調査（前回の判断を引き継いだやり直し）です。" },
         { sel: ".viewtabs", title: "3. リストとグラフ", before: () => setView("list"), body: "リストは確認作業用、グラフは全体像や説明用です。解析中はグラフ、終わるとリストに自動で切り替わります。" },

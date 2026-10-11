@@ -2,7 +2,7 @@
 against a hand-made ground truth (code, SQL, JSP, messages, PDF, Office documents,
 jobs). Usage:
 
-  CODEGRAPH_DATA_DIR=ws python -m codegraph.cli analyze --graph tour --json \
+  HIMOTOKI_DATA_DIR=ws python -m himotoki.cli analyze --graph tour --json \
       "予約の備考欄(remarks)の文字数上限を80文字から200文字に変更する" > remarks.json
   python eval/tour_remarks_check.py remarks.json
 """

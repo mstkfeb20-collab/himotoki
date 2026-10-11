@@ -18,18 +18,18 @@ services:
     depends_on:
       neo4j: { condition: service_healthy }
     environment:
-      CODEGRAPH_STORE: neo4j
+      HIMOTOKI_STORE: neo4j
       NEO4J_URI: bolt://neo4j:7687
       NEO4J_USER: neo4j
       NEO4J_PASSWORD: ${NEO4J_PASSWORD:?set NEO4J_PASSWORD in .env}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      CODEGRAPH_LLM_MODEL: ${CODEGRAPH_LLM_MODEL:-claude-sonnet-5-5}
-      CODEGRAPH_API_TOKEN: ${CODEGRAPH_API_TOKEN:?set CODEGRAPH_API_TOKEN in .env (long random string)}
-      CODEGRAPH_ALLOWED_HOSTS: ${CODEGRAPH_ALLOWED_HOSTS:-localhost,127.0.0.1}
-      CODEGRAPH_ALLOWED_ROOTS: /repos:/data         # paths the API may index / import from
-      CODEGRAPH_RULES: /rules                       # site-specific rule packs (YAML)
-      CODEGRAPH_CODESEARCH: ${CODEGRAPH_CODESEARCH:-}  # e.g. zoekt:http://zoekt:6070 or gitlab:https://gitlab.example/api/v4:<project id>
-      CODEGRAPH_WEBHOOK_SECRET: ${CODEGRAPH_WEBHOOK_SECRET:-}
+      HIMOTOKI_LLM_MODEL: ${HIMOTOKI_LLM_MODEL:-claude-sonnet-5-5}
+      HIMOTOKI_API_TOKEN: ${HIMOTOKI_API_TOKEN:?set HIMOTOKI_API_TOKEN in .env (long random string)}
+      HIMOTOKI_ALLOWED_HOSTS: ${HIMOTOKI_ALLOWED_HOSTS:-localhost,127.0.0.1}
+      HIMOTOKI_ALLOWED_ROOTS: /repos:/data         # paths the API may index / import from
+      HIMOTOKI_RULES: /rules                       # site-specific rule packs (YAML)
+      HIMOTOKI_CODESEARCH: ${HIMOTOKI_CODESEARCH:-}  # e.g. zoekt:http://zoekt:6070 or gitlab:https://gitlab.example/api/v4:<project id>
+      HIMOTOKI_WEBHOOK_SECRET: ${HIMOTOKI_WEBHOOK_SECRET:-}
       GITLAB_API: ${GITLAB_API:-}
       GITLAB_TOKEN: ${GITLAB_TOKEN:-}
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}

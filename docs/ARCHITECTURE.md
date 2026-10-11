@@ -1,8 +1,8 @@
-# アーキテクチャ設計書 — codegraph
+# アーキテクチャ設計書 — himotoki
 
 | 項目 | 内容 |
 |---|---|
-| 対象 | codegraph v2（`mstkfeb20-collab/codegraph` main） |
+| 対象 | himotoki v2（`mstkfeb20-collab/himotoki` main） |
 | 目的 | 要求（仕様書・チャット）または変更差分から、影響範囲と修整規模を確定させる仕組みの設計を記録する |
 | 読者 | 導入・運用を判断する人、ルールパックや抽出器を追加する開発者、連携するエージェントの設計者 |
 | 関連 | 使い方・検証結果は [README](../README.md)、脅威と対策・エラー処理の方針は [SECURITY](SECURITY.md)。本書は「なぜこの構成か」と「部品の境界・契約」を扱う |
@@ -73,14 +73,14 @@ flowchart TB
     Q[要求文 / MR・PR]
   end
 
-  subgraph Index["インデックス（codegraph.pipeline）"]
+  subgraph Index["インデックス（himotoki.pipeline）"]
     L[列挙・分類<br/>run.classify / list_repo]
-    X[抽出器 ×7<br/>codegraph.extractors]
-    RP[(ルールパック<br/>codegraph/rules/*.yaml<br/>+ CODEGRAPH_RULES)]
+    X[抽出器 ×7<br/>himotoki.extractors]
+    RP[(ルールパック<br/>himotoki/rules/*.yaml<br/>+ HIMOTOKI_RULES)]
     FC[(抽出キャッシュ<br/>facts.db)]
     K[リンカ<br/>linker / resolve_java]
     TX[トランザクション解析<br/>transactions]
-    S[外部ソース取込<br/>codegraph.sources]
+    S[外部ソース取込<br/>himotoki.sources]
   end
 
   subgraph Store["グラフ"]
@@ -88,7 +88,7 @@ flowchart TB
     REP[取込状況<br/>index_stats.json]
   end
 
-  subgraph Analysis["解析（codegraph.analysis）"]
+  subgraph Analysis["解析（himotoki.analysis）"]
     E[エンジン<br/>構造化→起点→伝播→判定→横断検索→独立再探索→CRUD→規模]
     LLM[判定器<br/>ルールベース / Claude]
     CS[コード検索<br/>git grep / Zoekt / GitLab]
@@ -96,10 +96,10 @@ flowchart TB
   end
 
   subgraph Front["利用者インターフェース"]
-    API[REST + WebSocket<br/>codegraph.api]
+    API[REST + WebSocket<br/>himotoki.api]
     V[ビュワー<br/>リスト / グラフ（React + Cytoscape.js）]
-    CLI[CLI<br/>codegraph.cli]
-    MCP[MCP サーバ<br/>codegraph.mcp_server]
+    CLI[CLI<br/>himotoki.cli]
+    MCP[MCP サーバ<br/>himotoki.mcp_server]
     WH[Webhook<br/>/api/hooks/git]
   end
 
@@ -133,17 +133,17 @@ flowchart TB
 
 | パッケージ | 責務 | 主なファイル |
 |---|---|---|
-| `codegraph.model` | ノード種別・関係種別・層の定義 | `model.py` |
-| `codegraph.extractors` | 形式ごとの抽出（フレームワーク非依存） | `java.py` `xml.py` `text.py` `sql.py` `props.py` `jobs.py` `docs.py` |
-| `codegraph.rules` | ルールパックの読み込み・統合 | `__init__.py`、`*.yaml`（`java-common` `jpa` `mybatis` `spring-xml` `struts1` `web-templates` `jee-remoting` `scripts-jobs` `office` `propagation`） |
-| `codegraph.pipeline` | 列挙・分類・抽出の実行・キャッシュ・リンク・トランザクション解析 | `run.py` `facts.py` `cache.py` `linker.py` `resolve_java.py` `transactions.py` |
-| `codegraph.sources` | DB 辞書・実行時 SQL・git・コード検索 | `catalog.py` `runtime.py` `git.py` `codesearch.py` |
-| `codegraph.store` | グラフストアの抽象と実装 | `base.py` `local.py` `neo4j_store.py` |
-| `codegraph.workspace` | 複数グラフ（ref ごと、システム単位）の管理、差分の取得 | `workspace.py` |
-| `codegraph.analysis` | 解析エンジン・判定器・規模・Run 保存 | `engine.py` `llm.py` `estimate.py` `search.py` `runstore.py` |
-| `codegraph.settings` / `usage` | AI判定の予算・単価の設定、使用量の台帳 | `settings.py` `usage.py` |
-| `codegraph.setup_cmds` | 利用開始の支援: ワークスペースの作成と検出、環境の確認、デモ、`repos/` `docs/` `db/` の一括取り込み | `setup_cmds.py`、`demo/sor-env`（デモ用のサンプル）、`web/`（同梱のビュワー） |
-| `codegraph.api` / `cli` / `mcp_server` | 外部インターフェース | |
+| `himotoki.model` | ノード種別・関係種別・層の定義 | `model.py` |
+| `himotoki.extractors` | 形式ごとの抽出（フレームワーク非依存） | `java.py` `xml.py` `text.py` `sql.py` `props.py` `jobs.py` `docs.py` |
+| `himotoki.rules` | ルールパックの読み込み・統合 | `__init__.py`、`*.yaml`（`java-common` `jpa` `mybatis` `spring-xml` `struts1` `web-templates` `jee-remoting` `scripts-jobs` `office` `propagation`） |
+| `himotoki.pipeline` | 列挙・分類・抽出の実行・キャッシュ・リンク・トランザクション解析 | `run.py` `facts.py` `cache.py` `linker.py` `resolve_java.py` `transactions.py` |
+| `himotoki.sources` | DB 辞書・実行時 SQL・git・コード検索 | `catalog.py` `runtime.py` `git.py` `codesearch.py` |
+| `himotoki.store` | グラフストアの抽象と実装 | `base.py` `local.py` `neo4j_store.py` |
+| `himotoki.workspace` | 複数グラフ（ref ごと、システム単位）の管理、差分の取得 | `workspace.py` |
+| `himotoki.analysis` | 解析エンジン・判定器・規模・Run 保存 | `engine.py` `llm.py` `estimate.py` `search.py` `runstore.py` |
+| `himotoki.settings` / `usage` | AI判定の予算・単価の設定、使用量の台帳 | `settings.py` `usage.py` |
+| `himotoki.setup_cmds` | 利用開始の支援: ワークスペースの作成と検出、環境の確認、デモ、`repos/` `docs/` `db/` の一括取り込み | `setup_cmds.py`、`demo/sor-env`（デモ用のサンプル）、`web/`（同梱のビュワー） |
+| `himotoki.api` / `cli` / `mcp_server` | 外部インターフェース | |
 | `frontend` | ビュワー | `App.tsx` `ListView.tsx` `Graph.tsx` `Inspector.tsx` `Panels.tsx` `ReqAid.tsx` `Tour.tsx` `sizing.ts` |
 
 ---
@@ -211,7 +211,7 @@ sequenceDiagram
 
 ルールパックの合成（`rules/__init__.py`）:
 
-- 組み込みパック、`CODEGRAPH_RULES` のディレクトリ（`:` 区切り）の順に読み込みます。
+- 組み込みパック、`HIMOTOKI_RULES` のディレクトリ（`:` 区切り）の順に読み込みます。
 - `java:` `office:` `sql:` は辞書として深くマージします（リストは和集合）。`xml:` `text:` `propagation:` はルールを連結します。
 - 全パックのバイト列からダイジェストを計算し、キャッシュキーに含めます（§4.5）。
 
@@ -392,8 +392,8 @@ flowchart LR
 | 構造化 | 要求文 | 変更意図（種別: add / modify / delete、語、新しい語、値の変化、変更パターン） | `RuleBasedLLM` / `ClaudeLLM` |
 | 起点 | 変更意図 | 起点ノードと理由 | |
 | 伝播 | 起点 | 候補（経路・関係・スコア） | `propagation.yaml` |
-| 判定 | 候補と経路 | 判定・確度・理由・変更種別・判定方法（AI／再利用／ルール：低スコア・上限超過） | 判定器、AIの予算（`settings.yaml`・`CODEGRAPH_LLM_*`・解析ごとの指定） |
-| 横断検索 | 起点の語 | ヒットした行と要素 | `CODEGRAPH_CODESEARCH` |
+| 判定 | 候補と経路 | 判定・確度・理由・変更種別・判定方法（AI／再利用／ルール：低スコア・上限超過） | 判定器、AIの予算（`settings.yaml`・`HIMOTOKI_LLM_*`・解析ごとの指定） |
+| 横断検索 | 起点の語 | ヒットした行と要素 | `HIMOTOKI_CODESEARCH` |
 | 独立再探索 | 要求文 | グラフを使わずに見つけた要素 | |
 | CRUD | 影響テーブル | 読み書きする全箇所 | |
 | 規模 | 確定・未判定の候補 | 人日（確定分＋未判定分の期待値と幅） | `estimate.py` の係数 |
@@ -416,14 +416,14 @@ flowchart LR
 
 ### 6.2.1 AI判定の予算
 
-判定は候補数に比例してトークンを使うため、`_judge` は候補を点数の高い順に並べ、次の順で振り分けます（設定は `codegraph/settings.py`、既定値は README の「AIの使用量と設定」）。
+判定は候補数に比例してトークンを使うため、`_judge` は候補を点数の高い順に並べ、次の順で振り分けます（設定は `himotoki/settings.py`、既定値は README の「AIの使用量と設定」）。
 
 1. **再利用**: 再調査で、親の解析でAIが判定済みかつ点数の上昇が `rescore_delta` 未満の候補は、親の判定をそのまま使う。
 2. **低スコア**: `min_score` 未満はルール判定。
 3. **上限**: その解析でAIに送った件数が `max_items` に達したら、残りはルール判定（`unlimited` で上限なし）。
 4. 残りを `batch_size` 件ずつまとめてAIに送る。
 
-候補ごとに `judged_by`（ai / reused / rule:low_score / rule:cap / rule / rule:fallback）を記録します。API 呼び出しごとに、実際の入出力トークン数を `pricing`（settings.yaml）の単価で費用に換算します。結果は解析の `llm_usage` に加算し、`llm.usage` イベントでビュワーに即時に通知し、ワークスペース共通の台帳（`usage.db`）に記録します（`codegraph/usage.py`）。解析ごとの内訳と、API が返した実際の入出力トークン数は `llm_usage` に記録します。横断検索・独立再探索・CRUD確認で見つかった候補は、工程ごとにまとめて判定します。
+候補ごとに `judged_by`（ai / reused / rule:low_score / rule:cap / rule / rule:fallback）を記録します。API 呼び出しごとに、実際の入出力トークン数を `pricing`（settings.yaml）の単価で費用に換算します。結果は解析の `llm_usage` に加算し、`llm.usage` イベントでビュワーに即時に通知し、ワークスペース共通の台帳（`usage.db`）に記録します（`himotoki/usage.py`）。解析ごとの内訳と、API が返した実際の入出力トークン数は `llm_usage` に記録します。横断検索・独立再探索・CRUD確認で見つかった候補は、工程ごとにまとめて判定します。
 
 ### 6.3 全数判定の条件
 
@@ -506,7 +506,7 @@ sequenceDiagram
 ### 9.1 ワークスペース
 
 ```
-<CODEGRAPH_DATA_DIR>/
+<HIMOTOKI_DATA_DIR>/
   workspace.json          グラフの一覧（repo・ref・snapshot・docs_dir・commit・件数。システム単位は repos・commits）
   facts.db                抽出キャッシュ（全グラフで共有）
   sources/*.json          DB辞書・実行時SQL
@@ -537,7 +537,7 @@ sequenceDiagram
 
 ### 9.3 コード検索
 
-横断検索の実装は `CODEGRAPH_CODESEARCH` で切り替えます。
+横断検索の実装は `HIMOTOKI_CODESEARCH` で切り替えます。
 
 - 既定: チェックアウト上の `git grep`
 - `zoekt:<url>`: Zoekt の JSON API
@@ -599,7 +599,7 @@ MCP サーバは、エージェントがファイルを丸ごと読まずに「�
 
 | やりたいこと | 手順 |
 |---|---|
-| 社内フレームワーク・新しい XML 形式に対応する | `CODEGRAPH_RULES` のディレクトリに YAML を追加し、`codegraph report` で未解決参照が減ることを確認する |
+| 社内フレームワーク・新しい XML 形式に対応する | `HIMOTOKI_RULES` のディレクトリに YAML を追加し、`himotoki report` で未解決参照が減ることを確認する |
 | 新しいテキスト形式（テンプレート言語・スクリプト）に対応する | `text:` ルールを追加する（glob・正規表現・キー） |
 | 設計書の書式に合わせる | `office:` の `headers` に見出し語を追加する |
 | 伝播の強さを調整する | `propagation.yaml` の重みを変える（コードの変更は不要） |
@@ -613,19 +613,19 @@ MCP サーバは、エージェントがファイルを丸ごと読まずに「�
 
 | 変数 | 用途 |
 |---|---|
-| `CODEGRAPH_DATA_DIR` | ワークスペースの場所 |
-| `CODEGRAPH_RULES` | 追加ルールパックのディレクトリ（`:` 区切り） |
-| `CODEGRAPH_STORE`、`NEO4J_URI` / `NEO4J_USER` / `NEO4J_PASSWORD` / `NEO4J_DATABASE` | グラフストアの選択と接続 |
-| `ANTHROPIC_API_KEY`、`CODEGRAPH_LLM_MODEL` | Claude 判定（無ければルールベース） |
-| `CODEGRAPH_CODESEARCH` | 横断検索の実装 |
-| `CODEGRAPH_WEBHOOK_SECRET` | Webhook の検証 |
+| `HIMOTOKI_DATA_DIR` | ワークスペースの場所 |
+| `HIMOTOKI_RULES` | 追加ルールパックのディレクトリ（`:` 区切り） |
+| `HIMOTOKI_STORE`、`NEO4J_URI` / `NEO4J_USER` / `NEO4J_PASSWORD` / `NEO4J_DATABASE` | グラフストアの選択と接続 |
+| `ANTHROPIC_API_KEY`、`HIMOTOKI_LLM_MODEL` | Claude 判定（無ければルールベース） |
+| `HIMOTOKI_CODESEARCH` | 横断検索の実装 |
+| `HIMOTOKI_WEBHOOK_SECRET` | Webhook の検証 |
 | `GITLAB_API` / `GITLAB_TOKEN`、`GITHUB_API` / `GITHUB_TOKEN` | MR / PR へのコメント、GitLab コード検索 |
-| `CODEGRAPH_FRONTEND` | 配信するビュワーのビルド先 |
-| `CODEGRAPH_SETTINGS`、`CODEGRAPH_LLM_MIN_SCORE` / `MAX_ITEMS` / `REUSE_VERDICTS` / `RESCORE_DELTA` / `BATCH_SIZE` | 設定ファイルの場所と、AI判定の予算（§6.2.1） |
-| `CODEGRAPH_JPY_PER_USD`、`CODEGRAPH_PRICE_INPUT` / `CODEGRAPH_PRICE_OUTPUT` | 費用表示の為替レートと単価（既定は settings.yaml の `pricing`） |
-| `CODEGRAPH_API_TOKEN`、`CODEGRAPH_ALLOWED_HOSTS`、`CODEGRAPH_CORS_ORIGINS` | API の認証・許可するホスト名・CORS（[SECURITY](SECURITY.md)） |
-| `CODEGRAPH_ALLOWED_ROOTS`、`CODEGRAPH_ALLOW_DB_FROM_API` | API で指定できるパスの範囲、API からの DB 接続の許可 |
-| `CODEGRAPH_MAX_FILE_MB`、`CODEGRAPH_MAX_OFFICE_MB`、`CODEGRAPH_GIT_TIMEOUT`、`CODEGRAPH_LLM_TIMEOUT` | 資源の上限・タイムアウト |
+| `HIMOTOKI_FRONTEND` | 配信するビュワーのビルド先 |
+| `HIMOTOKI_SETTINGS`、`HIMOTOKI_LLM_MIN_SCORE` / `MAX_ITEMS` / `REUSE_VERDICTS` / `RESCORE_DELTA` / `BATCH_SIZE` | 設定ファイルの場所と、AI判定の予算（§6.2.1） |
+| `HIMOTOKI_JPY_PER_USD`、`HIMOTOKI_PRICE_INPUT` / `HIMOTOKI_PRICE_OUTPUT` | 費用表示の為替レートと単価（既定は settings.yaml の `pricing`） |
+| `HIMOTOKI_API_TOKEN`、`HIMOTOKI_ALLOWED_HOSTS`、`HIMOTOKI_CORS_ORIGINS` | API の認証・許可するホスト名・CORS（[SECURITY](SECURITY.md)） |
+| `HIMOTOKI_ALLOWED_ROOTS`、`HIMOTOKI_ALLOW_DB_FROM_API` | API で指定できるパスの範囲、API からの DB 接続の許可 |
+| `HIMOTOKI_MAX_FILE_MB`、`HIMOTOKI_MAX_OFFICE_MB`、`HIMOTOKI_GIT_TIMEOUT`、`HIMOTOKI_LLM_TIMEOUT` | 資源の上限・タイムアウト |
 
 ## 付録 B. 検証の対応表
 
@@ -633,7 +633,7 @@ MCP サーバは、エージェントがファイルを丸ごと読まずに「�
 |---|---|
 | ルールパックによる社内フレームワーク対応 | `tests/test_mechanism.py::test_rule_pack_links_java_to_xml_sql_to_tables`、OFBiz の取込 |
 | ジョブ・スクリプト・データファイルの連鎖 | `test_jobs_scripts_and_data_files_chain`、ツアー予約の JP1 定義 |
-| サーバ間連携・システム単位のグラフ・トランザクション解析・データ連携の伝播 | `tests/test_sor_system.py`（`backend/codegraph/demo/sor-env` の 3 リポジトリ） |
+| サーバ間連携・システム単位のグラフ・トランザクション解析・データ連携の伝播 | `tests/test_sor_system.py`（`backend/himotoki/demo/sor-env` の 3 リポジトリ） |
 | Office の見出し検出・CRUD 表 | `test_office_header_detection_and_crud_matrix` |
 | DB 辞書のずれ・実行時 SQL の対応 | `test_catalog_drift_and_runtime_matching`、PostgreSQL 16 実機、Oracle 辞書の CSV |
 | 抽出キャッシュの増分 | `test_fact_cache_reextracts_only_changed_files`、OFBiz の 1 ファイル変更 |

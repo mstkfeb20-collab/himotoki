@@ -8,14 +8,14 @@ import textwrap
 
 import pytest
 
-from codegraph.analysis.engine import Engine
-from codegraph.extractors.sql import analyze
-from codegraph.model import Rel
-from codegraph.pipeline.run import Pipeline
-from codegraph.sources.catalog import CatalogBuilder, save_source
-from codegraph.sources.git import GitRepo, parse_webhook
-from codegraph.sources.runtime import build as runtime_build
-from codegraph.store import LocalStore
+from himotoki.analysis.engine import Engine
+from himotoki.extractors.sql import analyze
+from himotoki.model import Rel
+from himotoki.pipeline.run import Pipeline
+from himotoki.sources.catalog import CatalogBuilder, save_source
+from himotoki.sources.git import GitRepo, parse_webhook
+from himotoki.sources.runtime import build as runtime_build
+from himotoki.store import LocalStore
 
 RULES = """
 name: inhouse

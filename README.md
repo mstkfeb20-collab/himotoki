@@ -1,4 +1,6 @@
-# codegraph — 要求からソースコードの影響範囲・修整規模を出す仕組み
+# himotoki — 要求からソースコードの影響範囲・修整規模を出す仕組み
+
+> 名前は「紐解く」から。要求を起点に、コード・DB・ジョブ・設計書・サーバ間のつながりを一本ずつたどります（旧名: codegraph、Impact Analyzer）。
 
 要求仕様書の該当箇所やチャットの内容を投入すると、ソースコード・SQL・画面・メッセージ・DB・ジョブ・運用スクリプト・設計書（Excel/Word）のどこに影響するかを依存グラフで洗い出します。その過程はビュワーでリアルタイムに表示されます。
 
@@ -9,9 +11,9 @@
 **はじめて使う方は [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)** を見てください。インストールからデモ、自分のシステムのデータの置き方までを順に説明しています。最短は次の 3 行です（Python 3.11 以上と Git が必要。Node.js は不要）。
 
 ```bash
-git clone https://github.com/mstkfeb20-collab/codegraph.git && cd codegraph
+git clone https://github.com/mstkfeb20-collab/himotoki.git && cd himotoki
 python3 -m venv .venv && source .venv/bin/activate      # Windows: py -m venv .venv && .venv\Scripts\activate
-pip install ./backend && codegraph demo                  # サンプルを取り込んでビュワーを開く
+pip install ./backend && himotoki demo                  # サンプルを取り込んでビュワーを開く
 ```
 
 ![モジュール単位にまとめたグラフと取込状況](docs/screenshots/v2-aggregated.png)
@@ -76,7 +78,7 @@ pip install ./backend && codegraph demo                  # サンプルを取り
 
 抽出結果は `FileFacts`（ノード、ファイル内の関係、`table:reserve` や `view:reservetour/reserveForm` のような**キーへの参照**）という共通形式で、ファイルごとに独立しています。そのため並列に処理でき、キャッシュも効きます。
 
-フレームワークの知識は `backend/codegraph/rules/*.yaml` にあります。
+フレームワークの知識は `backend/himotoki/rules/*.yaml` にあります。
 
 | パック | 内容 |
 |---|---|
@@ -91,7 +93,7 @@ pip install ./backend && codegraph demo                  # サンプルを取り
 | `office` | 設計書の見出しの語彙（テーブル名・項目名(物理)・画面ID・ジョブ名…）と CRUD 記号 |
 | `propagation` | 影響が伝わる関係・向き・重み（エンジンはこの表だけを見る） |
 
-`CODEGRAPH_RULES` で指定したディレクトリのパックも読み込みます。`samples/rules/ofbiz.yaml` は、Apache OFBiz（エンティティエンジン・サービスエンジン・リクエストコントローラ・スクリーン・ラベル・Groovy）を**コードを1行も書かずに**ルールだけで取り込む例です。
+`HIMOTOKI_RULES` で指定したディレクトリのパックも読み込みます。`samples/rules/ofbiz.yaml` は、Apache OFBiz（エンティティエンジン・サービスエンジン・リクエストコントローラ・スクリーン・ラベル・Groovy）を**コードを1行も書かずに**ルールだけで取り込む例です。
 
 #### 社内フレームワークへの対応例
 
@@ -173,11 +175,11 @@ SoR では 1 つの業務が複数のサーバにまたがります。次の連�
 **システム単位のグラフ**: 複数のリポジトリを 1 つのグラフにまとめます。ファイルは `<リポジトリ名>/<パス>` として入り、上の連携がサーバをまたいでつながります。
 
 ```bash
-codegraph index --system sor --repo order-web=/src/order-web --repo /src/inventory-svc --repo /src/shipping-svc
-codegraph diff --graph sor --repo order-web --base main --head feature/x   # 変更したリポジトリを指定
+himotoki index --system sor --repo order-web=/src/order-web --repo /src/inventory-svc --repo /src/shipping-svc
+himotoki diff --graph sor --repo order-web --base main --head feature/x   # 変更したリポジトリを指定
 ```
 
-自作のサンプル `backend/codegraph/demo/sor-env`（受注・在庫・出荷の 3 サーバ）で、受注の NOTE 列の拡張が、出力 SQL → CSV → sftp 送信 → ファイル監視ジョブ → 取り込み → 出荷側の SHIPMENT_REQ.NOTE まで届くことを確認しています。
+自作のサンプル `backend/himotoki/demo/sor-env`（受注・在庫・出荷の 3 サーバ）で、受注の NOTE 列の拡張が、出力 SQL → CSV → sftp 送信 → ファイル監視ジョブ → 取り込み → 出荷側の SHIPMENT_REQ.NOTE まで届くことを確認しています。
 
 ### 3. 増分・スナップショット・規模
 
@@ -193,7 +195,7 @@ codegraph diff --graph sor --repo order-web --base main --head feature/x   # 変
 | 起点 | 識別子の一致、用語集、変更前の値（「80文字」→ 80 を持つ要素）、類似度 |
 | 伝播 | `propagation.yaml` の関係・向き・重みで閉包を計算。設計書・テスト・SQLファイルなどは終端（SQLファイルはそれを起動するジョブと、書き出すデータファイルへは伝わる）。データ連携（ファイルの書き出し → 読み手 → ファイル監視ジョブ → 後続ジョブ）は `flow` 指定の関係だけで深さの上限を超えてたどる（`flow_depth` 既定 8 段） |
 | 判定 | 確度・理由・変更種別 |
-| 横断検索 | 起点の語でリポジトリ全体を検索（既定は git grep。`CODEGRAPH_CODESEARCH` で Zoekt・GitLab のコード検索に切り替え、ソース管理サーバ側の全ブランチ・全リポジトリを対象にできる） |
+| 横断検索 | 起点の語でリポジトリ全体を検索（既定は git grep。`HIMOTOKI_CODESEARCH` で Zoekt・GitLab のコード検索に切り替え、ソース管理サーバ側の全ブランチ・全リポジトリを対象にできる） |
 | 独立再探索 | 依存グラフを使わない別戦略で探し、本探索と突き合わせる |
 | CRUD確認 | 影響テーブルを読み書きする全箇所（コード・SQL・ジョブ・設計書の CRUD 表・実行時SQL） |
 | 規模 | 係数表 ＋ 複雑度・行数・呼び出し元数・テスト有無・ロケール数 |
@@ -202,11 +204,11 @@ codegraph diff --graph sor --repo order-web --base main --head feature/x   # 変
 
 ## ソース管理サーバとの連携
 
-- **Webhook**（`POST /api/hooks/git`）: GitLab・GitHub の push と MR/PR を受けます（`CODEGRAPH_WEBHOOK_SECRET` で GitLab トークン／GitHub の HMAC 署名を検証）。
+- **Webhook**（`POST /api/hooks/git`）: GitLab・GitHub の push と MR/PR を受けます（`HIMOTOKI_WEBHOOK_SECRET` で GitLab トークン／GitHub の HMAC 署名を検証）。
   - push: そのブランチのグラフを更新します（変更ファイルだけ再抽出）。
   - MR/PR: ターゲットブランチのグラフで差分モードを実行し、`GITLAB_TOKEN` / `GITHUB_TOKEN` があれば回帰確認の範囲を MR/PR にコメントします。
-- **コード検索**: `CODEGRAPH_CODESEARCH=zoekt:http://zoekt:6070` または `gitlab:https://gitlab.example.com/api/v4:<project id>`
-- **MCP サーバ**（`codegraph mcp`、stdio）: Claude Code などのエージェントが次のツールでグラフを使えます。
+- **コード検索**: `HIMOTOKI_CODESEARCH=zoekt:http://zoekt:6070` または `gitlab:https://gitlab.example.com/api/v4:<project id>`
+- **MCP サーバ**（`himotoki mcp`、stdio）: Claude Code などのエージェントが次のツールでグラフを使えます。
   - `list_graphs`・`search_elements`・`get_element`・`neighbors`
   - `analyze_requirement`・`analyze_change`・`index_gaps`
 
@@ -218,43 +220,43 @@ SVN は対象外です（git 前提。必要なら git-svn で移行・ミラー
 
 ### ローカル（開発）
 
-利用者向けの手順は [GETTING_STARTED](docs/GETTING_STARTED.md) にあります。`codegraph init <フォルダ>` で作るワークスペース（`repos/` `docs/` `db/` `rules/` `settings.yaml`）の中では、`codegraph index` を引数なしで実行すると `repos/`（複数ならシステム単位）・`docs/`・`db/` の Oracle 辞書 CSV をまとめて取り込み、`rules/` のルールも読み込みます。`codegraph doctor` は環境とワークスペースを確認して、次にすることを表示します。
+利用者向けの手順は [GETTING_STARTED](docs/GETTING_STARTED.md) にあります。`himotoki init <フォルダ>` で作るワークスペース（`repos/` `docs/` `db/` `rules/` `settings.yaml`）の中では、`himotoki index` を引数なしで実行すると `repos/`（複数ならシステム単位）・`docs/`・`db/` の Oracle 辞書 CSV をまとめて取り込み、`rules/` のルールも読み込みます。`himotoki doctor` は環境とワークスペースを確認して、次にすることを表示します。
 
 以下は個別のコマンドです。
 
 ```bash
 cd backend
-pip install -e .            # `codegraph` コマンドが使えるようになる（python -m codegraph.cli でも同じ）
-export CODEGRAPH_DATA_DIR=./data   # ワークスペースの中では不要
+pip install -e .            # `himotoki` コマンドが使えるようになる（python -m himotoki.cli でも同じ）
+export HIMOTOKI_DATA_DIR=./data   # ワークスペースの中では不要
 
 # インデックス（設計書・ジョブ定義・運用シェルのフォルダは --docs）
-codegraph index --repo /path/to/repo --docs /path/to/ops-and-docs [--ref release/1.2]
+himotoki index --repo /path/to/repo --docs /path/to/ops-and-docs [--ref release/1.2]
 # 複数サーバのリポジトリを1つのシステムとして（名前=パス、または パスのフォルダ名が名前）
-codegraph index --system sor --repo /src/order-web --repo /src/inventory-svc --repo /src/shipping-svc
+himotoki index --system sor --repo /src/order-web --repo /src/inventory-svc --repo /src/shipping-svc
 
 # DB辞書と実行時SQL（任意。取り込んだら index をやり直すとリンクされる）
-codegraph catalog postgres --dsn "postgresql://user@host/db" --name proddb
-codegraph catalog oracle --csv-dir ./dict_export --name ora      # ALL_TAB_COLUMNS 等の CSV
-codegraph catalog oracle --dsn host:1521/svc --user u --password p --owner APP --name ora
-codegraph runtime --pg "postgresql://user@host/db" --name prod-rt  # pg_stat_statements
-codegraph runtime --csv sql_stats.csv --name ora-rt               # V$SQL などのエクスポート
+himotoki catalog postgres --dsn "postgresql://user@host/db" --name proddb
+himotoki catalog oracle --csv-dir ./dict_export --name ora      # ALL_TAB_COLUMNS 等の CSV
+himotoki catalog oracle --dsn host:1521/svc --user u --password p --owner APP --name ora
+himotoki runtime --pg "postgresql://user@host/db" --name prod-rt  # pg_stat_statements
+himotoki runtime --csv sql_stats.csv --name ora-rt               # V$SQL などのエクスポート
 
-codegraph report                       # 取込状況（未解決・ずれ・実行時SQLの対応）
-codegraph analyze "要求文"            # 要求から
-codegraph diff --base main --head feature/x   # 差分から（回帰確認の範囲）
-codegraph serve --port 8765            # ビュワー http://localhost:8765
-codegraph mcp                          # MCP サーバ（stdio）
+himotoki report                       # 取込状況（未解決・ずれ・実行時SQLの対応）
+himotoki analyze "要求文"            # 要求から
+himotoki diff --base main --head feature/x   # 差分から（回帰確認の範囲）
+himotoki serve --port 8765            # ビュワー http://localhost:8765
+himotoki mcp                          # MCP サーバ（stdio）
 ```
 
-ビュワーはビルド済みのものを Python パッケージ（`backend/codegraph/web`）に同梱しているので、利用者は Node.js を入れる必要がありません。ビュワーを改造するときは `cd frontend && npm install && npm run dev` で開発サーバを起動し、`npm run build` で同梱分も更新します（更新し忘れはテストで検出します）。ソースの文字コードは UTF-8 と Shift_JIS（Windows-31J）を自動で判別します。
+ビュワーはビルド済みのものを Python パッケージ（`backend/himotoki/web`）に同梱しているので、利用者は Node.js を入れる必要がありません。ビュワーを改造するときは `cd frontend && npm install && npm run dev` で開発サーバを起動し、`npm run build` で同梱分も更新します（更新し忘れはテストで検出します）。ソースの文字コードは UTF-8 と Shift_JIS（Windows-31J）を自動で判別します。
 
-`serve` は既定で 127.0.0.1 だけで待ち受けます。ほかのマシンから使う場合は `CODEGRAPH_API_TOKEN` と `CODEGRAPH_ALLOWED_HOSTS` が必要です（無いと起動しません）。
+`serve` は既定で 127.0.0.1 だけで待ち受けます。ほかのマシンから使う場合は `HIMOTOKI_API_TOKEN` と `HIMOTOKI_ALLOWED_HOSTS` が必要です（無いと起動しません）。
 
 ### Docker（Neo4j 構成）
 
 ```bash
-cp .env.example .env          # CODEGRAPH_API_TOKEN・NEO4J_PASSWORD（必須）、ANTHROPIC_API_KEY・REPOS_DIR など
-docker compose up --build     # http://localhost:8765/?token=<CODEGRAPH_API_TOKEN> で一度開く
+cp .env.example .env          # HIMOTOKI_API_TOKEN・NEO4J_PASSWORD（必須）、ANTHROPIC_API_KEY・REPOS_DIR など
+docker compose up --build     # http://localhost:8765/?token=<HIMOTOKI_API_TOKEN> で一度開く
 ```
 
 ## セキュリティ
@@ -319,8 +321,8 @@ AI（Claude）を使うのは「要求の構造化」と「候補の判定」と
 
 **設定の場所**（下ほど優先）:
 
-1. 設定ファイル `<CODEGRAPH_DATA_DIR>/settings.yaml`（場所は `CODEGRAPH_SETTINGS` で変更可）。例は `samples/settings.example.yaml`
-2. 環境変数 `CODEGRAPH_LLM_MIN_SCORE`・`CODEGRAPH_LLM_MAX_ITEMS`・`CODEGRAPH_LLM_REUSE_VERDICTS`・`CODEGRAPH_LLM_RESCORE_DELTA`・`CODEGRAPH_LLM_BATCH_SIZE`
+1. 設定ファイル `<HIMOTOKI_DATA_DIR>/settings.yaml`（場所は `HIMOTOKI_SETTINGS` で変更可）。例は `samples/settings.example.yaml`
+2. 環境変数 `HIMOTOKI_LLM_MIN_SCORE`・`HIMOTOKI_LLM_MAX_ITEMS`・`HIMOTOKI_LLM_REUSE_VERDICTS`・`HIMOTOKI_LLM_RESCORE_DELTA`・`HIMOTOKI_LLM_BATCH_SIZE`
 3. 解析ごとの指定:
    - API の `llm_max_items` / `llm_min_score`
    - CLI の `--llm-max-items` / `--llm-min-score`
@@ -334,7 +336,7 @@ AI（Claude）を使うのは「要求の構造化」と「候補の判定」と
 - 解析中は AI を1回呼ぶたびに更新されます。トークン数は API が返す実際の値です。
 - マウスを重ねると、入力・出力の内訳、API 呼び出し回数、モデル、為替レート、今日・今月の合計が出ます。
 - 「規模」タブにも費用の内訳を表示します。
-- 集計は `GET /api/usage`（今日・今月・日別）で取れます。呼び出しごとの記録は `<CODEGRAPH_DATA_DIR>/usage.db` に残ります。
+- 集計は `GET /api/usage`（今日・今月・日別）で取れます。呼び出しごとの記録は `<HIMOTOKI_DATA_DIR>/usage.db` に残ります。
 
 単価（USD／100万トークン）と為替レートは `settings.yaml` の `pricing` で設定します。
 
@@ -357,7 +359,7 @@ AI（Claude）を使うのは「要求の構造化」と「候補の判定」と
 
 ## 規模見積もり
 
-`backend/codegraph/analysis/estimate.py` の係数表（要素種別 × 変更種別の基準時間。ジョブ・スクリプト・SQL文・DBオブジェクト・設計書の項目も含む）を基準にします。これに循環的複雑度・行数・呼び出し元数・難易度補正・ロケール数を掛け、テストが無い要素にはテスト作成時間を加えます。最後にレビュー等の係数（既定 1.3）と、過去実績から求める補正係数（`POST /api/estimator/calibrate`）を掛けて人日にします。
+`backend/himotoki/analysis/estimate.py` の係数表（要素種別 × 変更種別の基準時間。ジョブ・スクリプト・SQL文・DBオブジェクト・設計書の項目も含む）を基準にします。これに循環的複雑度・行数・呼び出し元数・難易度補正・ロケール数を掛け、テストが無い要素にはテスト作成時間を加えます。最後にレビュー等の係数（既定 1.3）と、過去実績から求める補正係数（`POST /api/estimator/calibrate`）を掛けて人日にします。
 
 ## API
 
@@ -480,14 +482,14 @@ Oracle 辞書の CSV 取込（`samples/tour-env/db/oracle_catalog`）は、パ�
 ## ディレクトリ
 
 ```
-backend/codegraph/extractors/         汎用の抽出器（java / xml / text / sql / props / jobs / docs）
-backend/codegraph/rules/              ルールパック（YAML）: フレームワークの知識と伝播の重み
-backend/codegraph/pipeline/           抽出の実行・キャッシュ・リンク（名前空間ごとの解決・Java の型解決）
-backend/codegraph/sources/            DB辞書・実行時SQL・git（worktree・差分・Webhook）・コード検索
-backend/codegraph/store/              ローカルストア / Neo4jストア（グラフ名前空間・一括取得）
-backend/codegraph/analysis/           解析エンジン・LLM／ルールベース判定・規模見積もり
-backend/codegraph/workspace.py        複数グラフ（ブランチ・タグ）の管理
-backend/codegraph/api.py・cli.py・mcp_server.py   REST + WebSocket / コマンドライン / MCP
+backend/himotoki/extractors/         汎用の抽出器（java / xml / text / sql / props / jobs / docs）
+backend/himotoki/rules/              ルールパック（YAML）: フレームワークの知識と伝播の重み
+backend/himotoki/pipeline/           抽出の実行・キャッシュ・リンク（名前空間ごとの解決・Java の型解決）
+backend/himotoki/sources/            DB辞書・実行時SQL・git（worktree・差分・Webhook）・コード検索
+backend/himotoki/store/              ローカルストア / Neo4jストア（グラフ名前空間・一括取得）
+backend/himotoki/analysis/           解析エンジン・LLM／ルールベース判定・規模見積もり
+backend/himotoki/workspace.py        複数グラフ（ブランチ・タグ）の管理
+backend/himotoki/api.py・cli.py・mcp_server.py   REST + WebSocket / コマンドライン / MCP
 backend/scripts/eval_history.py    コミット履歴による評価
 backend/tests/                     テスト
 frontend/src/                      ビュワー

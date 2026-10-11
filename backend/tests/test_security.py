@@ -10,19 +10,19 @@ import zipfile
 import pytest
 from fastapi.testclient import TestClient
 
-from codegraph.security import check_ref, office_zip_ok, redact, safe_join
+from himotoki.security import check_ref, office_zip_ok, redact, safe_join
 
 FIX = os.path.join(os.path.dirname(__file__), "fixtures", "minirepo")
 
 
 def _client(tmp_path, monkeypatch, **env):
-    monkeypatch.setenv("CODEGRAPH_DATA_DIR", str(tmp_path / "data"))
-    for k in ("CODEGRAPH_API_TOKEN", "CODEGRAPH_WEBHOOK_SECRET", "CODEGRAPH_ALLOWED_ROOTS", "CODEGRAPH_CORS_ORIGINS",
-              "CODEGRAPH_ALLOW_DB_FROM_API", "CODEGRAPH_ALLOWED_HOSTS"):
+    monkeypatch.setenv("HIMOTOKI_DATA_DIR", str(tmp_path / "data"))
+    for k in ("HIMOTOKI_API_TOKEN", "HIMOTOKI_WEBHOOK_SECRET", "HIMOTOKI_ALLOWED_ROOTS", "HIMOTOKI_CORS_ORIGINS",
+              "HIMOTOKI_ALLOW_DB_FROM_API", "HIMOTOKI_ALLOWED_HOSTS"):
         monkeypatch.delenv(k, raising=False)
     for k, v in env.items():
         monkeypatch.setenv(k, v)
-    import codegraph.api as api
+    import himotoki.api as api
     importlib.reload(api)
     return api, TestClient(api.app)
 
@@ -60,7 +60,7 @@ def test_no_wildcard_cors_and_host_check(tmp_path, monkeypatch):
 
 
 def test_token_required_when_configured(tmp_path, monkeypatch):
-    api, c = _client(tmp_path, monkeypatch, CODEGRAPH_API_TOKEN="s3cr3t-token")
+    api, c = _client(tmp_path, monkeypatch, HIMOTOKI_API_TOKEN="s3cr3t-token")
     assert c.get("/api/status").status_code == 401
     assert c.get("/api/status", headers={"Authorization": "Bearer wrong"}).status_code == 401
     assert c.get("/api/status", headers={"Authorization": "Bearer s3cr3t-token"}).status_code == 200
@@ -75,7 +75,7 @@ def test_token_required_when_configured(tmp_path, monkeypatch):
 
 def test_websocket_rejects_cross_site_and_unauthenticated(tmp_path, monkeypatch):
     from starlette.websockets import WebSocketDisconnect
-    api, c = _client(tmp_path, monkeypatch, CODEGRAPH_API_TOKEN="t0ken")
+    api, c = _client(tmp_path, monkeypatch, HIMOTOKI_API_TOKEN="t0ken")
     with pytest.raises(WebSocketDisconnect):
         with c.websocket_connect("/ws/runs/x") as ws:
             ws.receive_json()
@@ -88,7 +88,7 @@ def test_websocket_rejects_cross_site_and_unauthenticated(tmp_path, monkeypatch)
 def test_paths_restricted_to_allowed_roots(tmp_path, monkeypatch):
     allowed = tmp_path / "repos"
     allowed.mkdir()
-    api, c = _client(tmp_path, monkeypatch, CODEGRAPH_ALLOWED_ROOTS=str(allowed))
+    api, c = _client(tmp_path, monkeypatch, HIMOTOKI_ALLOWED_ROOTS=str(allowed))
     assert c.post("/api/index", json={"repo": "/etc"}).status_code == 403
     assert c.post("/api/index", json={"repo": str(allowed) + "/../../etc"}).status_code == 403
     assert c.post("/api/sources/runtime", json={"kind": "csv", "path": "/etc/passwd"}).status_code == 403
@@ -107,7 +107,7 @@ def test_db_connections_from_api_are_opt_in(tmp_path, monkeypatch):
 def test_webhook_requires_secret_and_valid_refs(tmp_path, monkeypatch):
     api, c = _client(tmp_path, monkeypatch)
     assert c.post("/api/hooks/git", json={"object_kind": "push"}).status_code == 503
-    api, c = _client(tmp_path, monkeypatch, CODEGRAPH_WEBHOOK_SECRET="hooksecret")
+    api, c = _client(tmp_path, monkeypatch, HIMOTOKI_WEBHOOK_SECRET="hooksecret")
     body = json.dumps({"ref": "refs/heads/--upload-pack=touch /tmp/pwned", "after": "x"}).encode()
     sig = "sha256=" + hmac.new(b"hooksecret", body, hashlib.sha256).hexdigest()
     h = {"x-github-event": "push", "x-hub-signature-256": sig, "content-type": "application/json"}
@@ -141,8 +141,8 @@ def test_safe_join():
 
 
 def test_symlinks_and_oversized_files_are_not_indexed(tmp_path, monkeypatch):
-    from codegraph.pipeline.run import Pipeline
-    from codegraph.store import LocalStore
+    from himotoki.pipeline.run import Pipeline
+    from himotoki.store import LocalStore
     repo = tmp_path / "r"
     (repo / "conf").mkdir(parents=True)
     secret = tmp_path / "secret.properties"
@@ -152,7 +152,7 @@ def test_symlinks_and_oversized_files_are_not_indexed(tmp_path, monkeypatch):
     (repo / "conf" / "ok.properties").write_text("greeting=hello\n")
     subprocess.run(["git", "init", "-q", str(repo)], check=True)
     subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True)
-    monkeypatch.setenv("CODEGRAPH_MAX_FILE_MB", "1")
+    monkeypatch.setenv("HIMOTOKI_MAX_FILE_MB", "1")
     store = LocalStore(str(tmp_path / "g.json"))
     stats = Pipeline(str(tmp_path / "d"), workers=0).index(str(repo), store)
     text = json.dumps([n.to_dict() for n in store.nodes()])
@@ -162,8 +162,8 @@ def test_symlinks_and_oversized_files_are_not_indexed(tmp_path, monkeypatch):
 
 
 def test_xml_entities_and_zip_bombs_are_refused(tmp_path):
-    from codegraph.extractors import xml as xmlx
-    from codegraph.rules import load_rules
+    from himotoki.extractors import xml as xmlx
+    from himotoki.rules import load_rules
     bomb = b'<?xml version="1.0"?><!DOCTYPE l [<!ENTITY a "aaaaaaaaaa"><!ENTITY b "&a;&a;&a;&a;&a;&a;">]><l>&b;</l>'
     with pytest.raises(ValueError):
         xmlx.extract("x.xml", bomb, load_rules())

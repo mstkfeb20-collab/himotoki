@@ -4,7 +4,7 @@ The extractors and the linker are generic. Everything framework-specific —
 which annotations mark an HTTP endpoint, how an XML mapper binds SQL to a Java
 interface, which string patterns in a template refer to a message key, how a
 job definition points at a script — lives in YAML packs under this directory
-(and any directory listed in CODEGRAPH_RULES). Supporting a new framework means
+(and any directory listed in HIMOTOKI_RULES). Supporting a new framework means
 adding a pack, not code.
 """
 from __future__ import annotations
@@ -56,7 +56,7 @@ class RuleSet:
 
 @lru_cache(maxsize=4)
 def load_rules(extra: str | None = None) -> RuleSet:
-    dirs = [BUILTIN] + [d for d in (extra or os.environ.get("CODEGRAPH_RULES", "")).split(os.pathsep) if d]
+    dirs = [BUILTIN] + [d for d in (extra or os.environ.get("HIMOTOKI_RULES", "")).split(os.pathsep) if d]
     files = []
     for d in dirs:
         files += sorted(glob.glob(os.path.join(d, "*.yaml")))

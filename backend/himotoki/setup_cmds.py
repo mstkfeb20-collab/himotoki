@@ -7,7 +7,7 @@ a demo that runs end to end on the bundled sample system.
       db/         database dictionary exports (optional)
       rules/      rule packs for in-house frameworks (optional, *.yaml)
       settings.yaml
-      (graphs/, facts.db, workspace.json ... are created by codegraph)
+      (graphs/, facts.db, workspace.json ... are created by himotoki)
 
 Commands run inside the workspace (or any folder below it) find it on their own.
 """
@@ -21,13 +21,13 @@ import socket
 import subprocess
 import sys
 
-MARKER = ".codegraph-workspace"
+MARKER = ".himotoki-workspace"
 USER_DIRS = ("repos", "docs", "db", "rules")
 DEMO = os.path.join(os.path.dirname(__file__), "demo", "sor-env")
 DEMO_REQUIREMENT = "受注の備考（NOTE）の上限を200文字から500文字に拡張する"
 
 SETTINGS = """\
-# codegraph の設定（必要なところだけ書き換えてください。消しても既定値で動きます）
+# himotoki の設定（必要なところだけ書き換えてください。消しても既定値で動きます）
 # AI判定は環境変数 ANTHROPIC_API_KEY を設定したときだけ使われます。
 
 llm:
@@ -39,25 +39,25 @@ pricing:
 """
 
 README = """\
-codegraph ワークスペース
+himotoki ワークスペース
 ========================
 
-このフォルダに解析したいものを置き、このフォルダ（または下のフォルダ）で codegraph コマンドを実行します。
+このフォルダに解析したいものを置き、このフォルダ（または下のフォルダ）で himotoki コマンドを実行します。
 
   repos/   ソースコード。リポジトリごとに git clone してください（例: repos/order-web）
            複数のサーバで1つの業務を構成している場合は、全部ここに並べます（1つのシステムとして解析します）
   docs/    設計書（Excel・Word・Markdown）、JP1のジョブ定義（ajsprint の出力）、crontab、運用シェル
   db/      本番DBの辞書のエクスポート（任意）。db/export_oracle.sql で書き出した CSV を
-           db/<DB名>/ に置くと、codegraph index のときに取り込みます
+           db/<DB名>/ に置くと、himotoki index のときに取り込みます
   rules/   社内フレームワーク用のルール（任意。*.yaml を置くと自動で読み込みます）
   settings.yaml   AI判定の上限や費用表示の設定
 
 使い方:
-  codegraph doctor     準備ができているかを確認
-  codegraph index      repos/ と docs/ を取り込む（中身を更新したらもう一度実行）
-  codegraph serve --open   ビュワーを開く（止めるときは Ctrl+C）
+  himotoki doctor     準備ができているかを確認
+  himotoki index      repos/ と docs/ を取り込む（中身を更新したらもう一度実行）
+  himotoki serve --open   ビュワーを開く（止めるときは Ctrl+C）
 
-graphs/ facts.db workspace.json などは codegraph が作るファイルです。消すと取り込み直しになります。
+graphs/ facts.db workspace.json などは himotoki が作るファイルです。消すと取り込み直しになります。
 """
 
 
@@ -78,7 +78,7 @@ def init_workspace(path: str, quiet: bool = False) -> str:
     os.makedirs(path, exist_ok=True)
     for sub in USER_DIRS:
         os.makedirs(os.path.join(path, sub), exist_ok=True)
-    _write_once(os.path.join(path, MARKER), "codegraph workspace\n")
+    _write_once(os.path.join(path, MARKER), "himotoki workspace\n")
     _write_once(os.path.join(path, "settings.yaml"), SETTINGS)
     _write_once(os.path.join(path, "README.txt"), README)
     from .sources.catalog import oracle_export_script
@@ -88,7 +88,7 @@ def init_workspace(path: str, quiet: bool = False) -> str:
         print("  1. repos/ にソースを git clone する（複数サーバならリポジトリごとに）")
         print("  2. docs/ に設計書・ジョブ定義・運用シェルを置く（任意）")
         print(f"  3. cd {path}")
-        print("     codegraph doctor  →  codegraph index  →  codegraph serve --open")
+        print("     himotoki doctor  →  himotoki index  →  himotoki serve --open")
     return path
 
 
@@ -119,7 +119,7 @@ def graph_name_for(ws: str) -> str:
 
 
 def index_workspace(ws_obj, ws_dir: str, progress=None) -> dict:
-    """`codegraph index` with no arguments: repos/ (one repository, or several as one
+    """`himotoki index` with no arguments: repos/ (one repository, or several as one
     system) together with docs/."""
     repos = workspace_repos(ws_dir)
     if not repos:
@@ -221,7 +221,7 @@ def doctor(ws_dir: str | None, data_dir: str, port: int = 8765) -> int:
             rows.append((ok, "rules/", "社内ルールを読み込みます"))
     else:
         rows.append((warn, "ワークスペース", f"見つかりません（作業領域: {data_dir}）。"
-                     "codegraph init <フォルダ> で作ると、置き場所が決まって迷いません"))
+                     "himotoki init <フォルダ> で作ると、置き場所が決まって迷いません"))
     target = data_dir
     while not os.path.exists(target) and os.path.dirname(target) != target:
         target = os.path.dirname(target)          # checked without creating anything
@@ -238,7 +238,7 @@ def doctor(ws_dir: str | None, data_dir: str, port: int = 8765) -> int:
         except ValueError:
             pass
     rows.append((ok if graphs else warn, "取り込み済み", ", ".join(f"{n}（{g.get('nodes')} 要素）" for n, g in graphs.items())
-                 if graphs else "まだありません → codegraph index"))
+                 if graphs else "まだありません → himotoki index"))
     rows.append((ok if port_free(port) else warn, f"ポート {port}", "空いています" if port_free(port) else
                  f"使用中です（起動済みならそのまま http://127.0.0.1:{port} を開く。別のポートは --port 8766）"))
 
@@ -250,11 +250,11 @@ def doctor(ws_dir: str | None, data_dir: str, port: int = 8765) -> int:
     problems = sum(1 for r in rows if r[0] == bad)
     print()
     if problems:
-        print(f"NG が {problems} 件あります。上の説明に沿って直してから、もう一度 codegraph doctor を実行してください。")
+        print(f"NG が {problems} 件あります。上の説明に沿って直してから、もう一度 himotoki doctor を実行してください。")
     elif not graphs:
-        print("準備はできています。次は codegraph index（お試しなら codegraph demo）。")
+        print("準備はできています。次は himotoki index（お試しなら himotoki demo）。")
     else:
-        print("準備はできています。codegraph serve --open でビュワーを開けます。")
+        print("準備はできています。himotoki serve --open でビュワーを開けます。")
     return problems
 
 

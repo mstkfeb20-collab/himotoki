@@ -1,4 +1,4 @@
-# はじめての codegraph
+# はじめての himotoki
 
 このページの手順どおりに進めれば、プログラミングに詳しくなくても、自分の担当システムで影響調査を始められます。
 
@@ -25,7 +25,7 @@
 
 | ソフト | 必須か | 用途 |
 |---|---|---|
-| Python 3.11 以上 | 必須 | codegraph 本体 |
+| Python 3.11 以上 | 必須 | himotoki 本体 |
 | Git | ほぼ必須 | リポジトリの取得、差分からの解析、変更履歴 |
 | LibreOffice | 任意 | 古い形式の設計書（.xls / .doc）を読むときだけ。.xlsx / .docx はそのまま読めます |
 | Node.js | 不要 | ビュワーはパッケージに同梱しています（ビュワーを改造する開発者だけ必要） |
@@ -56,15 +56,15 @@
 
 ```bat
 cd %USERPROFILE%
-git clone https://github.com/mstkfeb20-collab/codegraph.git
-cd codegraph
+git clone https://github.com/mstkfeb20-collab/himotoki.git
+cd himotoki
 py -m venv .venv
 .venv\Scripts\activate
 pip install .\backend
-codegraph doctor
+himotoki doctor
 ```
 
-> 2 回目からは、コマンドプロンプトを開いたら `cd %USERPROFILE%\codegraph` → `.venv\Scripts\activate` を実行してから使います。
+> 2 回目からは、コマンドプロンプトを開いたら `cd %USERPROFILE%\himotoki` → `.venv\Scripts\activate` を実行してから使います。
 > PowerShell で `activate` がエラーになる場合は、コマンドプロンプトを使うか、`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` を一度実行してください。
 
 ### macOS / Linux
@@ -72,12 +72,12 @@ codegraph doctor
 ```bash
 # Python と Git が無ければ: macOS は brew install python git、Ubuntu は sudo apt install python3-venv git
 cd ~
-git clone https://github.com/mstkfeb20-collab/codegraph.git
-cd codegraph
+git clone https://github.com/mstkfeb20-collab/himotoki.git
+cd himotoki
 python3 -m venv .venv
 source .venv/bin/activate
 pip install ./backend
-codegraph doctor
+himotoki doctor
 ```
 
 ### 社内ネットワークで pip が通らないとき
@@ -88,13 +88,13 @@ codegraph doctor
 ```bash
 # インターネットに出られる PC
 pip download -d wheels ./backend
-# 閉じた環境の PC（codegraph のフォルダと wheels フォルダを持ち込んで）
+# 閉じた環境の PC（himotoki のフォルダと wheels フォルダを持ち込んで）
 pip install --no-index --find-links wheels ./backend
 ```
 
 ### 確認
 
-`codegraph doctor` で準備の状態が表示されます。`NG` があれば、その行の説明どおりに直してください。`注意` は任意の項目なので、そのままでも使えます。
+`himotoki doctor` で準備の状態が表示されます。`NG` があれば、その行の説明どおりに直してください。`注意` は任意の項目なので、そのままでも使えます。
 
 ```
 [OK  ] Python               3.12.6
@@ -111,10 +111,10 @@ pip install --no-index --find-links wheels ./backend
 ## 3. デモで試す
 
 ```bash
-codegraph demo
+himotoki demo
 ```
 
-サンプルのシステム（受注・在庫・出荷の 3 サーバで 1 つの業務）がフォルダ `codegraph-demo` に置かれます。続いて取り込み、「受注の備考（NOTE）の上限を200文字から500文字に拡張する」という要求を解析し、ブラウザでビュワーを開きます。止めるときは Ctrl+C です。
+サンプルのシステム（受注・在庫・出荷の 3 サーバで 1 つの業務）がフォルダ `himotoki-demo` に置かれます。続いて取り込み、「受注の備考（NOTE）の上限を200文字から500文字に拡張する」という要求を解析し、ブラウザでビュワーを開きます。止めるときは Ctrl+C です。
 
 ビュワーでは次の順に見てください。
 
@@ -134,7 +134,7 @@ codegraph demo
 ワークスペースは、解析に使うものを決まった場所に置くためのフォルダです。担当システムごとに 1 つ作ります。
 
 ```bash
-codegraph init C:\work\juchu      # Windows の例（macOS / Linux は ~/work/juchu など）
+himotoki init C:\work\juchu      # Windows の例（macOS / Linux は ~/work/juchu など）
 cd C:\work\juchu
 ```
 
@@ -203,7 +203,7 @@ DB にだけ追加された列やストアドを見つけるためのもので�
 sqlplus ユーザ/パスワード@接続先 @db/export_oracle.sql スキーマ名
 ```
 
-出力された `ALL_TAB_COLUMNS.csv` などを `db/proddb/` のようなフォルダに移します。読み取り専用のユーザで実行してください。PostgreSQL の場合は `codegraph catalog postgres --dsn …` で直接取り込めます（[README](../README.md#ローカル開発)）。
+出力された `ALL_TAB_COLUMNS.csv` などを `db/proddb/` のようなフォルダに移します。読み取り専用のユーザで実行してください。PostgreSQL の場合は `himotoki catalog postgres --dsn …` で直接取り込めます（[README](../README.md#ローカル開発)）。
 
 > `export_oracle.sql` は SQL*Plus 12.2 以降向けで、作成環境では実際の Oracle で確認できていません。うまく出力できない場合は、SQL Developer で同じ SELECT を実行し、見出し付きの CSV で保存しても読み込めます。
 
@@ -214,14 +214,14 @@ sqlplus ユーザ/パスワード@接続先 @db/export_oracle.sql スキーマ�
 ### 4.3 確認して取り込む
 
 ```bash
-codegraph doctor      # 置いたものが見えているか確認
-codegraph index       # repos/・docs/・db/ をまとめて取り込む
+himotoki doctor      # 置いたものが見えているか確認
+himotoki index       # repos/・docs/・db/ をまとめて取り込む
 ```
 
 取り込みが終わったら、どこまで取り込めたかを確認します。
 
 ```bash
-codegraph report
+himotoki report
 ```
 
 ビュワーの「取込状況」タブでも同じ内容が見られます。見るところは次の 3 つです。
@@ -233,14 +233,14 @@ codegraph report
 ### 4.4 解析する
 
 ```bash
-codegraph serve --open
+himotoki serve --open
 ```
 
 ビュワーの「新しい解析」に要求を貼り付けて「解析を開始」を押します。書き方のコツは画面の補助に出ます。特に、変更前と変更後の値（例:「80文字から200文字に」）を書くと、その値を使っている箇所まで探します。あとは[3章](#3-デモで試す)と同じ流れで、確定・除外してレポートを出します。
 
 ### 4.5 ソースや資料を更新したとき
 
-`git pull` で最新にするか資料を置き直してから、もう一度 `codegraph index` を実行します。変わったファイルだけを読み直すので、2 回目からは速く終わります。
+`git pull` で最新にするか資料を置き直してから、もう一度 `himotoki index` を実行します。変わったファイルだけを読み直すので、2 回目からは速く終わります。
 
 ---
 
@@ -266,10 +266,10 @@ export ANTHROPIC_API_KEY="sk-ant-..."        # macOS / Linux
 
 | 症状 | 対処 |
 |---|---|
-| `codegraph` が見つからない | 仮想環境を有効にしていません。`.venv\Scripts\activate`（Windows）/ `source .venv/bin/activate`（macOS / Linux）を実行 |
+| `himotoki` が見つからない | 仮想環境を有効にしていません。`.venv\Scripts\activate`（Windows）/ `source .venv/bin/activate`（macOS / Linux）を実行 |
 | `pip install` が失敗する | 社内プロキシの可能性があります。[2章](#社内ネットワークで-pip-が通らないとき)を参照 |
-| ポートが使用中と出る | 起動済みなら表示された URL を開く。別のポートで起動するには `codegraph serve --open --port 8766` |
-| `codegraph index` が「リポジトリがありません」 | `repos/` の中に、リポジトリのフォルダ（`repos/order-web/…`）があるか確認。`repos/` 直下にソースを直接置かないでください |
+| ポートが使用中と出る | 起動済みなら表示された URL を開く。別のポートで起動するには `himotoki serve --open --port 8766` |
+| `himotoki index` が「リポジトリがありません」 | `repos/` の中に、リポジトリのフォルダ（`repos/order-web/…`）があるか確認。`repos/` 直下にソースを直接置かないでください |
 | 日本語が文字化けする | UTF-8 と Shift_JIS（Windows-31J）は自動で判別します。EUC-JP など、それ以外の文字コードは未対応です |
 | 設計書が候補に出ない | 表の見出し行が見つからない可能性があります。「取込状況」のエラーと、`docs/` に置いたかを確認 |
 | 候補が多すぎる | ビュワーの確度のスライダーと層のフィルタ（コード・データなど）で絞れます。AI 判定を使うと「影響あり」が絞り込まれます |

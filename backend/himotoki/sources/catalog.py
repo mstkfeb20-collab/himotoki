@@ -180,7 +180,7 @@ def oracle_export_script() -> str:
     out = ["-- Oracle の辞書を CSV に書き出す（SQL*Plus 12.2 以降）",
            "-- 使い方: sqlplus ユーザ/パスワード@接続先 @export_oracle.sql スキーマ名",
            "-- 文字コードは UTF-8 を推奨（例: set NLS_LANG=JAPANESE_JAPAN.AL32UTF8）。Shift_JIS でも読み込めます。",
-           "-- 出力された *.csv を ワークスペースの db/<DB名>/ に置いて codegraph index を実行します。",
+           "-- 出力された *.csv を ワークスペースの db/<DB名>/ に置いて himotoki index を実行します。",
            "SET MARKUP CSV ON QUOTE ON", "SET FEEDBACK OFF TERMOUT OFF VERIFY OFF ECHO OFF",
            "SET PAGESIZE 50000 LINESIZE 32767 TRIMSPOOL ON LONG 2000000 LONGCHUNKSIZE 2000000", ""]
     for view, q in ORACLE_QUERIES.items():

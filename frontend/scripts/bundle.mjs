@@ -1,5 +1,5 @@
-// Copies the built viewer into the Python package (backend/codegraph/web) so that
-// `pip install` + `codegraph serve` works without Node.js. Records a hash of the
+// Copies the built viewer into the Python package (backend/himotoki/web) so that
+// `pip install` + `himotoki serve` works without Node.js. Records a hash of the
 // viewer sources; a backend test fails when the bundle is older than the sources.
 import { createHash } from "node:crypto";
 import { cpSync, existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
@@ -7,7 +7,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const out = join(root, "..", "backend", "codegraph", "web");
+const out = join(root, "..", "backend", "himotoki", "web");
 
 export function sourceHash() {
   const files = [];

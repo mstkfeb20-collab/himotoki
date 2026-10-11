@@ -13,9 +13,9 @@ COPY backend/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./
 COPY --from=web /web/dist /app/frontend/dist
-ENV CODEGRAPH_DATA_DIR=/data CODEGRAPH_FRONTEND=/app/frontend/dist CODEGRAPH_ALLOWED_ROOTS=/repos:/data
-RUN useradd --create-home --uid 10001 codegraph && mkdir -p /data && chown codegraph /data
-USER codegraph
+ENV HIMOTOKI_DATA_DIR=/data HIMOTOKI_FRONTEND=/app/frontend/dist HIMOTOKI_ALLOWED_ROOTS=/repos:/data
+RUN useradd --create-home --uid 10001 himotoki && mkdir -p /data && chown himotoki /data
+USER himotoki
 EXPOSE 8765
-# refuses to start without CODEGRAPH_API_TOKEN and CODEGRAPH_ALLOWED_HOSTS (see docs/SECURITY.md)
-CMD ["python", "-m", "codegraph.cli", "serve", "--host", "0.0.0.0", "--port", "8765"]
+# refuses to start without HIMOTOKI_API_TOKEN and HIMOTOKI_ALLOWED_HOSTS (see docs/SECURITY.md)
+CMD ["python", "-m", "himotoki.cli", "serve", "--host", "0.0.0.0", "--port", "8765"]

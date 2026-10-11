@@ -216,7 +216,7 @@ export function IndexPanel({ graph }: { graph?: string | null }) {
           {(drift.columns_only_in_db || []).length > 0 &&
             <p className="sample">DBにのみ: {(drift.columns_only_in_db || []).slice(0, 12).map((c) => c.replace("col:", "")).join(", ")}</p>}
         </>
-      ) : <p className="muted small">{drift.note || "DB辞書が未取込です（codegraph catalog で取り込めます）"}</p>}
+      ) : <p className="muted small">{drift.note || "DB辞書が未取込です（himotoki catalog で取り込めます）"}</p>}
 
       <span className="k">実行時SQLとの照合</span>
       {rt ? (
@@ -227,7 +227,7 @@ export function IndexPanel({ graph }: { graph?: string | null }) {
           ))}
           {rt.unmatched > 0 && <p className="muted small">対応なしのSQLは、動的SQL・他システム・運用ツールなど、静的解析の死角を示します。</p>}
         </>
-      ) : <p className="muted small">実行時SQLが未取込です（codegraph runtime で取り込めます）</p>}
+      ) : <p className="muted small">実行時SQLが未取込です（himotoki runtime で取り込めます）</p>}
 
       {r.errors > 0 && <><span className="k">抽出エラー {r.errors}</span>
         {(r.error_samples || []).slice(0, 5).map((e, i) => <p key={i} className="sample">{e.file}: {e.error}</p>)}</>}

@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-const target = process.env.CODEGRAPH_API || "http://localhost:8765";
+const target = process.env.HIMOTOKI_API || "http://localhost:8765";
 export default defineConfig({
   plugins: [react()],
   server: {

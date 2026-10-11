@@ -7,11 +7,11 @@ import time
 
 import pytest
 
-from codegraph.analysis import llm as L
-from codegraph.analysis.engine import Engine
-from codegraph.pipeline.run import Pipeline
-from codegraph.settings import LLMBudget, load_llm_budget, parse_max_items
-from codegraph.store import LocalStore
+from himotoki.analysis import llm as L
+from himotoki.analysis.engine import Engine
+from himotoki.pipeline.run import Pipeline
+from himotoki.settings import LLMBudget, load_llm_budget, parse_max_items
+from himotoki.store import LocalStore
 
 FIX = os.path.join(os.path.dirname(__file__), "fixtures", "minirepo")
 REQ = "郵便番号の入力チェックを7桁から8桁に変更する。"
@@ -42,7 +42,7 @@ class FakeClaude(L.ClaudeLLM):
 @pytest.fixture()
 def eng(tmp_path, monkeypatch):
     for k in list(os.environ):
-        if k.startswith("CODEGRAPH_LLM_") or k == "CODEGRAPH_SETTINGS":
+        if k.startswith("HIMOTOKI_LLM_") or k == "HIMOTOKI_SETTINGS":
             monkeypatch.delenv(k)
     store = LocalStore(str(tmp_path / "graph.json"))
     Pipeline(str(tmp_path)).index(FIX, store)
@@ -106,15 +106,15 @@ def test_reinvestigation_reuses_parent_verdicts(eng):
 
 def test_settings_file_env_and_run_params(tmp_path, monkeypatch):
     for k in list(os.environ):
-        if k.startswith("CODEGRAPH_LLM_") or k == "CODEGRAPH_SETTINGS":
+        if k.startswith("HIMOTOKI_LLM_") or k == "HIMOTOKI_SETTINGS":
             monkeypatch.delenv(k)
     assert load_llm_budget(str(tmp_path)) == LLMBudget()
     (tmp_path / "settings.yaml").write_text("llm:\n  min_score: 0.45\n  max_items: unlimited\n")
     b = load_llm_budget(str(tmp_path))
     assert b.min_score == 0.45 and b.max_items is None
-    monkeypatch.setenv("CODEGRAPH_LLM_MAX_ITEMS", "120")
+    monkeypatch.setenv("HIMOTOKI_LLM_MAX_ITEMS", "120")
     assert load_llm_budget(str(tmp_path)).max_items == 120
-    monkeypatch.setenv("CODEGRAPH_LLM_MAX_ITEMS", "")          # empty = not set
+    monkeypatch.setenv("HIMOTOKI_LLM_MAX_ITEMS", "")          # empty = not set
     assert load_llm_budget(str(tmp_path)).max_items is None
     run_b = b.with_run_params({"min_score": 0.2, "llm_max_items": 50})
     assert run_b.max_items == 50 and run_b.min_score == 0.45   # plain min_score is the propagation cut-off
@@ -129,8 +129,8 @@ def test_settings_file_env_and_run_params(tmp_path, monkeypatch):
 def test_api_accepts_and_validates_budget(tmp_path, monkeypatch):
     import importlib
     from fastapi.testclient import TestClient
-    monkeypatch.setenv("CODEGRAPH_DATA_DIR", str(tmp_path))
-    import codegraph.api as api
+    monkeypatch.setenv("HIMOTOKI_DATA_DIR", str(tmp_path))
+    import himotoki.api as api
     importlib.reload(api)
     c = TestClient(api.app)
     assert c.post("/api/index", json={"repo": FIX}).status_code == 200
@@ -171,7 +171,7 @@ def test_usage_is_priced_live_and_recorded(eng, monkeypatch):
 
 
 def test_pricing_settings():
-    from codegraph.settings import Pricing, DEFAULT_PRICES
+    from himotoki.settings import Pricing, DEFAULT_PRICES
     p = Pricing(DEFAULT_PRICES, 150)
     assert p.cost_usd("claude-opus-5-5", 1_000_000, 1_000_000) == 24.0
     assert p.cost_usd("claude-haiku-5-5", 200_000, 0) == 0.1          # long-prompt tier

@@ -39,7 +39,7 @@ from .runstore import EventBus, RunStore
 from .search import NodeSearch
 from ..rules import load_rules
 
-log = logging.getLogger("codegraph.engine")
+log = logging.getLogger("himotoki.engine")
 
 SINKS = {Kind.TEST_CLASS, Kind.TEST_METHOD, Kind.DOC, Kind.DOC_ENTITY, Kind.FEATURE, Kind.SQL_FILE, Kind.CONFIG,
          Kind.RUNTIME_SQL}
@@ -141,7 +141,7 @@ class Engine:
                  docs_dir: str | None = None, settings_dir: str | None = None, repos: dict | None = None):
         self.store = store
         self.data_dir = data_dir
-        # where settings.yaml lives (the workspace root); falls back to CODEGRAPH_DATA_DIR
+        # where settings.yaml lives (the workspace root); falls back to HIMOTOKI_DATA_DIR
         self.settings_dir = settings_dir
         self.ledger = UsageLedger(os.path.join(settings_dir or data_dir, "usage.db"))
         self.repo = repo
@@ -747,7 +747,7 @@ class Engine:
 
     def _judge(self, st, node_ids):
         """Judge candidates. Three ways to avoid spending AI tokens, all configurable
-        (settings.yaml / CODEGRAPH_LLM_* / per-run params, see settings.py):
+        (settings.yaml / HIMOTOKI_LLM_* / per-run params, see settings.py):
           - reuse: a re-investigation keeps the parent's AI verdict unless the
             candidate gained evidence (score up by >= rescore_delta);
           - min_score: weakly connected candidates are judged by rules;

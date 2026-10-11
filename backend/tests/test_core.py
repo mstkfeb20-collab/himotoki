@@ -5,10 +5,10 @@ import time
 import pytest
 from fastapi.testclient import TestClient
 
-from codegraph.analysis.engine import Engine
-from codegraph.model import Rel
-from codegraph.pipeline.run import Pipeline
-from codegraph.store import LocalStore
+from himotoki.analysis.engine import Engine
+from himotoki.model import Rel
+from himotoki.pipeline.run import Pipeline
+from himotoki.store import LocalStore
 
 FIX = os.path.join(os.path.dirname(__file__), "fixtures", "minirepo")
 P = "java:com.example.shop."
@@ -93,9 +93,9 @@ def test_add_attribute_pattern_and_reinvestigation(indexed):
 
 
 def test_api_smoke(tmp_path, monkeypatch):
-    monkeypatch.setenv("CODEGRAPH_DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("HIMOTOKI_DATA_DIR", str(tmp_path))
     import importlib
-    import codegraph.api as api
+    import himotoki.api as api
     importlib.reload(api)
     client = TestClient(api.app)
     assert client.post("/api/index", json={"repo": FIX}).status_code == 200

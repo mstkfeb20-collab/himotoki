@@ -8,11 +8,11 @@ import time
 
 import pytest
 
-from codegraph.extractors import text
-from codegraph.rules import load_rules
-from codegraph.workspace import Workspace
+from himotoki.extractors import text
+from himotoki.rules import load_rules
+from himotoki.workspace import Workspace
 
-SOR = os.path.join(os.path.dirname(__file__), "..", "codegraph", "demo", "sor-env")
+SOR = os.path.join(os.path.dirname(__file__), "..", "himotoki", "demo", "sor-env")
 REPOS = {n: os.path.join(SOR, n) for n in ("order-web", "inventory-svc", "shipping-svc")}
 NOTE = "受注の備考（NOTE）の上限を200文字から500文字に拡張する"
 
@@ -138,10 +138,10 @@ def test_transfer_script_directions():
 
 def test_api_indexes_a_system(tmp_path, monkeypatch):
     from fastapi.testclient import TestClient
-    monkeypatch.setenv("CODEGRAPH_DATA_DIR", str(tmp_path))
-    for k in ("CODEGRAPH_API_TOKEN", "CODEGRAPH_ALLOWED_ROOTS", "CODEGRAPH_ALLOWED_HOSTS"):
+    monkeypatch.setenv("HIMOTOKI_DATA_DIR", str(tmp_path))
+    for k in ("HIMOTOKI_API_TOKEN", "HIMOTOKI_ALLOWED_ROOTS", "HIMOTOKI_ALLOWED_HOSTS"):
         monkeypatch.delenv(k, raising=False)
-    import codegraph.api as api
+    import himotoki.api as api
     importlib.reload(api)
     c = TestClient(api.app)
     assert c.post("/api/index", json={"repos": {"../x": REPOS["order-web"]}, "graph": "s"}).status_code == 400

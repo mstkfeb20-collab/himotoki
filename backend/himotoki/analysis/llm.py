@@ -42,7 +42,7 @@ def _extract_json(text: str) -> Any:
     return json.loads(raw[start:])
 
 
-log = logging.getLogger("codegraph.llm")
+log = logging.getLogger("himotoki.llm")
 
 class RuleBasedLLM:
     name = "rule-based"
@@ -123,8 +123,8 @@ class ClaudeLLM(RuleBasedLLM):
         import anthropic
         # bounded waits: a slow or unreachable API must not stall a run indefinitely;
         # failures fall back to the rule-based answer (see the except branches below)
-        self.client = anthropic.Anthropic(timeout=float(os.environ.get("CODEGRAPH_LLM_TIMEOUT", "90")), max_retries=2)
-        self.model = os.environ.get("CODEGRAPH_LLM_MODEL", "claude-sonnet-5-5")
+        self.client = anthropic.Anthropic(timeout=float(os.environ.get("HIMOTOKI_LLM_TIMEOUT", "90")), max_retries=2)
+        self.model = os.environ.get("HIMOTOKI_LLM_MODEL", "claude-sonnet-5-5")
 
     def _ask(self, system: str, user: str, max_tokens: int = 4000, meter: dict | None = None,
              purpose: str = "") -> str:
