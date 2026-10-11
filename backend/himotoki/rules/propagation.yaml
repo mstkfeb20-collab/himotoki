@@ -18,6 +18,10 @@ propagation:
   - {rel: IMPLEMENTED_BY, dir: in, weight: 0.9}
   - {rel: IMPLEMENTED_BY, dir: out, weight: 0.7}
   - {rel: EXECUTES, dir: in, weight: 0.85}
+  # screens: a component used by a changed screen often changes with it (a new column
+  # in a list changes its row), and every screen using a changed component is affected
+  - {rel: RENDERS, dir: in, weight: 0.65}
+  - {rel: RENDERS, dir: out, weight: 0.45}
   # data flow between jobs and servers: whoever reads a changed data file, and the file
   # a changed exporter / transfer writes. `flow` rules continue past the depth limit
   # (up to the run parameter flow_depth, default 8 hops, kept while the score

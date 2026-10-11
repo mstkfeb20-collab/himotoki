@@ -29,14 +29,18 @@ from himotoki.workspace import Workspace  # noqa: E402
 
 SKIP = re.compile(r"format|copyright|import statements|sonar|license|typo|version|upgrade|bump|deprecat|"
                   r"schema location|logback|log format|loglevel", re.I)
-CODE = re.compile(r"/src/main/.*\.(java|xml|jsp|html|properties|sql|groovy|ftl)$")
+CODE_JAVA = r"/src/main/.*\.(java|xml|jsp|html|properties|sql|groovy|ftl)$"
+# TypeScript repositories: sources, schema and SQL, but not tests, e2e or type declarations
+CODE_TS = r"^(?!.*(\.test\.|\.spec\.|__tests__/|(^|/)e2e/|(^|/)tests?/|\.d\.ts$)).*\.(tsx?|prisma|sql)$"
+CODE = re.compile(CODE_JAVA)
 
 
 def git(repo, *args):
     return subprocess.run(["git", "-C", repo, *args], capture_output=True, text=True, check=True).stdout
 
 
-def sample(repo, n, max_files, since=None, subject=None, skip=None, stride=1):
+def sample(repo, n, max_files, since=None, subject=None, skip=None, stride=1, code=None):
+    code = code or CODE
     out = []
     args = ["log", "--no-merges", "--format=%H\t%P\t%s"] + ([f"--since={since}"] if since else [])
     seen = 0
@@ -49,7 +53,7 @@ def sample(repo, n, max_files, since=None, subject=None, skip=None, stride=1):
         if skip and re.search(skip, subj, re.I):
             continue
         files = [f for f in git(repo, "diff-tree", "--no-commit-id", "--name-status", "-r", sha).splitlines()]
-        changed = [f.split("\t")[-1] for f in files if f[:1] in "MD" and CODE.search(f)]
+        changed = [f.split("\t")[-1] for f in files if f[:1] in "MD" and code.search(f.split("\t")[-1])]
         if 2 <= len(changed) <= max_files:
             seen += 1
             if (seen - 1) % stride:
@@ -74,6 +78,7 @@ def main():
     ap.add_argument("--strip", default=r"^[A-Z][A-Z0-9]+-\d+\s*:\s*", help="regex removed from the message (ticket id)")
     ap.add_argument("--stride", type=int, default=1, help="take every n-th qualifying commit")
     ap.add_argument("--cache-graphs", help="keep each commit's graph here and reuse it (re-runs only re-analyse)")
+    ap.add_argument("--code", default="java", help="which changed files count: java, ts, or a regex")
     ap.add_argument("--resume", action="store_true", help="keep the rows already in --out and skip those commits")
     ap.add_argument("--max-commits", type=int, help="stop after this many new commits (run in slices)")
     ap.add_argument("--only", help="comma-separated short shas to evaluate (from an earlier sample)")
@@ -89,7 +94,8 @@ def main():
     if not os.path.isdir(wt):
         git(a.repo, "worktree", "prune")       # a data folder deleted by hand leaves a stale entry
         git(a.repo, "worktree", "add", "--detach", wt, "HEAD")
-    commits = sample(a.repo, a.n, a.max_files, a.since, a.subject, a.skip, a.stride)
+    code = re.compile({"java": CODE_JAVA, "ts": CODE_TS}.get(a.code, a.code))
+    commits = sample(a.repo, a.n, a.max_files, a.since, a.subject, a.skip, a.stride, code)
     if a.only:
         keep = a.only.split(",")
         commits = [c for c in commits if c["sha"][:8] in keep]

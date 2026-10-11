@@ -1,0 +1,2718 @@
+{
+ "conditions": "30 commits each, Japanese commit subjects as requirements (conventional-commit prefix stripped), rule-based judge; changed *.ts/*.tsx/*.prisma/*.sql excluding tests and e2e",
+ "marumie": {
+  "repo": "team-mirai/marumie",
+  "options": "--subject '^(feat|fix)' --stride 4",
+  "without_phrase_matching": {
+   "summary": {
+    "commits": 30,
+    "changed_files": 177,
+    "recall_any": 0.169,
+    "recall_impacted": 0.068,
+    "commits_with_any_hit": 16,
+    "recall_top20": 0.079,
+    "recall_top50": 0.119,
+    "recall_top100": 0.158,
+    "commits_with_hit_top20": 10,
+    "median_candidates": 108,
+    "median_seconds_index": 1.4
+   },
+   "rows": [
+    {
+     "sha": "00db0c81",
+     "message": "調研費の議員ページの公開を sitemap.xml に反映する",
+     "changed": 2,
+     "found_any": 1,
+     "found_impacted": 1,
+     "candidates": 152,
+     "candidate_files": 64,
+     "seconds_index": 2.78,
+     "seconds_total": 7.9,
+     "missed": [
+      "webapp/src/app/api/refresh/route.ts"
+     ],
+     "ranks": {
+      "webapp/src/app/api/refresh/route.ts": null,
+      "webapp/src/app/sitemap.ts": 1
+     },
+     "found_top20": 1,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "90029dac",
+     "message": "取引No の一意性を団体・年度単位にし、年度をまたいだ同じ取引No で前年度の取引が上書きされないようにする",
+     "changed": 5,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 2,
+     "candidate_files": 2,
+     "seconds_index": 1.59,
+     "seconds_total": 9.8,
+     "missed": [
+      "admin/src/server/contexts/data-import/application/usecases/save-preview-transactions-usecase.ts",
+      "admin/src/server/contexts/data-import/domain/services/transaction-validator.ts",
+      "admin/src/server/contexts/shared/domain/repositories/transaction-repository.interface.ts",
+      "admin/src/server/contexts/shared/infrastructure/repositories/prisma-transaction.repository.ts",
+      "prisma/schema.prisma"
+     ],
+     "ranks": {
+      "admin/src/server/contexts/data-import/application/usecases/save-preview-transactions-usecase.ts": null,
+      "admin/src/server/contexts/data-import/domain/services/transaction-validator.ts": null,
+      "admin/src/server/contexts/shared/domain/repositories/transaction-repository.interface.ts": null,
+      "admin/src/server/contexts/shared/infrastructure/repositories/prisma-transaction.repository.ts": null,
+      "prisma/schema.prisma": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".prisma",
+      ".ts"
+     ]
+    },
+    {
+     "sha": "77e18a5d",
+     "message": "書類の読み取りで発行元を読み取り、一致する支払先に自動で紐づける",
+     "changed": 9,
+     "found_any": 1,
+     "found_impacted": 0,
+     "candidates": 8,
+     "candidate_files": 4,
+     "seconds_index": 1.59,
+     "seconds_total": 9.9,
+     "missed": [
+      "admin/src/server/contexts/research-fund/application/usecases/process-scan-jobs-usecase.ts",
+      "admin/src/server/contexts/research-fund/domain/models/extracted-receipt.ts",
+      "admin/src/server/contexts/research-fund/domain/models/journal-review.ts",
+      "admin/src/server/contexts/research-fund/domain/models/payee.ts",
+      "admin/src/server/contexts/research-fund/domain/repositories/scan-repository.interface.ts",
+      "admin/src/server/contexts/research-fund/domain/services/receipt-extraction-prompt.ts",
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-journal-review.repository.ts",
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-scan.repository.ts"
+     ],
+     "ranks": {
+      "admin/src/client/components/research-fund/JournalPayeeField.tsx": 1,
+      "admin/src/server/contexts/research-fund/application/usecases/process-scan-jobs-usecase.ts": null,
+      "admin/src/server/contexts/research-fund/domain/models/extracted-receipt.ts": null,
+      "admin/src/server/contexts/research-fund/domain/models/journal-review.ts": null,
+      "admin/src/server/contexts/research-fund/domain/models/payee.ts": null,
+      "admin/src/server/contexts/research-fund/domain/repositories/scan-repository.interface.ts": null,
+      "admin/src/server/contexts/research-fund/domain/services/receipt-extraction-prompt.ts": null,
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-journal-review.repository.ts": null,
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-scan.repository.ts": null
+     },
+     "found_top20": 1,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "086881ea",
+     "message": "管理画面のタイトルを現行サービス名にし、ステージングだけ環境が分かるようにする",
+     "changed": 3,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 116,
+     "candidate_files": 47,
+     "seconds_index": 1.73,
+     "seconds_total": 10.9,
+     "missed": [
+      "admin/next.config.ts",
+      "admin/src/app/layout.tsx",
+      "admin/src/client/components/layout/BrandWordmark.tsx"
+     ],
+     "ranks": {
+      "admin/next.config.ts": null,
+      "admin/src/app/layout.tsx": null,
+      "admin/src/client/components/layout/BrandWordmark.tsx": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "00b65c26",
+     "message": "調研費の「すべての出入金」ページの絞り込み等を URL で指定できるようにし、行のカテゴリーを絞り込みリンクにする",
+     "changed": 7,
+     "found_any": 2,
+     "found_impacted": 1,
+     "candidates": 127,
+     "candidate_files": 58,
+     "seconds_index": 1.81,
+     "seconds_total": 10.4,
+     "missed": [
+      "webapp/src/client/components/research-fund/ResearchFundCategoryFilter.tsx",
+      "webapp/src/client/components/research-fund/ResearchFundCategoryPill.tsx",
+      "webapp/src/client/components/research-fund/ResearchFundTransactionsTable.tsx",
+      "webapp/src/server/contexts/research-fund/domain/models/research-fund-page.ts",
+      "webapp/src/server/contexts/research-fund/domain/services/research-fund-expense-list.ts"
+     ],
+     "ranks": {
+      "webapp/src/app/p/[slug]/[year]/transactions/page.tsx": 8,
+      "webapp/src/client/components/research-fund/ResearchFundCategoryFilter.tsx": null,
+      "webapp/src/client/components/research-fund/ResearchFundCategoryPill.tsx": null,
+      "webapp/src/client/components/research-fund/ResearchFundTransactionsTable.tsx": null,
+      "webapp/src/client/lib/research-fund-transactions.ts": 57,
+      "webapp/src/server/contexts/research-fund/domain/models/research-fund-page.ts": null,
+      "webapp/src/server/contexts/research-fund/domain/services/research-fund-expense-list.ts": null
+     },
+     "found_top20": 1,
+     "found_top50": 1,
+     "found_top100": 2,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "dd759920",
+     "message": "調研費の「調研費とは」の説明文を新しい文言に差し替える",
+     "changed": 2,
+     "found_any": 1,
+     "found_impacted": 0,
+     "candidates": 208,
+     "candidate_files": 78,
+     "seconds_index": 1.43,
+     "seconds_total": 9.5,
+     "missed": [
+      "webapp/src/client/components/research-fund/ResearchFundFlowSection.tsx"
+     ],
+     "ranks": {
+      "webapp/src/client/components/research-fund/ResearchFundFlowSection.tsx": null,
+      "webapp/src/client/components/research-fund/ResearchFundPartySection.tsx": 71
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "3d429176",
+     "message": "確認済の仕訳を選んで、まとめて下書きに戻す・破棄できるようにする",
+     "changed": 5,
+     "found_any": 1,
+     "found_impacted": 1,
+     "candidates": 21,
+     "candidate_files": 11,
+     "seconds_index": 1.82,
+     "seconds_total": 9.7,
+     "missed": [
+      "admin/src/client/components/research-fund/JournalReview.tsx",
+      "admin/src/server/contexts/research-fund/domain/repositories/journal-review-repository.interface.ts",
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-journal-review.repository.ts",
+      "admin/src/server/contexts/research-fund/presentation/actions/manage-journal-review.ts"
+     ],
+     "ranks": {
+      "admin/src/client/components/research-fund/JournalReview.tsx": null,
+      "admin/src/server/contexts/research-fund/application/usecases/manage-journal-review-usecase.ts": 1,
+      "admin/src/server/contexts/research-fund/domain/repositories/journal-review-repository.interface.ts": null,
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-journal-review.repository.ts": null,
+      "admin/src/server/contexts/research-fund/presentation/actions/manage-journal-review.ts": null
+     },
+     "found_top20": 1,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "ed638c24",
+     "message": "調研費の領収書を公開ページから出さないようにし、配信 API と説明文言からも外す",
+     "changed": 4,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 327,
+     "candidate_files": 139,
+     "seconds_index": 1.55,
+     "seconds_total": 10.2,
+     "missed": [
+      "webapp/src/app/api/research-fund/receipts/[entryId]/route.ts",
+      "webapp/src/client/components/common/ExplanationSection.tsx",
+      "webapp/src/client/components/research-fund/ResearchFundExpensesSection.tsx",
+      "webapp/src/client/components/research-fund/ResearchFundTransactionsTable.tsx"
+     ],
+     "ranks": {
+      "webapp/src/app/api/research-fund/receipts/[entryId]/route.ts": null,
+      "webapp/src/client/components/common/ExplanationSection.tsx": null,
+      "webapp/src/client/components/research-fund/ResearchFundExpensesSection.tsx": null,
+      "webapp/src/client/components/research-fund/ResearchFundTransactionsTable.tsx": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "447c8036",
+     "message": "調研費の「すべての出入金」に、公開済みの支給（入金）も出金と並べて出す",
+     "changed": 12,
+     "found_any": 3,
+     "found_impacted": 2,
+     "candidates": 9,
+     "candidate_files": 7,
+     "seconds_index": 1.51,
+     "seconds_total": 9.4,
+     "missed": [
+      "webapp/src/client/components/research-fund/ReceiptModal.tsx",
+      "webapp/src/client/components/research-fund/ResearchFundCategoryFilter.tsx",
+      "webapp/src/client/components/research-fund/ResearchFundTransactionsTable.tsx",
+      "webapp/src/server/contexts/research-fund/domain/models/published-research-fund.ts",
+      "webapp/src/server/contexts/research-fund/domain/models/research-fund-page.ts",
+      "webapp/src/server/contexts/research-fund/domain/services/research-fund-csv.ts",
+      "webapp/src/server/contexts/research-fund/domain/services/research-fund-expense-list.ts",
+      "webapp/src/server/contexts/research-fund/infrastructure/repositories/prisma-research-fund.repository.ts",
+      "webapp/src/server/contexts/research-fund/presentation/loaders/download-research-fund-csv.ts"
+     ],
+     "ranks": {
+      "webapp/src/app/p/[slug]/[year]/transactions/page.tsx": 1,
+      "webapp/src/client/components/research-fund/ReceiptModal.tsx": null,
+      "webapp/src/client/components/research-fund/ResearchFundCategoryFilter.tsx": null,
+      "webapp/src/client/components/research-fund/ResearchFundExpensesSection.tsx": 9,
+      "webapp/src/client/components/research-fund/ResearchFundTransactionsTable.tsx": null,
+      "webapp/src/client/lib/research-fund-transactions.ts": 2,
+      "webapp/src/server/contexts/research-fund/domain/models/published-research-fund.ts": null,
+      "webapp/src/server/contexts/research-fund/domain/models/research-fund-page.ts": null,
+      "webapp/src/server/contexts/research-fund/domain/services/research-fund-csv.ts": null,
+      "webapp/src/server/contexts/research-fund/domain/services/research-fund-expense-list.ts": null,
+      "webapp/src/server/contexts/research-fund/infrastructure/repositories/prisma-research-fund.repository.ts": null,
+      "webapp/src/server/contexts/research-fund/presentation/loaders/download-research-fund-csv.ts": null
+     },
+     "found_top20": 3,
+     "found_top50": 3,
+     "found_top100": 3,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "5d5f97f4",
+     "message": "調研費の下書き仕訳を、指示つきで LLM に書類ごと読み直させて作り直せるようにする",
+     "changed": 10,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 308,
+     "candidate_files": 155,
+     "seconds_index": 1.4,
+     "seconds_total": 9.5,
+     "missed": [
+      "admin/src/client/components/research-fund/JournalReview.tsx",
+      "admin/src/server/contexts/research-fund/application/usecases/manage-scan-usecase.ts",
+      "admin/src/server/contexts/research-fund/application/usecases/process-scan-jobs-usecase.ts",
+      "admin/src/server/contexts/research-fund/domain/models/scan-job.ts",
+      "admin/src/server/contexts/research-fund/domain/repositories/receipt-extraction-gateway.interface.ts",
+      "admin/src/server/contexts/research-fund/domain/repositories/scan-repository.interface.ts",
+      "admin/src/server/contexts/research-fund/domain/services/receipt-extraction-prompt.ts",
+      "admin/src/server/contexts/research-fund/domain/types/validation.ts",
+      "admin/src/server/contexts/research-fund/infrastructure/llm/vercel-ai-receipt-extraction-gateway.ts",
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-scan.repository.ts"
+     ],
+     "ranks": {
+      "admin/src/client/components/research-fund/JournalReview.tsx": null,
+      "admin/src/server/contexts/research-fund/application/usecases/manage-scan-usecase.ts": null,
+      "admin/src/server/contexts/research-fund/application/usecases/process-scan-jobs-usecase.ts": null,
+      "admin/src/server/contexts/research-fund/domain/models/scan-job.ts": null,
+      "admin/src/server/contexts/research-fund/domain/repositories/receipt-extraction-gateway.interface.ts": null,
+      "admin/src/server/contexts/research-fund/domain/repositories/scan-repository.interface.ts": null,
+      "admin/src/server/contexts/research-fund/domain/services/receipt-extraction-prompt.ts": null,
+      "admin/src/server/contexts/research-fund/domain/types/validation.ts": null,
+      "admin/src/server/contexts/research-fund/infrastructure/llm/vercel-ai-receipt-extraction-gateway.ts": null,
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-scan.repository.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "75556398",
+     "message": "調研費の公開画面で、確認済・未公開の仕訳をまとめて選択できるようにする",
+     "changed": 4,
+     "found_any": 2,
+     "found_impacted": 0,
+     "candidates": 48,
+     "candidate_files": 33,
+     "seconds_index": 1.57,
+     "seconds_total": 8.8,
+     "missed": [
+      "admin/src/client/components/ui/checkbox.tsx",
+      "admin/src/client/lib/research-fund-publish.ts"
+     ],
+     "ranks": {
+      "admin/src/client/components/research-fund/JournalPublication.tsx": 47,
+      "admin/src/client/components/ui/checkbox.tsx": null,
+      "admin/src/client/lib/index.ts": 10,
+      "admin/src/client/lib/research-fund-publish.ts": null
+     },
+     "found_top20": 1,
+     "found_top50": 2,
+     "found_top100": 2,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "62239c0c",
+     "message": "調研費ページの「すべての出入金」を先頭6件＋もっと見るにし、用途カードと相互リンクする",
+     "changed": 9,
+     "found_any": 1,
+     "found_impacted": 0,
+     "candidates": 118,
+     "candidate_files": 58,
+     "seconds_index": 1.47,
+     "seconds_total": 9.0,
+     "missed": [
+      "webapp/src/app/p/[slug]/[year]/page.tsx",
+      "webapp/src/client/components/research-fund/ResearchFundExpensesSection.tsx",
+      "webapp/src/client/components/research-fund/ResearchFundHighlightsSection.tsx",
+      "webapp/src/server/contexts/research-fund/application/usecases/get-research-fund-page-usecase.ts",
+      "webapp/src/server/contexts/research-fund/domain/models/published-research-fund.ts",
+      "webapp/src/server/contexts/research-fund/domain/models/research-fund-page.ts",
+      "webapp/src/server/contexts/research-fund/domain/services/research-fund-expense-list.ts",
+      "webapp/src/server/contexts/research-fund/infrastructure/repositories/prisma-research-fund.repository.ts"
+     ],
+     "ranks": {
+      "webapp/src/app/p/[slug]/[year]/page.tsx": null,
+      "webapp/src/client/components/research-fund/ResearchFundExpensesSection.tsx": null,
+      "webapp/src/client/components/research-fund/ResearchFundHighlightsSection.tsx": null,
+      "webapp/src/client/lib/research-fund-transactions.ts": 102,
+      "webapp/src/server/contexts/research-fund/application/usecases/get-research-fund-page-usecase.ts": null,
+      "webapp/src/server/contexts/research-fund/domain/models/published-research-fund.ts": null,
+      "webapp/src/server/contexts/research-fund/domain/models/research-fund-page.ts": null,
+      "webapp/src/server/contexts/research-fund/domain/services/research-fund-expense-list.ts": null,
+      "webapp/src/server/contexts/research-fund/infrastructure/repositories/prisma-research-fund.repository.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "726f9a77",
+     "message": "組織セレクタ・ヘッダーナビ・フッターを調研費の最終デザインに合わせる",
+     "changed": 3,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 3,
+     "candidate_files": 1,
+     "seconds_index": 1.46,
+     "seconds_total": 8.2,
+     "missed": [
+      "webapp/src/client/components/layout/footer/Footer.tsx",
+      "webapp/src/client/components/layout/header/OrganizationYearSheet.tsx",
+      "webapp/src/client/lib/header-navigation.ts"
+     ],
+     "ranks": {
+      "webapp/src/client/components/layout/footer/Footer.tsx": null,
+      "webapp/src/client/components/layout/header/OrganizationYearSheet.tsx": null,
+      "webapp/src/client/lib/header-navigation.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "5ef0012e",
+     "message": "sync-import で取り込まれなかった同期用JSONがストレージに残り続けないようにする",
+     "changed": 4,
+     "found_any": 4,
+     "found_impacted": 3,
+     "candidates": 160,
+     "candidate_files": 89,
+     "seconds_index": 1.55,
+     "seconds_total": 9.3,
+     "missed": [],
+     "ranks": {
+      "admin/src/server/contexts/data-import/application/usecases/prepare-sync-import-upload-usecase.ts": 22,
+      "admin/src/server/contexts/data-import/domain/models/organization-sync-import.ts": 9,
+      "admin/src/server/contexts/data-import/domain/repositories/sync-import-file-storage.interface.ts": 44,
+      "admin/src/server/contexts/data-import/infrastructure/storage/supabase-sync-import-file-storage.ts": 20
+     },
+     "found_top20": 2,
+     "found_top50": 4,
+     "found_top100": 4,
+     "missed_kinds": []
+    },
+    {
+     "sha": "74e0e449",
+     "message": "BS科目の未払金・未払費用を分割し、未収入金を追加する",
+     "changed": 7,
+     "found_any": 1,
+     "found_impacted": 0,
+     "candidates": 7,
+     "candidate_files": 5,
+     "seconds_index": 1.47,
+     "seconds_total": 8.4,
+     "missed": [
+      "admin/src/server/contexts/data-import/domain/services/transaction-validator.ts",
+      "admin/src/server/contexts/data-import/infrastructure/mf/mf-record-converter.ts",
+      "webapp/src/server/contexts/public-finance/application/usecases/get-balance-sheet-usecase.ts",
+      "webapp/src/server/contexts/public-finance/domain/models/balance-sheet.ts",
+      "webapp/src/server/contexts/public-finance/domain/repositories/balance-sheet-repository.interface.ts",
+      "webapp/src/server/contexts/public-finance/infrastructure/repositories/prisma-balance-sheet.repository.ts"
+     ],
+     "ranks": {
+      "admin/src/server/contexts/data-import/domain/services/transaction-validator.ts": null,
+      "admin/src/server/contexts/data-import/infrastructure/mf/mf-record-converter.ts": null,
+      "shared/accounting/account-category.ts": 6,
+      "webapp/src/server/contexts/public-finance/application/usecases/get-balance-sheet-usecase.ts": null,
+      "webapp/src/server/contexts/public-finance/domain/models/balance-sheet.ts": null,
+      "webapp/src/server/contexts/public-finance/domain/repositories/balance-sheet-repository.interface.ts": null,
+      "webapp/src/server/contexts/public-finance/infrastructure/repositories/prisma-balance-sheet.repository.ts": null
+     },
+     "found_top20": 1,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "88e430be",
+     "message": "返金取引を収支の正味として集計する",
+     "changed": 4,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 4,
+     "candidate_files": 4,
+     "seconds_index": 1.39,
+     "seconds_total": 8.2,
+     "missed": [
+      "shared/accounting/account-category.ts",
+      "webapp/src/server/contexts/public-finance/domain/services/sankey-data-builder.ts",
+      "webapp/src/server/contexts/public-finance/infrastructure/repositories/prisma-monthly-aggregation.repository.ts",
+      "webapp/src/server/contexts/public-finance/infrastructure/repositories/prisma-transaction.repository.ts"
+     ],
+     "ranks": {
+      "shared/accounting/account-category.ts": null,
+      "webapp/src/server/contexts/public-finance/domain/services/sankey-data-builder.ts": null,
+      "webapp/src/server/contexts/public-finance/infrastructure/repositories/prisma-monthly-aggregation.repository.ts": null,
+      "webapp/src/server/contexts/public-finance/infrastructure/repositories/prisma-transaction.repository.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "5cc3056e",
+     "message": "書類ストレージの組み立てを 1 か所に揃える",
+     "changed": 4,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 4,
+     "candidate_files": 4,
+     "seconds_index": 1.38,
+     "seconds_total": 8.6,
+     "missed": [
+      "admin/src/server/contexts/research-fund/infrastructure/storage/document-bucket.ts",
+      "admin/src/server/contexts/research-fund/presentation/loaders/load-journal-document.ts",
+      "admin/src/server/contexts/research-fund/presentation/loaders/load-prompts.ts",
+      "admin/src/server/contexts/research-fund/presentation/loaders/load-scan.ts"
+     ],
+     "ranks": {
+      "admin/src/server/contexts/research-fund/infrastructure/storage/document-bucket.ts": null,
+      "admin/src/server/contexts/research-fund/presentation/loaders/load-journal-document.ts": null,
+      "admin/src/server/contexts/research-fund/presentation/loaders/load-prompts.ts": null,
+      "admin/src/server/contexts/research-fund/presentation/loaders/load-scan.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "7b3e675b",
+     "message": "スキャンジョブの実行（LLM 読み取り → 下書き仕訳・ポーリング・再実行）",
+     "changed": 9,
+     "found_any": 1,
+     "found_impacted": 0,
+     "candidates": 307,
+     "candidate_files": 155,
+     "seconds_index": 1.4,
+     "seconds_total": 9.0,
+     "missed": [
+      "admin/src/app/(auth)/politicians/[id]/books/[bookId]/entries/page.tsx",
+      "admin/src/client/components/research-fund/DocumentScan.tsx",
+      "admin/src/client/components/research-fund/JournalReview.tsx",
+      "admin/src/server/contexts/research-fund/domain/repositories/document-storage.interface.ts",
+      "admin/src/server/contexts/research-fund/domain/repositories/scan-repository.interface.ts",
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-scan.repository.ts",
+      "admin/src/server/contexts/research-fund/infrastructure/storage/supabase-document-storage.ts",
+      "admin/src/server/contexts/research-fund/presentation/loaders/load-scan.ts"
+     ],
+     "ranks": {
+      "admin/src/app/(auth)/politicians/[id]/books/[bookId]/entries/page.tsx": null,
+      "admin/src/client/components/research-fund/DocumentScan.tsx": null,
+      "admin/src/client/components/research-fund/JournalReview.tsx": null,
+      "admin/src/server/contexts/research-fund/domain/models/journal-entry-hash.ts": 299,
+      "admin/src/server/contexts/research-fund/domain/repositories/document-storage.interface.ts": null,
+      "admin/src/server/contexts/research-fund/domain/repositories/scan-repository.interface.ts": null,
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-scan.repository.ts": null,
+      "admin/src/server/contexts/research-fund/infrastructure/storage/supabase-document-storage.ts": null,
+      "admin/src/server/contexts/research-fund/presentation/loaders/load-scan.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "69791d86",
+     "message": "政党ページの調研費セクション（A-6）と組織セレクタの2グループ化",
+     "changed": 11,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 108,
+     "candidate_files": 53,
+     "seconds_index": 1.36,
+     "seconds_total": 8.5,
+     "missed": [
+      "prisma/seeds/politicians.ts",
+      "prisma/seeds/researchFundBooks.ts",
+      "webapp/src/app/o/[slug]/[year]/page.tsx",
+      "webapp/src/client/components/common/ExplanationSection.tsx",
+      "webapp/src/client/components/layout/header/Header.tsx",
+      "webapp/src/client/components/layout/header/HeaderClient.tsx",
+      "webapp/src/client/components/layout/header/OrganizationYearSheet.tsx",
+      "webapp/src/client/lib/header-navigation.ts",
+      "webapp/src/server/contexts/research-fund/domain/models/published-research-fund.ts",
+      "webapp/src/server/contexts/research-fund/domain/repositories/research-fund-repository.interface.ts",
+      "webapp/src/server/contexts/research-fund/infrastructure/repositories/prisma-research-fund.repository.ts"
+     ],
+     "ranks": {
+      "prisma/seeds/politicians.ts": null,
+      "prisma/seeds/researchFundBooks.ts": null,
+      "webapp/src/app/o/[slug]/[year]/page.tsx": null,
+      "webapp/src/client/components/common/ExplanationSection.tsx": null,
+      "webapp/src/client/components/layout/header/Header.tsx": null,
+      "webapp/src/client/components/layout/header/HeaderClient.tsx": null,
+      "webapp/src/client/components/layout/header/OrganizationYearSheet.tsx": null,
+      "webapp/src/client/lib/header-navigation.ts": null,
+      "webapp/src/server/contexts/research-fund/domain/models/published-research-fund.ts": null,
+      "webapp/src/server/contexts/research-fund/domain/repositories/research-fund-repository.interface.ts": null,
+      "webapp/src/server/contexts/research-fund/infrastructure/repositories/prisma-research-fund.repository.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "1a5910bc",
+     "message": "調研費の支給の登録画面を追加",
+     "changed": 3,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 111,
+     "candidate_files": 43,
+     "seconds_index": 1.32,
+     "seconds_total": 8.3,
+     "missed": [
+      "admin/src/client/components/research-fund/JournalReview.tsx",
+      "admin/src/server/contexts/research-fund/domain/models/grant-schedule.ts",
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-journal-review.repository.ts"
+     ],
+     "ranks": {
+      "admin/src/client/components/research-fund/JournalReview.tsx": null,
+      "admin/src/server/contexts/research-fund/domain/models/grant-schedule.ts": null,
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-journal-review.repository.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "b9f89242",
+     "message": "CSV アップロード画面と取引取り込みプレビュー画面をリデザインする",
+     "changed": 7,
+     "found_any": 1,
+     "found_impacted": 0,
+     "candidates": 68,
+     "candidate_files": 21,
+     "seconds_index": 1.31,
+     "seconds_total": 7.1,
+     "missed": [
+      "admin/src/client/components/csv-import/CsvPreview.tsx",
+      "admin/src/client/components/csv-import/StatisticsTable.tsx",
+      "admin/src/client/components/csv-import/TransactionRow.tsx",
+      "admin/src/client/components/csv-upload/CsvUploadClient.tsx",
+      "admin/src/client/components/political-organizations/PoliticalOrganizationSelect.tsx",
+      "admin/src/client/lib/index.ts"
+     ],
+     "ranks": {
+      "admin/src/app/(auth)/upload-csv/page.tsx": 32,
+      "admin/src/client/components/csv-import/CsvPreview.tsx": null,
+      "admin/src/client/components/csv-import/StatisticsTable.tsx": null,
+      "admin/src/client/components/csv-import/TransactionRow.tsx": null,
+      "admin/src/client/components/csv-upload/CsvUploadClient.tsx": null,
+      "admin/src/client/components/political-organizations/PoliticalOrganizationSelect.tsx": null,
+      "admin/src/client/lib/index.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "d6b721bf",
+     "message": "取引先マスタ・寄付者マスタ画面をリデザインする",
+     "changed": 15,
+     "found_any": 1,
+     "found_impacted": 0,
+     "candidates": 40,
+     "candidate_files": 20,
+     "seconds_index": 1.08,
+     "seconds_total": 6.3,
+     "missed": [
+      "admin/src/client/components/counterparts/AddressInput.tsx",
+      "admin/src/client/components/counterparts/CounterpartDetailClient.tsx",
+      "admin/src/client/components/counterparts/CounterpartFormContent.tsx",
+      "admin/src/client/components/counterparts/CounterpartFormDialog.tsx",
+      "admin/src/client/components/counterparts/CounterpartMasterClient.tsx",
+      "admin/src/client/components/counterparts/CounterpartTable.tsx",
+      "admin/src/client/components/counterparts/DeleteCounterpartButton.tsx",
+      "admin/src/client/components/donors/DeleteDonorButton.tsx",
+      "admin/src/client/components/donors/DonorFormDialog.tsx",
+      "admin/src/client/components/donors/DonorMasterClient.tsx",
+      "admin/src/client/components/donors/DonorTable.tsx",
+      "admin/src/client/components/ui/StaticPagination.tsx",
+      "admin/src/client/components/ui/button.tsx",
+      "admin/src/client/lib/index.ts"
+     ],
+     "ranks": {
+      "admin/src/client/components/counterparts/AddressInput.tsx": null,
+      "admin/src/client/components/counterparts/CounterpartDetailClient.tsx": null,
+      "admin/src/client/components/counterparts/CounterpartFormContent.tsx": null,
+      "admin/src/client/components/counterparts/CounterpartFormDialog.tsx": null,
+      "admin/src/client/components/counterparts/CounterpartMasterClient.tsx": null,
+      "admin/src/client/components/counterparts/CounterpartTable.tsx": null,
+      "admin/src/client/components/counterparts/DeleteCounterpartButton.tsx": null,
+      "admin/src/client/components/donors/DeleteDonorButton.tsx": null,
+      "admin/src/client/components/donors/DonorFormContent.tsx": 9,
+      "admin/src/client/components/donors/DonorFormDialog.tsx": null,
+      "admin/src/client/components/donors/DonorMasterClient.tsx": null,
+      "admin/src/client/components/donors/DonorTable.tsx": null,
+      "admin/src/client/components/ui/StaticPagination.tsx": null,
+      "admin/src/client/components/ui/button.tsx": null,
+      "admin/src/client/lib/index.ts": null
+     },
+     "found_top20": 1,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "b6130b8b",
+     "message": "取引一覧のソート状態を支援技術へ公開する",
+     "changed": 3,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 341,
+     "candidate_files": 147,
+     "seconds_index": 1.23,
+     "seconds_total": 6.7,
+     "missed": [
+      "webapp/src/client/components/top-page/features/transactions-table/InteractiveTransactionTable.tsx",
+      "webapp/src/client/components/top-page/features/transactions-table/TransactionTableHeader.tsx",
+      "webapp/src/client/components/top-page/features/transactions-table/TransactionTableMobileHeader.tsx"
+     ],
+     "ranks": {
+      "webapp/src/client/components/top-page/features/transactions-table/InteractiveTransactionTable.tsx": null,
+      "webapp/src/client/components/top-page/features/transactions-table/TransactionTableHeader.tsx": null,
+      "webapp/src/client/components/top-page/features/transactions-table/TransactionTableMobileHeader.tsx": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "95e5a928",
+     "message": "unstable_cacheにtagsを追加しrevalidateTagによるキャッシュ無効化を修正",
+     "changed": 4,
+     "found_any": 4,
+     "found_impacted": 0,
+     "candidates": 470,
+     "candidate_files": 179,
+     "seconds_index": 1.19,
+     "seconds_total": 7.2,
+     "missed": [],
+     "ranks": {
+      "webapp/src/app/api/refresh/route.ts": 85,
+      "webapp/src/server/contexts/public-finance/presentation/loaders/load-organizations.ts": 87,
+      "webapp/src/server/contexts/public-finance/presentation/loaders/load-top-page-data.ts": 88,
+      "webapp/src/server/contexts/public-finance/presentation/loaders/load-transactions-page-data.ts": 90
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 4,
+     "missed_kinds": []
+    },
+    {
+     "sha": "b081c860",
+     "message": "取引一覧に「取引No」カラムを追加",
+     "changed": 2,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 61,
+     "candidate_files": 30,
+     "seconds_index": 1.04,
+     "seconds_total": 6.3,
+     "missed": [
+      "admin/src/client/components/transactions/TransactionRow.tsx",
+      "admin/src/client/components/transactions/TransactionsClient.tsx"
+     ],
+     "ranks": {
+      "admin/src/client/components/transactions/TransactionRow.tsx": null,
+      "admin/src/client/components/transactions/TransactionsClient.tsx": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "4e38670f",
+     "message": "フェーズ1マルチテナント化のスキーマ・ドメインモデル追加",
+     "changed": 7,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 25,
+     "candidate_files": 8,
+     "seconds_index": 1.05,
+     "seconds_total": 5.8,
+     "missed": [
+      "admin/src/server/contexts/shared/infrastructure/repositories/prisma-political-organization.repository.ts",
+      "prisma/schema.prisma",
+      "prisma/seed.ts",
+      "prisma/seeds/counterparts.ts",
+      "prisma/seeds/donors.ts",
+      "prisma/seeds/politicalOrganizations.ts",
+      "prisma/seeds/users.ts"
+     ],
+     "ranks": {
+      "admin/src/server/contexts/shared/infrastructure/repositories/prisma-political-organization.repository.ts": null,
+      "prisma/schema.prisma": null,
+      "prisma/seed.ts": null,
+      "prisma/seeds/counterparts.ts": null,
+      "prisma/seeds/donors.ts": null,
+      "prisma/seeds/politicalOrganizations.ts": null,
+      "prisma/seeds/users.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".prisma",
+      ".ts"
+     ]
+    },
+    {
+     "sha": "1b4a32a3",
+     "message": "address CodeRabbit review comments",
+     "changed": 2,
+     "found_any": 1,
+     "found_impacted": 0,
+     "candidates": 160,
+     "candidate_files": 51,
+     "seconds_index": 1.05,
+     "seconds_total": 5.8,
+     "missed": [
+      "admin/src/server/contexts/report/presentation/actions/import-donor-csv.ts"
+     ],
+     "ranks": {
+      "admin/src/server/contexts/report/application/usecases/import-donor-csv-usecase.ts": 72,
+      "admin/src/server/contexts/report/presentation/actions/import-donor-csv.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "9c602b49",
+     "message": "address review comments on PR",
+     "changed": 2,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 150,
+     "candidate_files": 45,
+     "seconds_index": 0.86,
+     "seconds_total": 5.7,
+     "missed": [
+      "webapp/src/server/contexts/public-finance/application/usecases/get-mock-transaction-page-data-usecase.ts",
+      "webapp/src/server/contexts/public-finance/application/usecases/get-organizations-usecase.ts"
+     ],
+     "ranks": {
+      "webapp/src/server/contexts/public-finance/application/usecases/get-mock-transaction-page-data-usecase.ts": null,
+      "webapp/src/server/contexts/public-finance/application/usecases/get-organizations-usecase.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "14304740",
+     "message": "implement DDD Phase 0 & Phase 1 for monthly aggregation",
+     "changed": 14,
+     "found_any": 5,
+     "found_impacted": 4,
+     "candidates": 92,
+     "candidate_files": 24,
+     "seconds_index": 0.9,
+     "seconds_total": 5.0,
+     "missed": [
+      "webapp/src/server/loaders/load-transactions-for-csv.ts",
+      "webapp/src/server/loaders/load-transactions-page-data.ts",
+      "webapp/src/server/repositories/interfaces/political-organization-repository.interface.ts",
+      "webapp/src/server/repositories/prisma-political-organization.repository.ts",
+      "webapp/src/server/usecases/get-all-transactions-by-slug-usecase.ts",
+      "webapp/src/server/usecases/get-balance-sheet-usecase.ts",
+      "webapp/src/server/usecases/get-daily-donation-usecase.ts",
+      "webapp/src/server/usecases/get-transactions-by-slug-usecase.ts",
+      "webapp/src/server/usecases/get-transactions-for-csv-usecase.ts"
+     ],
+     "ranks": {
+      "webapp/src/server/loaders/load-top-page-data.ts": 43,
+      "webapp/src/server/loaders/load-transactions-for-csv.ts": null,
+      "webapp/src/server/loaders/load-transactions-page-data.ts": null,
+      "webapp/src/server/repositories/interfaces/political-organization-repository.interface.ts": null,
+      "webapp/src/server/repositories/interfaces/transaction-repository.interface.ts": 2,
+      "webapp/src/server/repositories/prisma-political-organization.repository.ts": null,
+      "webapp/src/server/repositories/prisma-transaction.repository.ts": 23,
+      "webapp/src/server/usecases/get-all-transactions-by-slug-usecase.ts": null,
+      "webapp/src/server/usecases/get-balance-sheet-usecase.ts": null,
+      "webapp/src/server/usecases/get-daily-donation-usecase.ts": null,
+      "webapp/src/server/usecases/get-monthly-transaction-aggregation-usecase.ts": 5,
+      "webapp/src/server/usecases/get-sankey-aggregation-usecase.ts": 24,
+      "webapp/src/server/usecases/get-transactions-by-slug-usecase.ts": null,
+      "webapp/src/server/usecases/get-transactions-for-csv-usecase.ts": null
+     },
+     "found_top20": 2,
+     "found_top50": 5,
+     "found_top100": 5,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "4fdb6b80",
+     "message": "依存関係違反を修正",
+     "changed": 4,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 3,
+     "candidate_files": 3,
+     "seconds_index": 0.71,
+     "seconds_total": 4.9,
+     "missed": [
+      "admin/src/client/components/donor-csv-import/DonorCsvImportClient.tsx",
+      "admin/src/client/components/donor-csv-import/DonorCsvPreview.tsx",
+      "admin/src/server/contexts/report/application/usecases/preview-donor-csv-usecase.ts",
+      "admin/src/server/contexts/report/presentation/actions/preview-donor-csv.ts"
+     ],
+     "ranks": {
+      "admin/src/client/components/donor-csv-import/DonorCsvImportClient.tsx": null,
+      "admin/src/client/components/donor-csv-import/DonorCsvPreview.tsx": null,
+      "admin/src/server/contexts/report/application/usecases/preview-donor-csv-usecase.ts": null,
+      "admin/src/server/contexts/report/presentation/actions/preview-donor-csv.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    }
+   ]
+  },
+  "with_phrase_matching": {
+   "summary": {
+    "commits": 30,
+    "changed_files": 177,
+    "recall_any": 0.542,
+    "recall_impacted": 0.266,
+    "commits_with_any_hit": 26,
+    "recall_top20": 0.249,
+    "recall_top50": 0.333,
+    "recall_top100": 0.395,
+    "commits_with_hit_top20": 20,
+    "median_candidates": 197,
+    "median_seconds_index": 1.39
+   },
+   "rows": [
+    {
+     "sha": "00db0c81",
+     "message": "調研費の議員ページの公開を sitemap.xml に反映する",
+     "changed": 2,
+     "found_any": 1,
+     "found_impacted": 1,
+     "candidates": 200,
+     "candidate_files": 103,
+     "seconds_index": 1.49,
+     "seconds_total": 6.4,
+     "missed": [
+      "webapp/src/app/api/refresh/route.ts"
+     ],
+     "ranks": {
+      "webapp/src/app/api/refresh/route.ts": null,
+      "webapp/src/app/sitemap.ts": 1
+     },
+     "found_top20": 1,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "90029dac",
+     "message": "取引No の一意性を団体・年度単位にし、年度をまたいだ同じ取引No で前年度の取引が上書きされないようにする",
+     "changed": 5,
+     "found_any": 4,
+     "found_impacted": 0,
+     "candidates": 288,
+     "candidate_files": 116,
+     "seconds_index": 1.3,
+     "seconds_total": 10.0,
+     "missed": [
+      "admin/src/server/contexts/shared/domain/repositories/transaction-repository.interface.ts"
+     ],
+     "ranks": {
+      "admin/src/server/contexts/data-import/application/usecases/save-preview-transactions-usecase.ts": 173,
+      "admin/src/server/contexts/data-import/domain/services/transaction-validator.ts": 177,
+      "admin/src/server/contexts/shared/domain/repositories/transaction-repository.interface.ts": null,
+      "admin/src/server/contexts/shared/infrastructure/repositories/prisma-transaction.repository.ts": 186,
+      "prisma/schema.prisma": 286
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "77e18a5d",
+     "message": "書類の読み取りで発行元を読み取り、一致する支払先に自動で紐づける",
+     "changed": 9,
+     "found_any": 3,
+     "found_impacted": 2,
+     "candidates": 385,
+     "candidate_files": 220,
+     "seconds_index": 1.62,
+     "seconds_total": 10.4,
+     "missed": [
+      "admin/src/server/contexts/research-fund/domain/models/extracted-receipt.ts",
+      "admin/src/server/contexts/research-fund/domain/models/journal-review.ts",
+      "admin/src/server/contexts/research-fund/domain/repositories/scan-repository.interface.ts",
+      "admin/src/server/contexts/research-fund/domain/services/receipt-extraction-prompt.ts",
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-journal-review.repository.ts",
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-scan.repository.ts"
+     ],
+     "ranks": {
+      "admin/src/client/components/research-fund/JournalPayeeField.tsx": 2,
+      "admin/src/server/contexts/research-fund/application/usecases/process-scan-jobs-usecase.ts": 376,
+      "admin/src/server/contexts/research-fund/domain/models/extracted-receipt.ts": null,
+      "admin/src/server/contexts/research-fund/domain/models/journal-review.ts": null,
+      "admin/src/server/contexts/research-fund/domain/models/payee.ts": 1,
+      "admin/src/server/contexts/research-fund/domain/repositories/scan-repository.interface.ts": null,
+      "admin/src/server/contexts/research-fund/domain/services/receipt-extraction-prompt.ts": null,
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-journal-review.repository.ts": null,
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-scan.repository.ts": null
+     },
+     "found_top20": 2,
+     "found_top50": 2,
+     "found_top100": 2,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "086881ea",
+     "message": "管理画面のタイトルを現行サービス名にし、ステージングだけ環境が分かるようにする",
+     "changed": 3,
+     "found_any": 1,
+     "found_impacted": 1,
+     "candidates": 197,
+     "candidate_files": 102,
+     "seconds_index": 1.62,
+     "seconds_total": 10.1,
+     "missed": [
+      "admin/next.config.ts",
+      "admin/src/client/components/layout/BrandWordmark.tsx"
+     ],
+     "ranks": {
+      "admin/next.config.ts": null,
+      "admin/src/app/layout.tsx": 15,
+      "admin/src/client/components/layout/BrandWordmark.tsx": null
+     },
+     "found_top20": 1,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "00b65c26",
+     "message": "調研費の「すべての出入金」ページの絞り込み等を URL で指定できるようにし、行のカテゴリーを絞り込みリンクにする",
+     "changed": 7,
+     "found_any": 7,
+     "found_impacted": 6,
+     "candidates": 434,
+     "candidate_files": 189,
+     "seconds_index": 1.43,
+     "seconds_total": 10.1,
+     "missed": [],
+     "ranks": {
+      "webapp/src/app/p/[slug]/[year]/transactions/page.tsx": 5,
+      "webapp/src/client/components/research-fund/ResearchFundCategoryFilter.tsx": 31,
+      "webapp/src/client/components/research-fund/ResearchFundCategoryPill.tsx": 212,
+      "webapp/src/client/components/research-fund/ResearchFundTransactionsTable.tsx": 6,
+      "webapp/src/client/lib/research-fund-transactions.ts": 1,
+      "webapp/src/server/contexts/research-fund/domain/models/research-fund-page.ts": 22,
+      "webapp/src/server/contexts/research-fund/domain/services/research-fund-expense-list.ts": 23
+     },
+     "found_top20": 3,
+     "found_top50": 6,
+     "found_top100": 6,
+     "missed_kinds": []
+    },
+    {
+     "sha": "dd759920",
+     "message": "調研費の「調研費とは」の説明文を新しい文言に差し替える",
+     "changed": 2,
+     "found_any": 2,
+     "found_impacted": 2,
+     "candidates": 293,
+     "candidate_files": 105,
+     "seconds_index": 1.42,
+     "seconds_total": 9.3,
+     "missed": [],
+     "ranks": {
+      "webapp/src/client/components/research-fund/ResearchFundFlowSection.tsx": 4,
+      "webapp/src/client/components/research-fund/ResearchFundPartySection.tsx": 1
+     },
+     "found_top20": 2,
+     "found_top50": 2,
+     "found_top100": 2,
+     "missed_kinds": []
+    },
+    {
+     "sha": "3d429176",
+     "message": "確認済の仕訳を選んで、まとめて下書きに戻す・破棄できるようにする",
+     "changed": 5,
+     "found_any": 4,
+     "found_impacted": 3,
+     "candidates": 353,
+     "candidate_files": 195,
+     "seconds_index": 1.39,
+     "seconds_total": 12.5,
+     "missed": [
+      "admin/src/server/contexts/research-fund/presentation/actions/manage-journal-review.ts"
+     ],
+     "ranks": {
+      "admin/src/client/components/research-fund/JournalReview.tsx": 4,
+      "admin/src/server/contexts/research-fund/application/usecases/manage-journal-review-usecase.ts": 2,
+      "admin/src/server/contexts/research-fund/domain/repositories/journal-review-repository.interface.ts": 7,
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-journal-review.repository.ts": 5,
+      "admin/src/server/contexts/research-fund/presentation/actions/manage-journal-review.ts": null
+     },
+     "found_top20": 4,
+     "found_top50": 4,
+     "found_top100": 4,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "ed638c24",
+     "message": "調研費の領収書を公開ページから出さないようにし、配信 API と説明文言からも外す",
+     "changed": 4,
+     "found_any": 3,
+     "found_impacted": 3,
+     "candidates": 690,
+     "candidate_files": 324,
+     "seconds_index": 1.41,
+     "seconds_total": 10.4,
+     "missed": [
+      "webapp/src/client/components/common/ExplanationSection.tsx"
+     ],
+     "ranks": {
+      "webapp/src/app/api/research-fund/receipts/[entryId]/route.ts": 5,
+      "webapp/src/client/components/common/ExplanationSection.tsx": null,
+      "webapp/src/client/components/research-fund/ResearchFundExpensesSection.tsx": 124,
+      "webapp/src/client/components/research-fund/ResearchFundTransactionsTable.tsx": 123
+     },
+     "found_top20": 1,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "447c8036",
+     "message": "調研費の「すべての出入金」に、公開済みの支給（入金）も出金と並べて出す",
+     "changed": 12,
+     "found_any": 6,
+     "found_impacted": 4,
+     "candidates": 83,
+     "candidate_files": 45,
+     "seconds_index": 1.43,
+     "seconds_total": 9.0,
+     "missed": [
+      "webapp/src/server/contexts/research-fund/domain/models/published-research-fund.ts",
+      "webapp/src/server/contexts/research-fund/domain/models/research-fund-page.ts",
+      "webapp/src/server/contexts/research-fund/domain/services/research-fund-csv.ts",
+      "webapp/src/server/contexts/research-fund/domain/services/research-fund-expense-list.ts",
+      "webapp/src/server/contexts/research-fund/infrastructure/repositories/prisma-research-fund.repository.ts",
+      "webapp/src/server/contexts/research-fund/presentation/loaders/download-research-fund-csv.ts"
+     ],
+     "ranks": {
+      "webapp/src/app/p/[slug]/[year]/transactions/page.tsx": 6,
+      "webapp/src/client/components/research-fund/ReceiptModal.tsx": 57,
+      "webapp/src/client/components/research-fund/ResearchFundCategoryFilter.tsx": 60,
+      "webapp/src/client/components/research-fund/ResearchFundExpensesSection.tsx": 8,
+      "webapp/src/client/components/research-fund/ResearchFundTransactionsTable.tsx": 7,
+      "webapp/src/client/lib/research-fund-transactions.ts": 2,
+      "webapp/src/server/contexts/research-fund/domain/models/published-research-fund.ts": null,
+      "webapp/src/server/contexts/research-fund/domain/models/research-fund-page.ts": null,
+      "webapp/src/server/contexts/research-fund/domain/services/research-fund-csv.ts": null,
+      "webapp/src/server/contexts/research-fund/domain/services/research-fund-expense-list.ts": null,
+      "webapp/src/server/contexts/research-fund/infrastructure/repositories/prisma-research-fund.repository.ts": null,
+      "webapp/src/server/contexts/research-fund/presentation/loaders/download-research-fund-csv.ts": null
+     },
+     "found_top20": 4,
+     "found_top50": 4,
+     "found_top100": 6,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "5d5f97f4",
+     "message": "調研費の下書き仕訳を、指示つきで LLM に書類ごと読み直させて作り直せるようにする",
+     "changed": 10,
+     "found_any": 6,
+     "found_impacted": 2,
+     "candidates": 369,
+     "candidate_files": 163,
+     "seconds_index": 1.48,
+     "seconds_total": 12.0,
+     "missed": [
+      "admin/src/server/contexts/research-fund/domain/models/scan-job.ts",
+      "admin/src/server/contexts/research-fund/domain/repositories/scan-repository.interface.ts",
+      "admin/src/server/contexts/research-fund/domain/services/receipt-extraction-prompt.ts",
+      "admin/src/server/contexts/research-fund/domain/types/validation.ts"
+     ],
+     "ranks": {
+      "admin/src/client/components/research-fund/JournalReview.tsx": 1,
+      "admin/src/server/contexts/research-fund/application/usecases/manage-scan-usecase.ts": 304,
+      "admin/src/server/contexts/research-fund/application/usecases/process-scan-jobs-usecase.ts": 29,
+      "admin/src/server/contexts/research-fund/domain/models/scan-job.ts": null,
+      "admin/src/server/contexts/research-fund/domain/repositories/receipt-extraction-gateway.interface.ts": 13,
+      "admin/src/server/contexts/research-fund/domain/repositories/scan-repository.interface.ts": null,
+      "admin/src/server/contexts/research-fund/domain/services/receipt-extraction-prompt.ts": null,
+      "admin/src/server/contexts/research-fund/domain/types/validation.ts": null,
+      "admin/src/server/contexts/research-fund/infrastructure/llm/vercel-ai-receipt-extraction-gateway.ts": 34,
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-scan.repository.ts": 232
+     },
+     "found_top20": 2,
+     "found_top50": 4,
+     "found_top100": 4,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "75556398",
+     "message": "調研費の公開画面で、確認済・未公開の仕訳をまとめて選択できるようにする",
+     "changed": 4,
+     "found_any": 3,
+     "found_impacted": 1,
+     "candidates": 292,
+     "candidate_files": 147,
+     "seconds_index": 1.39,
+     "seconds_total": 12.8,
+     "missed": [
+      "admin/src/client/lib/research-fund-publish.ts"
+     ],
+     "ranks": {
+      "admin/src/client/components/research-fund/JournalPublication.tsx": 1,
+      "admin/src/client/components/ui/checkbox.tsx": 144,
+      "admin/src/client/lib/index.ts": 45,
+      "admin/src/client/lib/research-fund-publish.ts": null
+     },
+     "found_top20": 1,
+     "found_top50": 2,
+     "found_top100": 2,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "62239c0c",
+     "message": "調研費ページの「すべての出入金」を先頭6件＋もっと見るにし、用途カードと相互リンクする",
+     "changed": 9,
+     "found_any": 3,
+     "found_impacted": 2,
+     "candidates": 152,
+     "candidate_files": 86,
+     "seconds_index": 1.43,
+     "seconds_total": 10.2,
+     "missed": [
+      "webapp/src/client/lib/research-fund-transactions.ts",
+      "webapp/src/server/contexts/research-fund/application/usecases/get-research-fund-page-usecase.ts",
+      "webapp/src/server/contexts/research-fund/domain/models/published-research-fund.ts",
+      "webapp/src/server/contexts/research-fund/domain/models/research-fund-page.ts",
+      "webapp/src/server/contexts/research-fund/domain/services/research-fund-expense-list.ts",
+      "webapp/src/server/contexts/research-fund/infrastructure/repositories/prisma-research-fund.repository.ts"
+     ],
+     "ranks": {
+      "webapp/src/app/p/[slug]/[year]/page.tsx": 29,
+      "webapp/src/client/components/research-fund/ResearchFundExpensesSection.tsx": 150,
+      "webapp/src/client/components/research-fund/ResearchFundHighlightsSection.tsx": 1,
+      "webapp/src/client/lib/research-fund-transactions.ts": null,
+      "webapp/src/server/contexts/research-fund/application/usecases/get-research-fund-page-usecase.ts": null,
+      "webapp/src/server/contexts/research-fund/domain/models/published-research-fund.ts": null,
+      "webapp/src/server/contexts/research-fund/domain/models/research-fund-page.ts": null,
+      "webapp/src/server/contexts/research-fund/domain/services/research-fund-expense-list.ts": null,
+      "webapp/src/server/contexts/research-fund/infrastructure/repositories/prisma-research-fund.repository.ts": null
+     },
+     "found_top20": 1,
+     "found_top50": 2,
+     "found_top100": 2,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "726f9a77",
+     "message": "組織セレクタ・ヘッダーナビ・フッターを調研費の最終デザインに合わせる",
+     "changed": 3,
+     "found_any": 1,
+     "found_impacted": 1,
+     "candidates": 43,
+     "candidate_files": 27,
+     "seconds_index": 1.46,
+     "seconds_total": 9.3,
+     "missed": [
+      "webapp/src/client/components/layout/header/OrganizationYearSheet.tsx",
+      "webapp/src/client/lib/header-navigation.ts"
+     ],
+     "ranks": {
+      "webapp/src/client/components/layout/footer/Footer.tsx": 9,
+      "webapp/src/client/components/layout/header/OrganizationYearSheet.tsx": null,
+      "webapp/src/client/lib/header-navigation.ts": null
+     },
+     "found_top20": 1,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "5ef0012e",
+     "message": "sync-import で取り込まれなかった同期用JSONがストレージに残り続けないようにする",
+     "changed": 4,
+     "found_any": 4,
+     "found_impacted": 4,
+     "candidates": 252,
+     "candidate_files": 165,
+     "seconds_index": 1.39,
+     "seconds_total": 9.4,
+     "missed": [],
+     "ranks": {
+      "admin/src/server/contexts/data-import/application/usecases/prepare-sync-import-upload-usecase.ts": 25,
+      "admin/src/server/contexts/data-import/domain/models/organization-sync-import.ts": 20,
+      "admin/src/server/contexts/data-import/domain/repositories/sync-import-file-storage.interface.ts": 16,
+      "admin/src/server/contexts/data-import/infrastructure/storage/supabase-sync-import-file-storage.ts": 3
+     },
+     "found_top20": 3,
+     "found_top50": 4,
+     "found_top100": 4,
+     "missed_kinds": []
+    },
+    {
+     "sha": "74e0e449",
+     "message": "BS科目の未払金・未払費用を分割し、未収入金を追加する",
+     "changed": 7,
+     "found_any": 4,
+     "found_impacted": 1,
+     "candidates": 32,
+     "candidate_files": 11,
+     "seconds_index": 1.45,
+     "seconds_total": 9.2,
+     "missed": [
+      "webapp/src/server/contexts/public-finance/application/usecases/get-balance-sheet-usecase.ts",
+      "webapp/src/server/contexts/public-finance/domain/models/balance-sheet.ts",
+      "webapp/src/server/contexts/public-finance/domain/repositories/balance-sheet-repository.interface.ts"
+     ],
+     "ranks": {
+      "admin/src/server/contexts/data-import/domain/services/transaction-validator.ts": 17,
+      "admin/src/server/contexts/data-import/infrastructure/mf/mf-record-converter.ts": 18,
+      "shared/accounting/account-category.ts": 2,
+      "webapp/src/server/contexts/public-finance/application/usecases/get-balance-sheet-usecase.ts": null,
+      "webapp/src/server/contexts/public-finance/domain/models/balance-sheet.ts": null,
+      "webapp/src/server/contexts/public-finance/domain/repositories/balance-sheet-repository.interface.ts": null,
+      "webapp/src/server/contexts/public-finance/infrastructure/repositories/prisma-balance-sheet.repository.ts": 20
+     },
+     "found_top20": 4,
+     "found_top50": 4,
+     "found_top100": 4,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "88e430be",
+     "message": "返金取引を収支の正味として集計する",
+     "changed": 4,
+     "found_any": 3,
+     "found_impacted": 2,
+     "candidates": 173,
+     "candidate_files": 82,
+     "seconds_index": 1.41,
+     "seconds_total": 9.2,
+     "missed": [
+      "shared/accounting/account-category.ts"
+     ],
+     "ranks": {
+      "shared/accounting/account-category.ts": null,
+      "webapp/src/server/contexts/public-finance/domain/services/sankey-data-builder.ts": 25,
+      "webapp/src/server/contexts/public-finance/infrastructure/repositories/prisma-monthly-aggregation.repository.ts": 5,
+      "webapp/src/server/contexts/public-finance/infrastructure/repositories/prisma-transaction.repository.ts": 102
+     },
+     "found_top20": 1,
+     "found_top50": 2,
+     "found_top100": 2,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "5cc3056e",
+     "message": "書類ストレージの組み立てを 1 か所に揃える",
+     "changed": 4,
+     "found_any": 3,
+     "found_impacted": 2,
+     "candidates": 43,
+     "candidate_files": 27,
+     "seconds_index": 1.26,
+     "seconds_total": 8.1,
+     "missed": [
+      "admin/src/server/contexts/research-fund/infrastructure/storage/document-bucket.ts"
+     ],
+     "ranks": {
+      "admin/src/server/contexts/research-fund/infrastructure/storage/document-bucket.ts": null,
+      "admin/src/server/contexts/research-fund/presentation/loaders/load-journal-document.ts": 3,
+      "admin/src/server/contexts/research-fund/presentation/loaders/load-prompts.ts": 11,
+      "admin/src/server/contexts/research-fund/presentation/loaders/load-scan.ts": 2
+     },
+     "found_top20": 3,
+     "found_top50": 3,
+     "found_top100": 3,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "7b3e675b",
+     "message": "スキャンジョブの実行（LLM 読み取り → 下書き仕訳・ポーリング・再実行）",
+     "changed": 9,
+     "found_any": 1,
+     "found_impacted": 0,
+     "candidates": 315,
+     "candidate_files": 163,
+     "seconds_index": 1.15,
+     "seconds_total": 8.0,
+     "missed": [
+      "admin/src/app/(auth)/politicians/[id]/books/[bookId]/entries/page.tsx",
+      "admin/src/client/components/research-fund/DocumentScan.tsx",
+      "admin/src/client/components/research-fund/JournalReview.tsx",
+      "admin/src/server/contexts/research-fund/domain/repositories/document-storage.interface.ts",
+      "admin/src/server/contexts/research-fund/domain/repositories/scan-repository.interface.ts",
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-scan.repository.ts",
+      "admin/src/server/contexts/research-fund/infrastructure/storage/supabase-document-storage.ts",
+      "admin/src/server/contexts/research-fund/presentation/loaders/load-scan.ts"
+     ],
+     "ranks": {
+      "admin/src/app/(auth)/politicians/[id]/books/[bookId]/entries/page.tsx": null,
+      "admin/src/client/components/research-fund/DocumentScan.tsx": null,
+      "admin/src/client/components/research-fund/JournalReview.tsx": null,
+      "admin/src/server/contexts/research-fund/domain/models/journal-entry-hash.ts": 310,
+      "admin/src/server/contexts/research-fund/domain/repositories/document-storage.interface.ts": null,
+      "admin/src/server/contexts/research-fund/domain/repositories/scan-repository.interface.ts": null,
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-scan.repository.ts": null,
+      "admin/src/server/contexts/research-fund/infrastructure/storage/supabase-document-storage.ts": null,
+      "admin/src/server/contexts/research-fund/presentation/loaders/load-scan.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "69791d86",
+     "message": "政党ページの調研費セクション（A-6）と組織セレクタの2グループ化",
+     "changed": 11,
+     "found_any": 4,
+     "found_impacted": 2,
+     "candidates": 117,
+     "candidate_files": 57,
+     "seconds_index": 1.16,
+     "seconds_total": 8.3,
+     "missed": [
+      "prisma/seeds/politicians.ts",
+      "prisma/seeds/researchFundBooks.ts",
+      "webapp/src/client/components/common/ExplanationSection.tsx",
+      "webapp/src/client/lib/header-navigation.ts",
+      "webapp/src/server/contexts/research-fund/domain/models/published-research-fund.ts",
+      "webapp/src/server/contexts/research-fund/domain/repositories/research-fund-repository.interface.ts",
+      "webapp/src/server/contexts/research-fund/infrastructure/repositories/prisma-research-fund.repository.ts"
+     ],
+     "ranks": {
+      "prisma/seeds/politicians.ts": null,
+      "prisma/seeds/researchFundBooks.ts": null,
+      "webapp/src/app/o/[slug]/[year]/page.tsx": 30,
+      "webapp/src/client/components/common/ExplanationSection.tsx": null,
+      "webapp/src/client/components/layout/header/Header.tsx": 46,
+      "webapp/src/client/components/layout/header/HeaderClient.tsx": 40,
+      "webapp/src/client/components/layout/header/OrganizationYearSheet.tsx": 108,
+      "webapp/src/client/lib/header-navigation.ts": null,
+      "webapp/src/server/contexts/research-fund/domain/models/published-research-fund.ts": null,
+      "webapp/src/server/contexts/research-fund/domain/repositories/research-fund-repository.interface.ts": null,
+      "webapp/src/server/contexts/research-fund/infrastructure/repositories/prisma-research-fund.repository.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 3,
+     "found_top100": 3,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "1a5910bc",
+     "message": "調研費の支給の登録画面を追加",
+     "changed": 3,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 169,
+     "candidate_files": 65,
+     "seconds_index": 1.21,
+     "seconds_total": 8.1,
+     "missed": [
+      "admin/src/client/components/research-fund/JournalReview.tsx",
+      "admin/src/server/contexts/research-fund/domain/models/grant-schedule.ts",
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-journal-review.repository.ts"
+     ],
+     "ranks": {
+      "admin/src/client/components/research-fund/JournalReview.tsx": null,
+      "admin/src/server/contexts/research-fund/domain/models/grant-schedule.ts": null,
+      "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-journal-review.repository.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "b9f89242",
+     "message": "CSV アップロード画面と取引取り込みプレビュー画面をリデザインする",
+     "changed": 7,
+     "found_any": 2,
+     "found_impacted": 1,
+     "candidates": 172,
+     "candidate_files": 65,
+     "seconds_index": 0.98,
+     "seconds_total": 8.6,
+     "missed": [
+      "admin/src/client/components/csv-import/CsvPreview.tsx",
+      "admin/src/client/components/csv-import/StatisticsTable.tsx",
+      "admin/src/client/components/csv-import/TransactionRow.tsx",
+      "admin/src/client/components/political-organizations/PoliticalOrganizationSelect.tsx",
+      "admin/src/client/lib/index.ts"
+     ],
+     "ranks": {
+      "admin/src/app/(auth)/upload-csv/page.tsx": 1,
+      "admin/src/client/components/csv-import/CsvPreview.tsx": null,
+      "admin/src/client/components/csv-import/StatisticsTable.tsx": null,
+      "admin/src/client/components/csv-import/TransactionRow.tsx": null,
+      "admin/src/client/components/csv-upload/CsvUploadClient.tsx": 150,
+      "admin/src/client/components/political-organizations/PoliticalOrganizationSelect.tsx": null,
+      "admin/src/client/lib/index.ts": null
+     },
+     "found_top20": 1,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "d6b721bf",
+     "message": "取引先マスタ・寄付者マスタ画面をリデザインする",
+     "changed": 15,
+     "found_any": 10,
+     "found_impacted": 2,
+     "candidates": 163,
+     "candidate_files": 88,
+     "seconds_index": 0.99,
+     "seconds_total": 6.8,
+     "missed": [
+      "admin/src/client/components/counterparts/AddressInput.tsx",
+      "admin/src/client/components/counterparts/DeleteCounterpartButton.tsx",
+      "admin/src/client/components/donors/DeleteDonorButton.tsx",
+      "admin/src/client/components/ui/StaticPagination.tsx",
+      "admin/src/client/lib/index.ts"
+     ],
+     "ranks": {
+      "admin/src/client/components/counterparts/AddressInput.tsx": null,
+      "admin/src/client/components/counterparts/CounterpartDetailClient.tsx": 121,
+      "admin/src/client/components/counterparts/CounterpartFormContent.tsx": 18,
+      "admin/src/client/components/counterparts/CounterpartFormDialog.tsx": 66,
+      "admin/src/client/components/counterparts/CounterpartMasterClient.tsx": 2,
+      "admin/src/client/components/counterparts/CounterpartTable.tsx": 68,
+      "admin/src/client/components/counterparts/DeleteCounterpartButton.tsx": null,
+      "admin/src/client/components/donors/DeleteDonorButton.tsx": null,
+      "admin/src/client/components/donors/DonorFormContent.tsx": 13,
+      "admin/src/client/components/donors/DonorFormDialog.tsx": 19,
+      "admin/src/client/components/donors/DonorMasterClient.tsx": 5,
+      "admin/src/client/components/donors/DonorTable.tsx": 82,
+      "admin/src/client/components/ui/StaticPagination.tsx": null,
+      "admin/src/client/components/ui/button.tsx": 69,
+      "admin/src/client/lib/index.ts": null
+     },
+     "found_top20": 5,
+     "found_top50": 5,
+     "found_top100": 9,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "b6130b8b",
+     "message": "取引一覧のソート状態を支援技術へ公開する",
+     "changed": 3,
+     "found_any": 2,
+     "found_impacted": 0,
+     "candidates": 400,
+     "candidate_files": 175,
+     "seconds_index": 0.97,
+     "seconds_total": 6.8,
+     "missed": [
+      "webapp/src/client/components/top-page/features/transactions-table/TransactionTableMobileHeader.tsx"
+     ],
+     "ranks": {
+      "webapp/src/client/components/top-page/features/transactions-table/InteractiveTransactionTable.tsx": 31,
+      "webapp/src/client/components/top-page/features/transactions-table/TransactionTableHeader.tsx": 391,
+      "webapp/src/client/components/top-page/features/transactions-table/TransactionTableMobileHeader.tsx": null
+     },
+     "found_top20": 0,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "95e5a928",
+     "message": "unstable_cacheにtagsを追加しrevalidateTagによるキャッシュ無効化を修正",
+     "changed": 4,
+     "found_any": 4,
+     "found_impacted": 0,
+     "candidates": 287,
+     "candidate_files": 115,
+     "seconds_index": 0.85,
+     "seconds_total": 6.6,
+     "missed": [],
+     "ranks": {
+      "webapp/src/app/api/refresh/route.ts": 171,
+      "webapp/src/server/contexts/public-finance/presentation/loaders/load-organizations.ts": 173,
+      "webapp/src/server/contexts/public-finance/presentation/loaders/load-top-page-data.ts": 174,
+      "webapp/src/server/contexts/public-finance/presentation/loaders/load-transactions-page-data.ts": 176
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": []
+    },
+    {
+     "sha": "b081c860",
+     "message": "取引一覧に「取引No」カラムを追加",
+     "changed": 2,
+     "found_any": 2,
+     "found_impacted": 1,
+     "candidates": 219,
+     "candidate_files": 109,
+     "seconds_index": 0.89,
+     "seconds_total": 6.2,
+     "missed": [],
+     "ranks": {
+      "admin/src/client/components/transactions/TransactionRow.tsx": 188,
+      "admin/src/client/components/transactions/TransactionsClient.tsx": 14
+     },
+     "found_top20": 1,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": []
+    },
+    {
+     "sha": "4e38670f",
+     "message": "フェーズ1マルチテナント化のスキーマ・ドメインモデル追加",
+     "changed": 7,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 25,
+     "candidate_files": 8,
+     "seconds_index": 0.87,
+     "seconds_total": 5.6,
+     "missed": [
+      "admin/src/server/contexts/shared/infrastructure/repositories/prisma-political-organization.repository.ts",
+      "prisma/schema.prisma",
+      "prisma/seed.ts",
+      "prisma/seeds/counterparts.ts",
+      "prisma/seeds/donors.ts",
+      "prisma/seeds/politicalOrganizations.ts",
+      "prisma/seeds/users.ts"
+     ],
+     "ranks": {
+      "admin/src/server/contexts/shared/infrastructure/repositories/prisma-political-organization.repository.ts": null,
+      "prisma/schema.prisma": null,
+      "prisma/seed.ts": null,
+      "prisma/seeds/counterparts.ts": null,
+      "prisma/seeds/donors.ts": null,
+      "prisma/seeds/politicalOrganizations.ts": null,
+      "prisma/seeds/users.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".prisma",
+      ".ts"
+     ]
+    },
+    {
+     "sha": "1b4a32a3",
+     "message": "address CodeRabbit review comments",
+     "changed": 2,
+     "found_any": 1,
+     "found_impacted": 0,
+     "candidates": 177,
+     "candidate_files": 60,
+     "seconds_index": 0.75,
+     "seconds_total": 5.8,
+     "missed": [
+      "admin/src/server/contexts/report/presentation/actions/import-donor-csv.ts"
+     ],
+     "ranks": {
+      "admin/src/server/contexts/report/application/usecases/import-donor-csv-usecase.ts": 72,
+      "admin/src/server/contexts/report/presentation/actions/import-donor-csv.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "9c602b49",
+     "message": "address review comments on PR",
+     "changed": 2,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 175,
+     "candidate_files": 47,
+     "seconds_index": 0.89,
+     "seconds_total": 5.6,
+     "missed": [
+      "webapp/src/server/contexts/public-finance/application/usecases/get-mock-transaction-page-data-usecase.ts",
+      "webapp/src/server/contexts/public-finance/application/usecases/get-organizations-usecase.ts"
+     ],
+     "ranks": {
+      "webapp/src/server/contexts/public-finance/application/usecases/get-mock-transaction-page-data-usecase.ts": null,
+      "webapp/src/server/contexts/public-finance/application/usecases/get-organizations-usecase.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "14304740",
+     "message": "implement DDD Phase 0 & Phase 1 for monthly aggregation",
+     "changed": 14,
+     "found_any": 12,
+     "found_impacted": 4,
+     "candidates": 128,
+     "candidate_files": 41,
+     "seconds_index": 0.8,
+     "seconds_total": 5.0,
+     "missed": [
+      "webapp/src/server/repositories/interfaces/political-organization-repository.interface.ts",
+      "webapp/src/server/repositories/prisma-political-organization.repository.ts"
+     ],
+     "ranks": {
+      "webapp/src/server/loaders/load-top-page-data.ts": 43,
+      "webapp/src/server/loaders/load-transactions-for-csv.ts": 127,
+      "webapp/src/server/loaders/load-transactions-page-data.ts": 126,
+      "webapp/src/server/repositories/interfaces/political-organization-repository.interface.ts": null,
+      "webapp/src/server/repositories/interfaces/transaction-repository.interface.ts": 2,
+      "webapp/src/server/repositories/prisma-political-organization.repository.ts": null,
+      "webapp/src/server/repositories/prisma-transaction.repository.ts": 19,
+      "webapp/src/server/usecases/get-all-transactions-by-slug-usecase.ts": 95,
+      "webapp/src/server/usecases/get-balance-sheet-usecase.ts": 96,
+      "webapp/src/server/usecases/get-daily-donation-usecase.ts": 97,
+      "webapp/src/server/usecases/get-monthly-transaction-aggregation-usecase.ts": 5,
+      "webapp/src/server/usecases/get-sankey-aggregation-usecase.ts": 24,
+      "webapp/src/server/usecases/get-transactions-by-slug-usecase.ts": 100,
+      "webapp/src/server/usecases/get-transactions-for-csv-usecase.ts": 101
+     },
+     "found_top20": 3,
+     "found_top50": 5,
+     "found_top100": 9,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "4fdb6b80",
+     "message": "依存関係違反を修正",
+     "changed": 4,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 3,
+     "candidate_files": 3,
+     "seconds_index": 0.75,
+     "seconds_total": 4.6,
+     "missed": [
+      "admin/src/client/components/donor-csv-import/DonorCsvImportClient.tsx",
+      "admin/src/client/components/donor-csv-import/DonorCsvPreview.tsx",
+      "admin/src/server/contexts/report/application/usecases/preview-donor-csv-usecase.ts",
+      "admin/src/server/contexts/report/presentation/actions/preview-donor-csv.ts"
+     ],
+     "ranks": {
+      "admin/src/client/components/donor-csv-import/DonorCsvImportClient.tsx": null,
+      "admin/src/client/components/donor-csv-import/DonorCsvPreview.tsx": null,
+      "admin/src/server/contexts/report/application/usecases/preview-donor-csv-usecase.ts": null,
+      "admin/src/server/contexts/report/presentation/actions/preview-donor-csv.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    }
+   ]
+  }
+ },
+ "mirai-gikai": {
+  "repo": "team-mirai/mirai-gikai",
+  "options": "--stride 4",
+  "result": {
+   "summary": {
+    "commits": 30,
+    "changed_files": 127,
+    "recall_any": 0.433,
+    "recall_impacted": 0.213,
+    "commits_with_any_hit": 23,
+    "recall_top20": 0.181,
+    "recall_top50": 0.283,
+    "recall_top100": 0.323,
+    "commits_with_hit_top20": 15,
+    "median_candidates": 201,
+    "median_seconds_index": 1.15
+   },
+   "rows": [
+    {
+     "sha": "99840c65",
+     "message": "トップページのArchiveに過去の会期一覧を追加する",
+     "changed": 6,
+     "found_any": 4,
+     "found_impacted": 3,
+     "candidates": 264,
+     "candidate_files": 140,
+     "seconds_index": 2.49,
+     "seconds_total": 6.5,
+     "missed": [
+      "web/src/features/bills/server/loaders/get-previous-session-bills.ts",
+      "web/src/features/diet-sessions/shared/types/index.ts"
+     ],
+     "ranks": {
+      "web/src/app/(main)/page.tsx": 42,
+      "web/src/features/bills/server/loaders/get-previous-session-bills.ts": null,
+      "web/src/features/bills/server/loaders/load-home-data.ts": 8,
+      "web/src/features/bills/server/repositories/bill-repository.ts": 128,
+      "web/src/features/diet-sessions/server/repositories/diet-session-repository.ts": 13,
+      "web/src/features/diet-sessions/shared/types/index.ts": null
+     },
+     "found_top20": 2,
+     "found_top50": 3,
+     "found_top100": 3,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "7144ae06",
+     "message": "SNSリンク更新し、noteとthreadsを追加",
+     "changed": 2,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 409,
+     "candidate_files": 186,
+     "seconds_index": 1.42,
+     "seconds_total": 8.4,
+     "missed": [
+      "web/src/components/top/team-mirai.tsx",
+      "web/src/lib/social-links.ts"
+     ],
+     "ranks": {
+      "web/src/components/top/team-mirai.tsx": null,
+      "web/src/lib/social-links.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "a53b28f9",
+     "message": "ふりがな表示時の引用クラッシュを防ぐ",
+     "changed": 3,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 125,
+     "candidate_files": 66,
+     "seconds_index": 1.3,
+     "seconds_total": 8.0,
+     "missed": [
+      "web/src/features/user-topic-analysis/client/components/clamped-quote.tsx",
+      "web/src/features/user-topic-analysis/shared/components/topic-card.tsx",
+      "web/src/lib/rubyful/initializer.tsx"
+     ],
+     "ranks": {
+      "web/src/features/user-topic-analysis/client/components/clamped-quote.tsx": null,
+      "web/src/features/user-topic-analysis/shared/components/topic-card.tsx": null,
+      "web/src/lib/rubyful/initializer.tsx": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "9e1a3a63",
+     "message": "オープンデータAPIに議案一覧・詳細とチームみらいの賛否取得を追加",
+     "changed": 8,
+     "found_any": 2,
+     "found_impacted": 1,
+     "candidates": 163,
+     "candidate_files": 100,
+     "seconds_index": 1.33,
+     "seconds_total": 7.8,
+     "missed": [
+      "web/src/features/bill-difficulty/shared/utils/parse-difficulty-level.ts",
+      "web/src/features/open-data/server/services/get-open-data-interviews.ts",
+      "web/src/features/open-data/shared/utils/cursor.ts",
+      "web/src/features/open-data/shared/utils/parse-interviews-query.ts",
+      "web/src/lib/api/response.ts",
+      "web/src/middleware.ts"
+     ],
+     "ranks": {
+      "web/src/app/api/open-data/interviews/route.ts": 9,
+      "web/src/features/bill-difficulty/shared/utils/parse-difficulty-level.ts": null,
+      "web/src/features/open-data/server/repositories/open-data-repository.ts": 130,
+      "web/src/features/open-data/server/services/get-open-data-interviews.ts": null,
+      "web/src/features/open-data/shared/utils/cursor.ts": null,
+      "web/src/features/open-data/shared/utils/parse-interviews-query.ts": null,
+      "web/src/lib/api/response.ts": null,
+      "web/src/middleware.ts": null
+     },
+     "found_top20": 1,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "689aebd7",
+     "message": "難易度・ふりがな表示の利用状況をGAでトラッキング",
+     "changed": 4,
+     "found_any": 1,
+     "found_impacted": 0,
+     "candidates": 41,
+     "candidate_files": 30,
+     "seconds_index": 1.58,
+     "seconds_total": 8.1,
+     "missed": [
+      "web/src/features/bill-difficulty/client/components/difficulty-selector.tsx",
+      "web/src/lib/rubyful/initializer.tsx",
+      "web/src/lib/rubyful/use-ruby-toggle.ts"
+     ],
+     "ranks": {
+      "web/src/components/header/header-client.tsx": 40,
+      "web/src/features/bill-difficulty/client/components/difficulty-selector.tsx": null,
+      "web/src/lib/rubyful/initializer.tsx": null,
+      "web/src/lib/rubyful/use-ruby-toggle.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "c2d1212f",
+     "message": "チャット利用状況の集計ツール get_chat_usage_metrics を追加",
+     "changed": 2,
+     "found_any": 2,
+     "found_impacted": 0,
+     "candidates": 217,
+     "candidate_files": 95,
+     "seconds_index": 1.38,
+     "seconds_total": 8.3,
+     "missed": [],
+     "ranks": {
+      "admin/src/features/mcp/server/create-handler.ts": 65,
+      "packages/supabase/types/supabase.types.ts": 102
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 1,
+     "missed_kinds": []
+    },
+    {
+     "sha": "23f69e46",
+     "message": "フッターに自主制作ガイドラインへの導線を追加",
+     "changed": 3,
+     "found_any": 1,
+     "found_impacted": 1,
+     "candidates": 47,
+     "candidate_files": 19,
+     "seconds_index": 1.16,
+     "seconds_total": 6.8,
+     "missed": [
+      "web/src/components/layouts/footer/footer.config.ts",
+      "web/src/config/external-links.ts"
+     ],
+     "ranks": {
+      "web/src/components/layouts/desktop-menu/links.tsx": 3,
+      "web/src/components/layouts/footer/footer.config.ts": null,
+      "web/src/config/external-links.ts": null
+     },
+     "found_top20": 1,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "df3504e1",
+     "message": "インタビューレポートに二次利用許諾カラム is_data_reuse_consented を追加",
+     "changed": 5,
+     "found_any": 4,
+     "found_impacted": 0,
+     "candidates": 544,
+     "candidate_files": 268,
+     "seconds_index": 1.16,
+     "seconds_total": 7.9,
+     "missed": [
+      "web/src/features/interview-session/shared/utils/public-setting.ts"
+     ],
+     "ranks": {
+      "packages/supabase/types/supabase.types.ts": 110,
+      "web/src/app/api/interview/complete/route.ts": 294,
+      "web/src/features/interview-session/server/services/complete-interview-session.ts": 42,
+      "web/src/features/interview-session/shared/utils/complete-interview-report.ts": 170,
+      "web/src/features/interview-session/shared/utils/public-setting.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "bf2a9f87",
+     "message": "MCPに upsert_mirai_stance ツールを追加",
+     "changed": 2,
+     "found_any": 2,
+     "found_impacted": 2,
+     "candidates": 648,
+     "candidate_files": 252,
+     "seconds_index": 1.16,
+     "seconds_total": 7.9,
+     "missed": [],
+     "ranks": {
+      "admin/src/features/mcp/server/create-handler.ts": 50,
+      "admin/src/features/mirai-stance/server/repositories/mirai-stance-repository.ts": 29
+     },
+     "found_top20": 0,
+     "found_top50": 2,
+     "found_top100": 2,
+     "missed_kinds": []
+    },
+    {
+     "sha": "3975735a",
+     "message": "引用ハイライトを該当メッセージ(source_message_id)に限定する",
+     "changed": 4,
+     "found_any": 3,
+     "found_impacted": 2,
+     "candidates": 349,
+     "candidate_files": 148,
+     "seconds_index": 1.33,
+     "seconds_total": 7.5,
+     "missed": [
+      "web/src/app/(main)/report/[reportId]/page.tsx"
+     ],
+     "ranks": {
+      "web/src/app/(main)/report/[reportId]/page.tsx": null,
+      "web/src/features/interview-config/shared/utils/interview-links.ts": 22,
+      "web/src/features/interview-report/server/components/public-report-page.tsx": 272,
+      "web/src/features/interview-report/shared/components/chat-log-section.tsx": 17
+     },
+     "found_top20": 1,
+     "found_top50": 2,
+     "found_top100": 2,
+     "missed_kinds": [
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "e82415a6",
+     "message": "MCP update_bill でも法案成立時にインタビューを自動クローズ",
+     "changed": 2,
+     "found_any": 1,
+     "found_impacted": 1,
+     "candidates": 174,
+     "candidate_files": 74,
+     "seconds_index": 1.16,
+     "seconds_total": 7.1,
+     "missed": [
+      "admin/src/features/mcp/server/tools/register-bills-tools.ts"
+     ],
+     "ranks": {
+      "admin/src/features/bills-edit/server/actions/update-bill.ts": 1,
+      "admin/src/features/mcp/server/tools/register-bills-tools.ts": null
+     },
+     "found_top20": 1,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "d4802cbe",
+     "message": "回答一覧・トピック一覧の「もっと見る」ページ件数を20→40に",
+     "changed": 2,
+     "found_any": 2,
+     "found_impacted": 2,
+     "candidates": 145,
+     "candidate_files": 83,
+     "seconds_index": 1.12,
+     "seconds_total": 6.7,
+     "missed": [],
+     "ranks": {
+      "web/src/features/user-topic-analysis/client/components/respondent-list.tsx": 45,
+      "web/src/features/user-topic-analysis/client/components/topic-list.tsx": 44
+     },
+     "found_top20": 0,
+     "found_top50": 2,
+     "found_top100": 2,
+     "missed_kinds": []
+    },
+    {
+     "sha": "759cf6c2",
+     "message": "モバイルでパンくずが固定ヘッダーに埋もれる問題を修正",
+     "changed": 5,
+     "found_any": 1,
+     "found_impacted": 0,
+     "candidates": 13,
+     "candidate_files": 10,
+     "seconds_index": 1.22,
+     "seconds_total": 6.9,
+     "missed": [
+      "web/src/components/layouts/main-layout.tsx",
+      "web/src/features/user-topic-analysis/client/components/topic-filter-chips.tsx",
+      "web/src/features/user-topic-analysis/client/components/topic-list.tsx",
+      "web/src/features/user-topic-analysis/shared/components/topic-card.tsx"
+     ],
+     "ranks": {
+      "web/src/components/layouts/main-layout.tsx": null,
+      "web/src/features/interview-config/client/components/interview-landing-section.tsx": 12,
+      "web/src/features/user-topic-analysis/client/components/topic-filter-chips.tsx": null,
+      "web/src/features/user-topic-analysis/client/components/topic-list.tsx": null,
+      "web/src/features/user-topic-analysis/shared/components/topic-card.tsx": null
+     },
+     "found_top20": 1,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "314a8611",
+     "message": "全議案トピック分析ページ＋差分(strategy)実行に対応 (PR②)",
+     "changed": 4,
+     "found_any": 2,
+     "found_impacted": 0,
+     "candidates": 335,
+     "candidate_files": 180,
+     "seconds_index": 1.16,
+     "seconds_total": 7.1,
+     "missed": [
+      "admin/src/app/(protected)/layout/navigation-links.tsx",
+      "admin/src/features/user-topic-analysis/client/components/run-analysis-button.tsx"
+     ],
+     "ranks": {
+      "admin/src/app/(protected)/layout/navigation-links.tsx": null,
+      "admin/src/app/api/user-topic-analysis/dispatch/route.ts": 145,
+      "admin/src/features/user-topic-analysis/client/components/run-analysis-button.tsx": null,
+      "admin/src/lib/routes.ts": 184
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "70fb4f1a",
+     "message": "意見単位の情報充実度(richness)を引用文込みで生成・保存する",
+     "changed": 7,
+     "found_any": 3,
+     "found_impacted": 1,
+     "candidates": 207,
+     "candidate_files": 80,
+     "seconds_index": 1.12,
+     "seconds_total": 6.4,
+     "missed": [
+      "packages/shared/src/interview-report/build-opinion-rows.ts",
+      "packages/topic-analysis-core/src/shared/types.ts",
+      "web/src/features/interview-session/client/utils/message-utils.ts",
+      "web/src/features/interview-session/shared/utils/report-extraction.ts"
+     ],
+     "ranks": {
+      "packages/shared/src/interview-prompts/summary.ts": 49,
+      "packages/shared/src/interview-report/build-opinion-rows.ts": null,
+      "packages/shared/src/interview-report/schema.ts": 18,
+      "packages/topic-analysis-core/src/repositories/analysis-repository.ts": 165,
+      "packages/topic-analysis-core/src/shared/types.ts": null,
+      "web/src/features/interview-session/client/utils/message-utils.ts": null,
+      "web/src/features/interview-session/shared/utils/report-extraction.ts": null
+     },
+     "found_top20": 1,
+     "found_top50": 2,
+     "found_top100": 2,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "424b2bbc",
+     "message": "opinion backfill の使用モデルを選択可能にする",
+     "changed": 7,
+     "found_any": 6,
+     "found_impacted": 4,
+     "candidates": 113,
+     "candidate_files": 34,
+     "seconds_index": 1.0,
+     "seconds_total": 6.0,
+     "missed": [
+      "packages/shared/src/ai/models.ts"
+     ],
+     "ranks": {
+      "admin/src/app/api/interview-opinion-backfill/dispatch/route.ts": 20,
+      "admin/src/features/interview-opinion-backfill/client/components/opinion-backfill-runner.tsx": 2,
+      "packages/shared/src/ai/models.ts": null,
+      "packages/topic-analysis-core/src/backfill.ts": 1,
+      "packages/topic-analysis-core/src/services/reextract-report-opinions.ts": 69,
+      "packages/topic-analysis-core/src/shared/backfill-params.ts": 4,
+      "worker/src/main.ts": 106
+     },
+     "found_top20": 4,
+     "found_top50": 4,
+     "found_top100": 5,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "161b7e70",
+     "message": "インタビュー意見の再抽出バックフィルをadminに追加 (Step 2)",
+     "changed": 8,
+     "found_any": 3,
+     "found_impacted": 1,
+     "candidates": 530,
+     "candidate_files": 139,
+     "seconds_index": 1.08,
+     "seconds_total": 6.6,
+     "missed": [
+      "admin/src/features/interview-simulation/server/loaders/get-report-detail-for-simulation.ts",
+      "admin/src/middleware.ts",
+      "web/src/features/interview-session/shared/schemas.ts",
+      "web/src/features/interview-session/shared/utils/build-interview-opinion-rows.ts",
+      "web/src/features/interview-session/shared/utils/complete-interview-report.ts"
+     ],
+     "ranks": {
+      "admin/src/features/interview-simulation/server/loaders/get-report-detail-for-simulation.ts": null,
+      "admin/src/lib/routes.ts": 74,
+      "admin/src/middleware.ts": null,
+      "packages/supabase/types/supabase.types.ts": 104,
+      "web/src/features/interview-session/server/services/complete-interview-session.ts": 1,
+      "web/src/features/interview-session/shared/schemas.ts": null,
+      "web/src/features/interview-session/shared/utils/build-interview-opinion-rows.ts": null,
+      "web/src/features/interview-session/shared/utils/complete-interview-report.ts": null
+     },
+     "found_top20": 1,
+     "found_top50": 1,
+     "found_top100": 2,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "d6d10bd9",
+     "message": "インタビュー新規設定の設定名にログインユーザー名を自動入力",
+     "changed": 3,
+     "found_any": 3,
+     "found_impacted": 1,
+     "candidates": 123,
+     "candidate_files": 59,
+     "seconds_index": 1.13,
+     "seconds_total": 6.6,
+     "missed": [],
+     "ranks": {
+      "admin/src/app/(protected)/bills/[id]/interview/new/page.tsx": 109,
+      "admin/src/features/interview-config/client/components/interview-config-edit-client.tsx": 19,
+      "admin/src/features/interview-config/client/components/interview-config-form.tsx": 9
+     },
+     "found_top20": 2,
+     "found_top50": 2,
+     "found_top100": 2,
+     "missed_kinds": []
+    },
+    {
+     "sha": "b913e836",
+     "message": "「深堀り」を「深掘り」に修正",
+     "changed": 2,
+     "found_any": 2,
+     "found_impacted": 2,
+     "candidates": 398,
+     "candidate_files": 191,
+     "seconds_index": 1.15,
+     "seconds_total": 6.0,
+     "missed": [],
+     "ranks": {
+      "web/src/features/interview-config/client/components/interview-lp-page.tsx": 1,
+      "web/src/lib/prompt/source-code/templates/shared-sections.ts": 3
+     },
+     "found_top20": 2,
+     "found_top50": 2,
+     "found_top100": 2,
+     "missed_kinds": []
+    },
+    {
+     "sha": "70ed7015",
+     "message": "MCPのupdate_tagツールをPATCH方式に変更",
+     "changed": 3,
+     "found_any": 2,
+     "found_impacted": 0,
+     "candidates": 203,
+     "candidate_files": 88,
+     "seconds_index": 0.97,
+     "seconds_total": 5.3,
+     "missed": [
+      "admin/src/features/tags/shared/utils/map-tag-db-error.ts"
+     ],
+     "ranks": {
+      "admin/src/features/mcp/server/tools/register-tags-tools.ts": 50,
+      "admin/src/features/tags/server/repositories/tag-repository.ts": 180,
+      "admin/src/features/tags/shared/utils/map-tag-db-error.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "baa52be9",
+     "message": "MCPにslugで議案を検索するget_bill_by_slugツールを追加",
+     "changed": 2,
+     "found_any": 2,
+     "found_impacted": 1,
+     "candidates": 403,
+     "candidate_files": 163,
+     "seconds_index": 0.93,
+     "seconds_total": 5.6,
+     "missed": [],
+     "ranks": {
+      "admin/src/features/bills-edit/server/repositories/bill-edit-repository.ts": 73,
+      "admin/src/features/mcp/server/tools/register-bills-tools.ts": 20
+     },
+     "found_top20": 1,
+     "found_top50": 1,
+     "found_top100": 2,
+     "missed_kinds": []
+    },
+    {
+     "sha": "dce805f1",
+     "message": "インタビューシミュレーションを実装",
+     "changed": 15,
+     "found_any": 2,
+     "found_impacted": 0,
+     "candidates": 25,
+     "candidate_files": 9,
+     "seconds_index": 1.3,
+     "seconds_total": 4.9,
+     "missed": [
+      "admin/src/features/interview-config/client/components/interview-config-edit-client.tsx",
+      "admin/src/features/interview-config/client/components/interview-config-form.tsx",
+      "admin/src/features/interview-config/client/components/interview-config-list.tsx",
+      "admin/src/features/interview-config/client/components/interview-question-list.tsx",
+      "admin/src/features/interview-reports/server/components/session-list.tsx",
+      "packages/seed/main/run.ts",
+      "packages/seed/main/shipping-bill-data.ts",
+      "web/src/features/interview-session/shared/utils/build-summary-system-prompt.ts",
+      "web/src/features/interview-session/shared/utils/interview-logic/bill-clarification-guidance.ts",
+      "web/src/features/interview-session/shared/utils/interview-logic/bulk-mode.ts",
+      "web/src/features/interview-session/shared/utils/interview-logic/loop-mode.ts",
+      "web/src/features/interview-session/shared/utils/interview-logic/types.ts",
+      "web/src/features/interview-session/shared/utils/stage-transition-guidance.ts"
+     ],
+     "ranks": {
+      "admin/src/app/(protected)/bills/[id]/interview/[configId]/edit/page.tsx": 25,
+      "admin/src/app/(protected)/bills/[id]/interview/new/page.tsx": 22,
+      "admin/src/features/interview-config/client/components/interview-config-edit-client.tsx": null,
+      "admin/src/features/interview-config/client/components/interview-config-form.tsx": null,
+      "admin/src/features/interview-config/client/components/interview-config-list.tsx": null,
+      "admin/src/features/interview-config/client/components/interview-question-list.tsx": null,
+      "admin/src/features/interview-reports/server/components/session-list.tsx": null,
+      "packages/seed/main/run.ts": null,
+      "packages/seed/main/shipping-bill-data.ts": null,
+      "web/src/features/interview-session/shared/utils/build-summary-system-prompt.ts": null,
+      "web/src/features/interview-session/shared/utils/interview-logic/bill-clarification-guidance.ts": null,
+      "web/src/features/interview-session/shared/utils/interview-logic/bulk-mode.ts": null,
+      "web/src/features/interview-session/shared/utils/interview-logic/loop-mode.ts": null,
+      "web/src/features/interview-session/shared/utils/interview-logic/types.ts": null,
+      "web/src/features/interview-session/shared/utils/stage-transition-guidance.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 2,
+     "found_top100": 2,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "62e4528a",
+     "message": "ReviewCompleteBadgeにsize/topプロパティを追加しツールチップテキスト色を修正",
+     "changed": 3,
+     "found_any": 3,
+     "found_impacted": 1,
+     "candidates": 168,
+     "candidate_files": 78,
+     "seconds_index": 0.98,
+     "seconds_total": 5.2,
+     "missed": [],
+     "ranks": {
+      "web/src/components/ui/tooltip.tsx": 73,
+      "web/src/features/bills/client/components/bill-detail/review-status-banner.tsx": 6,
+      "web/src/features/bills/client/components/bill-list/compact-bill-card.tsx": 35
+     },
+     "found_top20": 1,
+     "found_top50": 2,
+     "found_top100": 3,
+     "missed_kinds": []
+    },
+    {
+     "sha": "6391eaa8",
+     "message": "adminにGoogleログイン機能を追加",
+     "changed": 3,
+     "found_any": 3,
+     "found_impacted": 3,
+     "candidates": 580,
+     "candidate_files": 208,
+     "seconds_index": 0.76,
+     "seconds_total": 5.9,
+     "missed": [],
+     "ranks": {
+      "admin/src/features/auth/client/components/login-form.tsx": 6,
+      "admin/src/features/auth/client/lib/auth-client.ts": 5,
+      "admin/src/middleware.ts": 7
+     },
+     "found_top20": 3,
+     "found_top50": 3,
+     "found_top100": 3,
+     "missed_kinds": []
+    },
+    {
+     "sha": "2838c8f8",
+     "message": "法案記事にレビューステータス機能を追加",
+     "changed": 8,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 3,
+     "candidate_files": 2,
+     "seconds_index": 0.87,
+     "seconds_total": 4.5,
+     "missed": [
+      "admin/src/features/bills-edit/client/components/bill-create-form.tsx",
+      "admin/src/features/bills-edit/client/components/bill-edit-form.tsx",
+      "admin/src/features/bills-edit/client/components/bill-form-fields.tsx",
+      "admin/src/features/bills-edit/shared/types/index.ts",
+      "admin/src/features/bills/shared/utils/prepare-bill-for-duplication.ts",
+      "packages/supabase/types/supabase.types.ts",
+      "web/src/app/dev/_lib/mock-data.ts",
+      "web/src/features/bills/server/components/bill-detail/bill-detail-header.tsx"
+     ],
+     "ranks": {
+      "admin/src/features/bills-edit/client/components/bill-create-form.tsx": null,
+      "admin/src/features/bills-edit/client/components/bill-edit-form.tsx": null,
+      "admin/src/features/bills-edit/client/components/bill-form-fields.tsx": null,
+      "admin/src/features/bills-edit/shared/types/index.ts": null,
+      "admin/src/features/bills/shared/utils/prepare-bill-for-duplication.ts": null,
+      "packages/supabase/types/supabase.types.ts": null,
+      "web/src/app/dev/_lib/mock-data.ts": null,
+      "web/src/features/bills/server/components/bill-detail/bill-detail-header.tsx": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts",
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "526c004e",
+     "message": "インタビュー設定一覧のセッション数カウントをRPC関数に変更",
+     "changed": 2,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 53,
+     "candidate_files": 28,
+     "seconds_index": 0.86,
+     "seconds_total": 4.4,
+     "missed": [
+      "admin/src/features/interview-config/server/repositories/interview-config-repository.ts",
+      "packages/supabase/types/supabase.types.ts"
+     ],
+     "ranks": {
+      "admin/src/features/interview-config/server/repositories/interview-config-repository.ts": null,
+      "packages/supabase/types/supabase.types.ts": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "0f1d9887",
+     "message": "一括公開の件数取得・実行をRPC関数に変更してURL長制限エラーを修正",
+     "changed": 2,
+     "found_any": 1,
+     "found_impacted": 1,
+     "candidates": 201,
+     "candidate_files": 109,
+     "seconds_index": 1.01,
+     "seconds_total": 4.8,
+     "missed": [
+      "packages/supabase/types/supabase.types.ts"
+     ],
+     "ranks": {
+      "admin/src/features/interview-reports/server/actions/bulk-publish-reports-action.ts": 11,
+      "packages/supabase/types/supabase.types.ts": null
+     },
+     "found_top20": 1,
+     "found_top50": 1,
+     "found_top100": 1,
+     "missed_kinds": [
+      ".ts"
+     ]
+    },
+    {
+     "sha": "46384daa",
+     "message": "インタビュー画面のUI調整",
+     "changed": 6,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 258,
+     "candidate_files": 111,
+     "seconds_index": 0.83,
+     "seconds_total": 5.0,
+     "missed": [
+      "web/src/features/chat/client/components/user-message.tsx",
+      "web/src/features/interview-session/client/components/interview-chat-client.tsx",
+      "web/src/features/interview-session/client/components/interview-chat-input.tsx",
+      "web/src/features/interview-session/client/components/interview-message.tsx",
+      "web/src/features/interview-session/client/components/interview-progress-bar.tsx",
+      "web/src/features/interview-session/client/components/quick-reply-buttons.tsx"
+     ],
+     "ranks": {
+      "web/src/features/chat/client/components/user-message.tsx": null,
+      "web/src/features/interview-session/client/components/interview-chat-client.tsx": null,
+      "web/src/features/interview-session/client/components/interview-chat-input.tsx": null,
+      "web/src/features/interview-session/client/components/interview-message.tsx": null,
+      "web/src/features/interview-session/client/components/interview-progress-bar.tsx": null,
+      "web/src/features/interview-session/client/components/quick-reply-buttons.tsx": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "c81c3ae5",
+     "message": "ボタンクリック時のローディング表示を追加",
+     "changed": 2,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 66,
+     "candidate_files": 26,
+     "seconds_index": 0.8,
+     "seconds_total": 4.4,
+     "missed": [
+      "web/src/features/interview-config/client/components/interview-consent-modal.tsx",
+      "web/src/features/interview-session/client/components/new-interview-button.tsx"
+     ],
+     "ranks": {
+      "web/src/features/interview-config/client/components/interview-consent-modal.tsx": null,
+      "web/src/features/interview-session/client/components/new-interview-button.tsx": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".tsx"
+     ]
+    },
+    {
+     "sha": "b65d3936",
+     "message": "法案詳細ページのヘッダーに意見数リンクを追加",
+     "changed": 2,
+     "found_any": 0,
+     "found_impacted": 0,
+     "candidates": 74,
+     "candidate_files": 47,
+     "seconds_index": 0.92,
+     "seconds_total": 4.2,
+     "missed": [
+      "web/src/features/bills/server/components/bill-detail/bill-detail-header.tsx",
+      "web/src/features/bills/server/components/bill-detail/bill-detail-layout.tsx"
+     ],
+     "ranks": {
+      "web/src/features/bills/server/components/bill-detail/bill-detail-header.tsx": null,
+      "web/src/features/bills/server/components/bill-detail/bill-detail-layout.tsx": null
+     },
+     "found_top20": 0,
+     "found_top50": 0,
+     "found_top100": 0,
+     "missed_kinds": [
+      ".tsx"
+     ]
+    }
+   ]
+  }
+ }
+}

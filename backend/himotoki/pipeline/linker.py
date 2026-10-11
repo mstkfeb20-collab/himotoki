@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import os
+import posixpath
 import re
 from collections import Counter, defaultdict
 
@@ -20,7 +21,7 @@ from ..model import Edge, Kind, Node, Rel
 from ..text import words
 from .resolve_java import JavaResolver
 
-CASE_INSENSITIVE = {"table", "column", "colany", "datafile", "proc", "dbobj", "screen", "function", "dblink"}
+CASE_INSENSITIVE = {"table", "column", "colany", "datafile", "proc", "dbobj", "screen", "function", "dblink", "prisma"}
 
 
 def norm_key(key: str) -> str:
@@ -86,6 +87,7 @@ class Linker:
         for f in facts_list:
             for e in f.edges:
                 self.add_edge(e["src"], e["dst"], e["rel"], e.get("props") or {})
+        self._ts_init(facts_list)
         jr = JavaResolver(facts_list, self.rules)
         for e in jr.run():
             self.add_edge(e["src"], e["dst"], e["rel"], e["props"])
@@ -140,9 +142,9 @@ class Linker:
         return pkg not in self.repo_pkgs
 
     def _resolve_ref(self, r):
-        targets = self.resolve_key(r["key"], r.get("props") or {})
+        targets = self.resolve_key(r["key"], dict(r.get("props") or {}, _src=r["src"]))
         if not targets:
-            if self._is_external(r["key"]):
+            if self._is_external(r["key"]) or self._ts_external(r):
                 self.external[r["key"].split(":", 1)[0]] += 1
                 return
             if not r.get("optional"):
@@ -152,9 +154,12 @@ class Linker:
             props = {"conf": round(float(r.get("conf", 1.0)) * c, 3), "src": _src_kind(r.get("via", "")),
                      "via": r.get("via"), "line": r.get("line")}
             for k, v in (r.get("props") or {}).items():       # rule / extractor attributes travel with the edge
-                if k != "tables" and v is not None:
+                if k not in ("tables", "reverse") and v is not None:
                     props[k] = v
-            self.add_edge(r["src"], t, r["rel"], props)
+            if (r.get("props") or {}).get("reverse"):         # the edge points at the referring element
+                self.add_edge(t, r["src"], r["rel"], props)
+            else:
+                self.add_edge(r["src"], t, r["rel"], props)
 
     # ------------------------------------------------------------ indexes
     def _build_indexes(self):
@@ -209,6 +214,141 @@ class Linker:
         if out:
             self.resolved_by[f"{ns}:fallback"] += 1
         return out
+
+    # ------------------------------------------------------------ TypeScript modules
+    def _ts_init(self, facts_list):
+        """Module table, re-exports (barrel files), tsconfig `paths` and workspace packages."""
+        self.ts_modules = {k[6:] for k in self.keys if k.startswith("tsmod:")}
+        self.ts_reexp = defaultdict(list)
+        self.ts_configs, self.ts_packages = [], {}
+        for f in facts_list:
+            for e in f.payload.get("ts_reexports", []):
+                self.ts_reexp[e["module"]].append(e)
+            if f.payload.get("ts_config"):
+                self.ts_configs.append(f.payload["ts_config"])
+            if f.payload.get("ts_package"):
+                p = f.payload["ts_package"]
+                self.ts_packages[p["name"]] = p
+        self.ts_configs.sort(key=lambda c: -len(c["dir"]))          # nearest tsconfig first
+        self._ts_spec_cache = {}
+
+    def _ts_existing(self, mod: str) -> list[str]:
+        return [m for m in (mod, f"{mod}/index") if m in self.ts_modules]
+
+    def _ts_spec(self, spec: str, importer: str) -> list[str]:
+        """An import specifier that is not relative (`@/lib/x`, `@scope/pkg/sub`) -> module paths."""
+        from ..extractors.ts import module_of
+        ck = (spec, importer.split("/", 1)[0])
+        if ck in self._ts_spec_cache and not any(c["dir"] for c in self.ts_configs):
+            return self._ts_spec_cache[ck]
+        out = []
+        for name in sorted(self.ts_packages, key=len, reverse=True):          # workspace packages
+            if spec != name and not spec.startswith(name + "/"):
+                continue
+            p = self.ts_packages[name]
+            sub = "." + spec[len(name):]
+            targets = []
+            if sub in p["exports"]:
+                targets.append(p["exports"][sub])
+            for k, t in p["exports"].items():
+                if k.endswith("*") and sub.startswith(k[:-1]):
+                    targets.append(t.replace("*", sub[len(k) - 1:]))
+            if sub == "." and p.get("main"):
+                targets.append(p["main"])
+            rest = sub[2:] if sub != "." else "index"
+            targets += [f"src/{rest}", rest]
+            for t in targets:
+                out += self._ts_existing(module_of(posixpath.normpath(posixpath.join(p["dir"], t))))
+            if out:
+                break
+        if not out:
+            for cfg in self.ts_configs:                                      # tsconfig paths
+                if cfg["dir"] and not importer.startswith(cfg["dir"] + "/"):
+                    continue
+                base = posixpath.normpath(posixpath.join(cfg["dir"], cfg.get("baseUrl") or "."))
+                for pat, targets in sorted(cfg["paths"].items(), key=lambda kv: -len(kv[0])):
+                    if pat.endswith("*") and spec.startswith(pat[:-1]):
+                        rest = spec[len(pat) - 1:]
+                    elif pat == spec:
+                        rest = ""
+                    else:
+                        continue
+                    for t in targets:
+                        out += self._ts_existing(module_of(posixpath.normpath(posixpath.join(base, t.replace("*", rest)))))
+                    if out:
+                        break
+                if out:
+                    break
+        if not out and spec[:2] in ("@/", "~/", "#/"):
+            # no tsconfig seen: the usual alias for the package's src folder
+            top = importer.split("/", 1)[0]
+            rest = spec[2:]
+            out = [m for m in self.ts_modules if m.startswith(top + "/") and
+                   (m.endswith("/src/" + rest) or m.endswith("/src/" + rest + "/index"))][:2]
+        self._ts_spec_cache[ck] = out
+        return out
+
+    def _ts_lookup(self, mod: str, name: str, depth: int = 0) -> list[tuple[str, float]]:
+        for m in self._ts_existing(mod) or [mod]:
+            hit = self.keys.get(f"tsexp:{m}#{name}")
+            if hit:
+                return [(h, 1.0) for h in hit]
+            if "." in name:                                  # Cls.member
+                head, _, member = name.partition(".")
+                for h in self.keys.get(f"tsexp:{m}#{head}", []):
+                    if f"{h}.{member}" in self.nodes:
+                        return [(f"{h}.{member}", 1.0)]
+            if depth < 6:
+                for e in self.ts_reexp.get(m, []):
+                    targets = [e["target"]] if e.get("target") else self._ts_spec(e["spec"], e["from"])
+                    for t in targets:
+                        if e.get("as"):                      # export * as ns from "./x"
+                            if name == e["as"]:
+                                mods = self._ts_existing(t)
+                                return [(i, 0.9) for i in self.keys.get(f"tsmod:{mods[0]}", [])] if mods else []
+                            continue
+                        if e.get("names"):
+                            if name.split(".")[0] in e["names"]:
+                                inner = e["names"][name.split(".")[0]] + name[len(name.split(".")[0]):]
+                                r = self._ts_lookup(t, inner, depth + 1)
+                                if r:
+                                    return r
+                            continue
+                        r = self._ts_lookup(t, name, depth + 1)
+                        if r:
+                            return r
+        return []
+
+    def _ns_tsexp(self, v, props):
+        mod, _, name = v.rpartition("#")
+        r = self._ts_lookup(mod, name)
+        if r:
+            return r
+        mods = self._ts_existing(mod)
+        if mods:            # the module is there, the name is not (a type-only or computed export)
+            return [(i, 0.6) for i in self.keys.get(f"tsmod:{mods[0]}", [])]
+        return []
+
+    def _ns_tsimp(self, v, props):
+        spec, _, name = v.rpartition("#")
+        src = props.get("_src")
+        importer = self.nodes[src].file if src in self.nodes and self.nodes[src].file else ""
+        for m in self._ts_spec(spec, importer):
+            r = self._ns_tsexp(f"{m}#{name}", props)
+            if r:
+                return [(t, round(c * 0.95, 3)) for t, c in r]
+        return []
+
+    def _ts_external(self, r) -> bool:
+        """An import of a library (react, next, zod…) is a dependency, not a gap in the graph."""
+        if not r["key"].startswith("tsimp:"):
+            return False
+        spec = r["key"][6:].rpartition("#")[0]
+        src = self.nodes.get(r["src"])
+        if self._ts_spec(spec, src.file if src and src.file else ""):
+            return False
+        self.external["tsimp"] += 1
+        return True
 
     def _ns_ejbmethod(self, v, props):
         """ejb-jar.xml <method-name>*</method-name>: every business method of that EJB."""

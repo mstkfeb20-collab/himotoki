@@ -41,7 +41,7 @@ def clean_sql(sql: str) -> str:
 
 
 def _norm_table(name: str) -> str:
-    return name.strip('"`[]').split(".")[-1].lower()
+    return name.split(".")[-1].strip('"`[] ').lower()      # "public"."transactions" -> transactions
 
 
 _SELECT_INTO = re.compile(r"(\bSELECT\b(?:(?!\bFROM\b)[\s\S])*?)\bINTO\s+[:\w$.,\s]+?(?=\s+FROM\b|\s*;|\s*$)", re.I)

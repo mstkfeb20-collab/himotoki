@@ -67,6 +67,36 @@ GREP_MAX_NEW = 300        # new candidates one sweep may add
 COMPOUND_SKIP = {"a", "an", "the", "as", "to", "of", "for", "in", "on", "and", "or", "with", "by", "from", "is", "be"}
 
 
+JA_RUN = re.compile(r"[\u4e00-\u9fff\u3005\u30a0-\u30ff\uff10-\uff19\uff21-\uff3a\uff41-\uff5aA-Za-z0-9_]+")
+JA_CHAR = re.compile(r"[\u3040-\u30ff\u3400-\u9fff]")
+# verbs of change and words every requirement uses: they say what to do, not where
+JA_STOP = {"追加", "変更", "修正", "削除", "対応", "実装", "反映", "改善", "作成", "更新", "設定", "処理", "確認", "利用",
+           "使用", "指定", "可能", "場合", "表示", "機能", "画面", "以下", "以上", "不具合", "新規", "既存", "一部", "全体",
+           "改修", "整理", "導入", "廃止", "検討", "仕様", "必要", "出力", "入力", "登録"}
+PHRASE_TOP = 25          # elements seeded from Japanese phrases
+PHRASE_REL = 0.34        # ... whose share of the requirement's phrases is at least this part of the best
+PHRASE_DOCS = 5          # design-document sections used as a bridge to the code they describe
+
+
+def ja_terms(text: str) -> list[str]:
+    """Phrases of a Japanese requirement: runs of kanji / katakana / Latin letters (hiragana
+    separates them), and the kanji and katakana parts of mixed runs
+    ("議員ページの公開を sitemap.xml に反映" -> 議員ページ, 議員, ページ, 公開). Latin-only runs
+    are left to the identifier matching."""
+    out = []
+    for q in re.findall(r"[「『\"“]([^」』\"”]{2,40})[」』\"”]", text):
+        if JA_CHAR.search(q) and q not in out:
+            out.append(q)                 # a quoted phrase is usually the exact wording on the screen
+    for run in JA_RUN.findall(text):
+        if not JA_CHAR.search(run):
+            continue
+        parts = [run] + re.findall(r"[\u4e00-\u9fff\u3005]{2,}|[\u30a0-\u30ff]{2,}", run)
+        for p in parts:
+            if len(p) >= 2 and p not in JA_STOP and p not in out:
+                out.append(p)
+    return out
+
+
 def compounds(text: str, by_name: dict) -> list[str]:
     """Runs of 2-4 adjacent English words that name an existing identifier
     ("mark as fraud" -> markAsFraud / markFraud, "working capital loan" -> WorkingCapitalLoan)."""
@@ -225,14 +255,17 @@ class Engine:
         """How many seedable elements use each identifier word (and their lower-cased names)."""
         if self._terms is None:
             from ..text import split_ident
-            df, names = Counter(), []
+            df, names, texts = Counter(), [], []
             for n in self.store.nodes():
+                if n.kind in (Kind.DOC, Kind.DOC_ENTITY):
+                    texts.append((n, f"{n.name} {n.text}".lower()))
                 if not seedable(n):
                     continue
                 base = n.name.split(".")[-1].replace("()", "").split("/")[-1]
                 names.append(base.lower())
                 df.update(set(split_ident(base)))
-            self._terms = {"n": len(names), "df": df, "names": names, "sub": {}}
+                texts.append((n, f"{n.name} {n.text}".lower()))
+            self._terms = {"n": len(names), "df": df, "names": names, "sub": {}, "texts": texts, "phrase": {}}
         return self._terms
 
     def term_df(self, term: str) -> int:
@@ -264,6 +297,63 @@ class Engine:
         if d >= lo:
             return 0.0
         return round(math.log(lo / d) / math.log(lo / hi), 3)
+
+    def _phrase_seeds(self, text: str) -> list[tuple[str, float, str]]:
+        terms = ja_terms(text)
+        if not terms:
+            return []
+        t = self._term_stats()
+        hits: dict[str, list] = {}
+        for term in terms:
+            if term not in t["phrase"]:
+                low = term.lower()
+                t["phrase"][term] = [n.id for n, txt in t["texts"] if low in txt]
+            hits[term] = t["phrase"][term]
+        n_code = lambda ids: sum(1 for i in ids if not i.startswith("doc"))
+        weight = {}
+        for term, ids in hits.items():
+            if not ids:
+                continue          # a word the system does not use yet (a new concept) does not count against anyone
+            d = sum(1 for i in ids if (self.store.get(i) is not None and seedable(self.store.get(i))))
+            weight[term] = self._spec_of_count(d) * min(len(term), 6) / 6
+        total = sum(weight.values())
+        if total <= 0:
+            return []
+        node_terms: dict[str, list[str]] = defaultdict(list)
+        for term, w in weight.items():
+            if w <= 0:
+                continue
+            for i in hits[term]:
+                node_terms[i].append(term)
+        scored = []
+        for nid, ts in node_terms.items():
+            cov = sum(weight[x] for x in ts) / total
+            if cov >= 0.3 or max(weight[x] for x in ts) >= 0.8:
+                scored.append((cov, nid, ts))
+        scored.sort(key=lambda x: (-x[0], len(self.store.get(x[1]).text) if self.store.get(x[1]) else 0))
+        if scored:      # elements that carry only the system's theme word ("受注") trail far behind
+            best = scored[0][0]
+            scored = [x for x in scored if x[0] >= PHRASE_REL * best]
+        out, docs = [], 0
+        for cov, nid, ts in scored:
+            n = self.store.get(nid)
+            if n is None:
+                continue
+            terms_s = "・".join(ts[:4])
+            if n.kind in (Kind.DOC, Kind.DOC_ENTITY):
+                if docs >= PHRASE_DOCS or cov < 0.5:
+                    continue
+                docs += 1
+                for e in self.store.out_edges(nid, [Rel.DESCRIBES])[:10]:
+                    tn = self.store.get(e.dst)
+                    if tn is not None and seedable(tn):
+                        out.append((e.dst, round(min(0.7, 0.25 + 0.45 * cov) * e.conf, 3),
+                                    f"設計書「{n.name[:40]}」（要求の語 {terms_s} を含む）が説明している要素"))
+                continue
+            if sum(1 for o in out if not o[2].startswith("設計書")) >= PHRASE_TOP:
+                continue
+            out.append((nid, round(min(0.85, 0.35 + 0.5 * cov), 3), f"要求の語 {terms_s} が文言・コメントに出現"))
+        return out
 
     # ------------------------------------------------------------- state io
     def state(self, run_id: str) -> dict | None:
@@ -522,6 +612,11 @@ class Engine:
                                                    reason=f"変更前の値「{v}」が出現（要求との類似度 {sim:.2f}）"):
                                 seeds.append((n.id, score))
                             break
+            # (e) Japanese phrases found verbatim in screen wording, messages, comments and
+            # design documents; documents hand over to the code they describe
+            for nid, score, reason in self._phrase_seeds(it["summary"]):
+                if self._add_candidate(st, nid, score, "seed", it["id"], reason=reason):
+                    seeds.append((nid, score))
             # (c) text similarity (skipped for bare instructions such as "テストも確認して")
             if it.get("instruction") and not it.get("keywords"):
                 continue
@@ -710,6 +805,7 @@ class Engine:
                             elif rule.get("flow") and other not in flow_ids and other in st["candidates"]:
                                 # found earlier by another path: the data flow still continues through it
                                 flow_ids.add(other)
+                                st["candidates"][other]["data_flow"] = True
                                 nxt.append((other, max(s2, st["candidates"][other]["score"])))
                             break
                 # changes the graph did not reach in earlier verifications of this system

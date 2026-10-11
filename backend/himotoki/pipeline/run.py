@@ -17,13 +17,13 @@ from typing import Callable
 
 from ..security import max_file_bytes, safe_join
 
-from ..extractors import docs, java, jobs, props, sql, text, xml
+from ..extractors import docs, java, jobs, prisma, props, sql, text, ts, xml
 from ..rules import load_rules
 from .cache import FactCache
 from .facts import FileFacts
 from .linker import Linker
 
-EXTRACTORS = {m.NAME: m for m in (java, xml, sql, text, props, jobs, docs)}
+EXTRACTORS = {m.NAME: m for m in (java, ts, prisma, xml, sql, text, props, jobs, docs)}
 SQL_EXT = (".sql", ".pls", ".pks", ".pkb", ".prc", ".fnc", ".trg", ".ddl", ".plsql")
 DOC_EXT = (".md", ".markdown", ".xlsx", ".xlsm", ".docx")
 LEGACY_OFFICE = (".xls", ".doc")
@@ -35,6 +35,10 @@ def classify(path: str, rules, head: str | None = None) -> str | None:
     low = path.lower()
     if low.endswith(".java"):
         return "java"
+    if ts.is_ts(path) or ts.is_config(path):
+        return "ts"
+    if low.endswith(".prisma"):
+        return "prisma"
     if low.endswith((".xml", ".xhtml", ".wsdl", ".xsd")) and not low.endswith(("pom.xml",)):
         return "xml"
     if low.endswith(SQL_EXT):

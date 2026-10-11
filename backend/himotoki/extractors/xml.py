@@ -42,7 +42,22 @@ class El:
             yield from c.iter()
 
 
+def _as_utf8(data: bytes) -> bytes:
+    """expat reads UTF-8/16 and Latin-1 only: Shift_JIS / EUC-JP files (common in
+    Japanese systems) are decoded first and their declaration rewritten."""
+    m = re.match(rb'<\?xml[^>]*encoding=["\']([\w.\-]+)["\']', data[:200])
+    enc = m.group(1).decode("ascii").lower() if m else "utf-8"
+    if enc.replace("_", "-") in ("utf-8", "utf8", "us-ascii", "ascii", "iso-8859-1", "latin-1", "utf-16"):
+        return data
+    try:
+        text = data.decode(enc)
+    except (LookupError, UnicodeDecodeError):
+        text = data.decode("cp932", "replace")
+    return re.sub(r'(<\?xml[^>]*encoding=["\'])[\w.\-]+', r"\1UTF-8", text, count=1).encode("utf-8")
+
+
 def parse_xml(data: bytes) -> El | None:
+    data = _as_utf8(data)
     p = xml.parsers.expat.ParserCreate()
     stack: list[El] = []
     root = [None]
