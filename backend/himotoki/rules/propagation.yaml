@@ -9,7 +9,7 @@ propagation:
   - {rel: MAPS_TO, dir: in, weight: 0.7}
   - {rel: DEFINES, dir: in, weight: 0.9}
   - {rel: POPULATES, dir: in, weight: 0.5, positional_weight: 0.9}
-  - {rel: TESTS, dir: in, weight: 0.8}
+  - {rel: TESTS, dir: in, weight: 0.6}   # tests follow what they test, below the code to change
   - {rel: HANDLES, dir: in, weight: 0.75}
   - {rel: DESCRIBES, dir: in, weight: 0.8}
   - {rel: DOC_CRUD, dir: in, weight: 0.75}
