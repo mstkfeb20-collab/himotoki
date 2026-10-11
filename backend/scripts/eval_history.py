@@ -34,15 +34,24 @@ def git(repo, *args):
     return subprocess.run(["git", "-C", repo, *args], capture_output=True, text=True, check=True).stdout
 
 
-def sample(repo, n, max_files):
+def sample(repo, n, max_files, since=None, subject=None, skip=None, stride=1):
     out = []
-    for line in git(repo, "log", "--no-merges", "--format=%H\t%P\t%s").splitlines():
+    args = ["log", "--no-merges", "--format=%H\t%P\t%s"] + ([f"--since={since}"] if since else [])
+    seen = 0
+    for line in git(repo, *args).splitlines():
         sha, parents, subj = line.split("\t", 2)
         if " " in parents or not parents or SKIP.search(subj):
+            continue
+        if subject and not re.search(subject, subj):
+            continue
+        if skip and re.search(skip, subj, re.I):
             continue
         files = [f for f in git(repo, "diff-tree", "--no-commit-id", "--name-status", "-r", sha).splitlines()]
         changed = [f.split("\t")[-1] for f in files if f[:1] in "MD" and CODE.search(f)]
         if 2 <= len(changed) <= max_files:
+            seen += 1
+            if (seen - 1) % stride:
+                continue          # spread the sample over the period instead of taking one burst of work
             out.append({"sha": sha, "parent": parents, "message": subj, "files": changed})
         if len(out) >= n:
             break
@@ -57,36 +66,57 @@ def main():
     ap.add_argument("--n", type=int, default=25)
     ap.add_argument("--max-files", type=int, default=15)
     ap.add_argument("--out")
+    ap.add_argument("--since", help="only commits after this date")
+    ap.add_argument("--subject", help="regex the commit subject must match (e.g. '^FINERACT-')")
+    ap.add_argument("--skip", help="regex of subjects to leave out (tests-only, docs...)")
+    ap.add_argument("--strip", default=r"^[A-Z][A-Z0-9]+-\d+\s*:\s*", help="regex removed from the message (ticket id)")
+    ap.add_argument("--stride", type=int, default=1, help="take every n-th qualifying commit")
     a = ap.parse_args()
     ws = Workspace(a.data)
     rows = []
-    for c in sample(a.repo, a.n, a.max_files):
+    # one checkout moved from parent to parent (a worktree per commit would need gigabytes)
+    wt = os.path.join(os.path.abspath(a.data), "eval-checkout")
+    if not os.path.isdir(wt):
+        git(a.repo, "worktree", "add", "--detach", wt, "HEAD")
+    for c in sample(a.repo, a.n, a.max_files, a.since, a.subject, a.skip, a.stride):
         t0 = time.time()
-        name = f"eval@{c['parent'][:8]}"
-        st = ws.index(a.repo, a.docs, ref=c["parent"], name=name)
+        name = "eval"
+        git(wt, "checkout", "-q", "--detach", c["parent"])
+        st = ws.index(wt, a.docs, name=name)
         e = ws.engine(name)
         msg = re.sub(r"\(?#\d+\)?", "", c["message"]).strip()
+        msg = re.sub(a.strip, "", msg).strip() if a.strip else msg
         rid = e.start_run(msg, background=False)
         run = e.state(rid)
         cand = run["candidates"].values()
         any_f = {x["file"] for x in cand if x.get("file")}
         imp_f = {x["file"] for x in cand if x.get("file") and x["verdict"] == "impacted"}
+        # rank of each file = best rank of a candidate in it (the order a reviewer goes through the list)
+        order = sorted(cand, key=lambda x: -(x.get("confidence") or x["score"]))
+        rank = {}
+        for i, x in enumerate(order, 1):
+            if x.get("file") and x["file"] not in rank:
+                rank[x["file"]] = i
         hit_any = [f for f in c["files"] if f in any_f]
         hit_imp = [f for f in c["files"] if f in imp_f]
         r = {"sha": c["sha"][:8], "message": msg, "changed": len(c["files"]), "found_any": len(hit_any),
              "found_impacted": len(hit_imp), "candidates": len(run["candidates"]),
              "candidate_files": len(any_f), "seconds_index": st["seconds"], "seconds_total": round(time.time() - t0, 1),
-             "missed": [f for f in c["files"] if f not in any_f]}
+             "missed": [f for f in c["files"] if f not in any_f],
+             "ranks": {f: rank.get(f) for f in c["files"]},
+             **{f"found_top{k}": sum(1 for f in c["files"] if rank.get(f, 10**9) <= k) for k in (20, 50, 100)}}
         rows.append(r)
         print(f"{r['sha']} {r['found_any']}/{r['changed']} any, {r['found_impacted']} impacted, "
               f"{r['candidates']} cands, idx {r['seconds_index']}s  {msg[:60]}", flush=True)
-        ws.engines.pop(name, None)
+        r["missed_kinds"] = sorted({os.path.splitext(f)[1] for f in r["missed"]})
     tot = sum(r["changed"] for r in rows)
     summary = {
         "commits": len(rows), "changed_files": tot,
         "recall_any": round(sum(r["found_any"] for r in rows) / max(1, tot), 3),
         "recall_impacted": round(sum(r["found_impacted"] for r in rows) / max(1, tot), 3),
         "commits_with_any_hit": sum(1 for r in rows if r["found_any"]),
+        **{f"recall_top{k}": round(sum(r[f"found_top{k}"] for r in rows) / max(1, tot), 3) for k in (20, 50, 100)},
+        "commits_with_hit_top20": sum(1 for r in rows if r["found_top20"]),
         "median_candidates": sorted(r["candidates"] for r in rows)[len(rows) // 2] if rows else 0,
         "median_seconds_index": sorted(r["seconds_index"] for r in rows)[len(rows) // 2] if rows else 0,
     }
