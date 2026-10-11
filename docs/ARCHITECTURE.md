@@ -142,6 +142,7 @@ flowchart TB
 | `codegraph.workspace` | 複数グラフ（ref ごと、システム単位）の管理、差分の取得 | `workspace.py` |
 | `codegraph.analysis` | 解析エンジン・判定器・規模・Run 保存 | `engine.py` `llm.py` `estimate.py` `search.py` `runstore.py` |
 | `codegraph.settings` / `usage` | AI判定の予算・単価の設定、使用量の台帳 | `settings.py` `usage.py` |
+| `codegraph.setup_cmds` | 利用開始の支援: ワークスペースの作成と検出、環境の確認、デモ、`repos/` `docs/` `db/` の一括取り込み | `setup_cmds.py`、`demo/sor-env`（デモ用のサンプル）、`web/`（同梱のビュワー） |
 | `codegraph.api` / `cli` / `mcp_server` | 外部インターフェース | |
 | `frontend` | ビュワー | `App.tsx` `ListView.tsx` `Graph.tsx` `Inspector.tsx` `Panels.tsx` `ReqAid.tsx` `Tour.tsx` `sizing.ts` |
 
@@ -552,7 +553,7 @@ sequenceDiagram
 |---|---|---|
 | ビュワー | 業務分析・開発管理の担当者 | リスト表示（既定。判定の状態ごとの一覧、要素ごとと絞り込み範囲の規模、トランザクション・連携の注意バッジ、キー操作での確定・除外）とグラフ表示（同心円。150 件超ではモジュール単位に集約）の切り替え、根拠と確度・トランザクション境界と注意点の表示、確定・除外・再調査・質問、全数判定、規模、取込状況、差分からの解析、要求の書き方補助（AI不使用）、初回のチュートリアル、AI 使用量と費用（円換算）の即時表示、システム単位のインデックス |
 | REST + WebSocket | ビュワー・他システム | 一覧は README の API 節 |
-| CLI | 開発者・CI | index（`--system` で複数リポジトリ）/ catalog / runtime / report / analyze / diff（システム単位では `--repo`）/ serve / mcp |
+| CLI | 利用者・開発者・CI | demo / init / doctor（利用開始の支援）、index（`--system` で複数リポジトリ。ワークスペースの中では引数なしで一括）/ catalog / runtime / report / analyze / diff（システム単位では `--repo`）/ serve（`--open`）/ mcp |
 | MCP サーバ | Claude Code 等のエージェント | list_graphs, search_elements, get_element, neighbors, analyze_requirement, analyze_change（システム単位では repo）, index_gaps（トランザクション解析の要約を含む） |
 | Webhook | ソース管理サーバ | §9.2 |
 
@@ -576,6 +577,7 @@ MCP サーバは、エージェントがファイルを丸ごと読まずに「�
 | D10 | 複数サーバの業務を 1 つのグラフにする（ファイルに `<リポジトリ名>/` を付ける） | リンクがキーで行われるため、SOAP・REST・JMS・DB リンク・連携ファイルがサーバをまたいでも追加の仕組み無しでつながる。影響分析と全数判定を業務単位で行える | リポジトリごとのグラフをあとから突き合わせる（伝播が境界で切れる） |
 | D11 | トランザクション解析は、ルールと抽出器が付けた属性だけを読む汎用処理にする | EJB・Spring・Bean 管理・PL/SQL を同じ規則で扱え、別の基盤もルールの追加で対応できる。結果は判定ではなく「確認すべき場所」として示す | フレームワークごとの専用解析、実行時トレースによる確定 |
 | D12 | データ連携だけは探索の深さの上限を超えてたどる（`flow` 指定の関係のみ） | 出力 SQL → ファイル → 送信 → 受信 → 取り込みは段数が多く、深さ 3 では途中で切れる。対象を連携の関係に限ることで候補の膨張を抑える（ツアー予約の例で +1 件） | 深さ全体を上げる（候補が一律に増える） |
+| D13 | ビュワーをビルド済みで Python パッケージに同梱し、ワークスペースのフォルダ構成を決める | 利用者は Python と Git だけで始められ、置き場所に迷わない。社内ネットワークで npm が通らない環境でも使える。同梱分とソースのずれはテストで検出する | 利用者が Node.js でビルドする、置き場所を毎回コマンドで指定する |
 
 ---
 
@@ -631,7 +633,7 @@ MCP サーバは、エージェントがファイルを丸ごと読まずに「�
 |---|---|
 | ルールパックによる社内フレームワーク対応 | `tests/test_mechanism.py::test_rule_pack_links_java_to_xml_sql_to_tables`、OFBiz の取込 |
 | ジョブ・スクリプト・データファイルの連鎖 | `test_jobs_scripts_and_data_files_chain`、ツアー予約の JP1 定義 |
-| サーバ間連携・システム単位のグラフ・トランザクション解析・データ連携の伝播 | `tests/test_sor_system.py`（`samples/sor-env` の 3 リポジトリ） |
+| サーバ間連携・システム単位のグラフ・トランザクション解析・データ連携の伝播 | `tests/test_sor_system.py`（`backend/codegraph/demo/sor-env` の 3 リポジトリ） |
 | Office の見出し検出・CRUD 表 | `test_office_header_detection_and_crud_matrix` |
 | DB 辞書のずれ・実行時 SQL の対応 | `test_catalog_drift_and_runtime_matching`、PostgreSQL 16 実機、Oracle 辞書の CSV |
 | 抽出キャッシュの増分 | `test_fact_cache_reextracts_only_changed_files`、OFBiz の 1 ファイル変更 |

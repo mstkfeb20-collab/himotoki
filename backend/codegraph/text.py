@@ -3,6 +3,24 @@ from __future__ import annotations
 
 import re
 
+def decode_source(data: bytes) -> str:
+    """Source files in Japanese systems are often Shift_JIS (Windows-31J). UTF-8 first,
+    then CP932, then UTF-8 with replacement characters."""
+    if data.startswith(b"\xef\xbb\xbf"):
+        data = data[3:]
+    for enc in ("utf-8", "cp932"):
+        try:
+            return data.decode(enc)
+        except UnicodeDecodeError:
+            pass
+    return data.decode("utf-8", "replace")
+
+
+def read_source(path: str) -> str:
+    with open(path, "rb") as fh:
+        return decode_source(fh.read())
+
+
 _CAMEL = re.compile(r"[A-Z]+(?=[A-Z][a-z])|[A-Z]?[a-z]+|[A-Z]+|\d+")
 
 

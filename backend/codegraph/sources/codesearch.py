@@ -17,6 +17,8 @@ import subprocess
 import urllib.parse
 import urllib.request
 
+from ..text import read_source
+
 TEXT_EXT = (".java", ".html", ".sql", ".properties", ".yml", ".yaml", ".xml", ".md", ".txt", ".js", ".ts", ".jsp",
             ".jspf", ".tag", ".ftl", ".groovy", ".kt", ".sh", ".ksh", ".bat", ".cmd", ".jmx", ".gradle", ".css",
             ".json", ".pls", ".pkb", ".pks", ".prc", ".fnc", ".trg", ".ddl", ".csv", ".jp1", ".ajs")
@@ -68,9 +70,9 @@ class LocalSearch:
                 p = os.path.join(d, f)
                 if os.path.islink(p):
                     continue
-                rel = os.path.relpath(p, self.root)
+                rel = os.path.relpath(p, self.root).replace(os.sep, "/")
                 try:
-                    for i, line in enumerate(open(p, encoding="utf-8", errors="replace"), 1):
+                    for i, line in enumerate(read_source(p).splitlines(), 1):
                         m = rx.search(line)
                         if m:
                             hits.append({"file": rel, "line": i, "term": m.group(1), "text": line.strip()[:160]})

@@ -14,8 +14,10 @@
 2. 夜間 J100（sqlplus で ORDERS を orders.csv に出力）→ J110（sftp で出荷サーバの /recv/orders.csv へ）→ 出荷サーバ J200（ファイル監視）→ J210（ImportOrdersMain が SHIPMENT_REQ に取り込み）
 3. 出荷結果: 出荷サーバが JMS で受注サーバの ShipResultListener へ送信、ファイル /send/ship_result.csv にも出力 → 受注サーバ J120（ftp get）→ J130（SQL*Loader で ORDER_SHIP_RESULT へ）
 
+`codegraph demo` がこのサンプルをワークスペースの `repos/` に置き、インデックスしてビュワーを開きます。手で行う場合は次のとおりです。
+
 ```bash
-codegraph index --system sor --repo samples/sor-env/order-web --repo samples/sor-env/inventory-svc --repo samples/sor-env/shipping-svc
+codegraph index --system sor --repo order-web --repo inventory-svc --repo shipping-svc   # このフォルダで実行
 codegraph analyze --graph sor "受注の備考（NOTE）の上限を200文字から500文字に拡張する"
 ```
 

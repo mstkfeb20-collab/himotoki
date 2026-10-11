@@ -16,7 +16,7 @@ from sqlglot.errors import ErrorLevel
 
 from ..model import Kind, Rel
 from ..pipeline.facts import FileFacts
-from ..text import words
+from ..text import decode_source, words
 
 NAME = "sql"
 VERSION = "2"
@@ -283,7 +283,7 @@ def tx_traits(body: str) -> dict:
 
 def extract(path: str, data: bytes, rules) -> FileFacts:
     f = FileFacts(path, NAME)
-    src = data.decode("utf-8", "replace")
+    src = decode_source(data)
     # SQL*Plus commands are not SQL: keep line numbers, remember where SPOOL writes
     spools, kept = [], []
     for i, ln in enumerate(src.split("\n"), 1):

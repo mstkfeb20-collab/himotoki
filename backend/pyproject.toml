@@ -19,4 +19,4 @@ dependencies = { file = ["requirements.txt"] }
 include = ["codegraph*"]
 
 [tool.setuptools.package-data]
-codegraph = ["rules/*.yaml"]
+codegraph = ["rules/*.yaml", "web/*.html", "web/*.json", "web/assets/*", "demo/**/*"]

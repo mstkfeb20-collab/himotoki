@@ -29,6 +29,7 @@ from collections import defaultdict
 
 from ..model import EDITABLE, Kind, LAYER, Rel
 from ..security import max_file_bytes, safe_join
+from ..text import read_source
 from ..settings import LLMBudget, load_llm_budget, load_pricing
 from ..usage import UsageLedger, UsageMeter, new_usage
 from ..store.base import GraphStore
@@ -629,7 +630,7 @@ class Engine:
         path = self._source_path(n.file)
         if not path or not os.path.isfile(path) or os.path.getsize(path) > max_file_bytes():
             return n.text[:600]
-        lines = open(path, encoding="utf-8", errors="replace").read().splitlines()
+        lines = read_source(path).splitlines()
         a = max(0, (n.line or 1) - 1)
         b = min(len(lines), (n.end_line or a + max_lines))
         return "\n".join(lines[a:min(b, a + max_lines)])
@@ -1270,7 +1271,7 @@ class Engine:
         path = self._source_path(rel)
         if not path or not os.path.isfile(path) or os.path.getsize(path) > max_file_bytes():
             return []
-        lines = open(path, encoding="utf-8", errors="replace").read().splitlines()
+        lines = read_source(path).splitlines()
         return [{"n": i, "text": lines[i - 1]} for i in range(max(1, a), min(len(lines), b) + 1)]
 
     def ask(self, run_id, node_ids, question) -> str:

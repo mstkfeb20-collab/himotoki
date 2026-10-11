@@ -18,7 +18,7 @@ import unicodedata
 from ..model import Kind, Rel
 from ..pipeline.facts import FileFacts
 from ..security import office_zip_ok
-from ..text import words
+from ..text import decode_source, words
 
 NAME = "docs"
 VERSION = "2"
@@ -279,7 +279,7 @@ def extract(path: str, data: bytes, rules) -> FileFacts:
         elif low.endswith(".docx"):
             extract_docx(path, data, rules, f)
         else:
-            extract_text(path, data.decode("utf-8", "replace"), f)
+            extract_text(path, decode_source(data), f)
     except Exception as e:  # a broken document must not stop indexing
         f.errors.append(f"{type(e).__name__}: {e}")
     return f

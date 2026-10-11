@@ -84,7 +84,7 @@ def list_repo(root: str) -> dict[str, str]:
             full = os.path.join(d, f)
             if os.path.islink(full) or not os.path.isfile(full):
                 continue
-            res[os.path.relpath(full, root)] = "w" + _sha1(full)
+            res[os.path.relpath(full, root).replace(os.sep, "/")] = "w" + _sha1(full)
     return res
 
 

@@ -12,7 +12,7 @@ from functools import lru_cache
 
 from ..model import Kind
 from ..pipeline.facts import FileFacts
-from ..text import words
+from ..text import decode_source, words
 
 NAME = "text"
 VERSION = "2"
@@ -57,7 +57,7 @@ def _view_keys(path: str, roots):
 
 def extract(path: str, data: bytes, rules) -> FileFacts:
     f = FileFacts(path, NAME)
-    src = data.decode("utf-8", "replace")
+    src = decode_source(data)
     applicable = rules_for(rules, path)
     if not applicable:
         return f

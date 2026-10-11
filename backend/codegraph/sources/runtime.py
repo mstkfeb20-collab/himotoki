@@ -72,7 +72,9 @@ def from_pg_stat_statements(dsn: str, name: str = "pg_stat_statements") -> FileF
 
 def from_csv(path: str, name: str | None = None, sql_col: str | None = None, calls_col: str | None = None,
              dialect: str | None = None) -> FileFacts:
-    with open(path, encoding="utf-8-sig", newline="") as fh:
+    import io
+    from ..text import read_source
+    with io.StringIO(read_source(path), newline="") as fh:        # UTF-8 or Shift_JIS exports
         rd = csv.DictReader(fh)
         cols = rd.fieldnames or []
         sc = sql_col or next((c for c in cols if c.lower() in ("sql_text", "sql_fulltext", "query", "sql", "statement")), cols[0])

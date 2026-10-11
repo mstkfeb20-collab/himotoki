@@ -15,7 +15,7 @@ from tree_sitter import Language, Parser
 
 from ..model import Kind, Rel
 from ..pipeline.facts import FileFacts
-from ..text import words
+from ..text import decode_source, words
 
 JAVA = Language(tree_sitter_java.language())
 BRANCH_TYPES = {"if_statement", "for_statement", "enhanced_for_statement", "while_statement", "do_statement",
@@ -349,6 +349,7 @@ class _Ctx:
 
 def extract(path: str, data: bytes, rules) -> FileFacts:
     f = FileFacts(path, NAME)
+    data = decode_source(data).encode("utf-8")      # Shift_JIS sources are parsed as UTF-8
     tree = _p().parse(data)
     root = tree.root_node
     is_test = "/src/test/" in "/" + path or "/test/java/" in path or path.startswith("test/")

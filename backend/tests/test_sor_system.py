@@ -12,7 +12,7 @@ from codegraph.extractors import text
 from codegraph.rules import load_rules
 from codegraph.workspace import Workspace
 
-SOR = os.path.join(os.path.dirname(__file__), "..", "..", "samples", "sor-env")
+SOR = os.path.join(os.path.dirname(__file__), "..", "codegraph", "demo", "sor-env")
 REPOS = {n: os.path.join(SOR, n) for n in ("order-web", "inventory-svc", "shipping-svc")}
 NOTE = "受注の備考（NOTE）の上限を200文字から500文字に拡張する"
 

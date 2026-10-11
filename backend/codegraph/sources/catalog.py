@@ -174,14 +174,31 @@ ORACLE_QUERIES = {
 }
 
 
+def oracle_export_script() -> str:
+    """SQL*Plus script (12.2+) writing the CSV files that `catalog oracle --csv-dir` and a
+    workspace's db/ folder read, with the same queries as the direct connection."""
+    out = ["-- Oracle の辞書を CSV に書き出す（SQL*Plus 12.2 以降）",
+           "-- 使い方: sqlplus ユーザ/パスワード@接続先 @export_oracle.sql スキーマ名",
+           "-- 文字コードは UTF-8 を推奨（例: set NLS_LANG=JAPANESE_JAPAN.AL32UTF8）。Shift_JIS でも読み込めます。",
+           "-- 出力された *.csv を ワークスペースの db/<DB名>/ に置いて codegraph index を実行します。",
+           "SET MARKUP CSV ON QUOTE ON", "SET FEEDBACK OFF TERMOUT OFF VERIFY OFF ECHO OFF",
+           "SET PAGESIZE 50000 LINESIZE 32767 TRIMSPOOL ON LONG 2000000 LONGCHUNKSIZE 2000000", ""]
+    for view, q in ORACLE_QUERIES.items():
+        out += [f"SPOOL {view}.csv", q.replace(":owner", "UPPER('&1')") + ";", "SPOOL OFF", ""]
+    out += ["SET TERMOUT ON", "PROMPT 書き出しました。", "EXIT", ""]
+    return "\n".join(out)
+
+
 def _oracle_rows_from_csv(folder: str, view: str):
     p = os.path.join(folder, f"{view}.csv")
     if not os.path.exists(p):
         return []
-    with open(p, encoding="utf-8-sig", newline="") as fh:
-        rd = csv.reader(fh)
-        header = next(rd, None)
-        return [row for row in rd]
+    import io
+    from ..text import read_source
+    rd = csv.reader(io.StringIO(read_source(p), newline=""))     # UTF-8 or Shift_JIS exports
+    header = next(rd, None)
+    # SQL*Plus repeats the heading every PAGESIZE rows: those lines are not data
+    return [row for row in rd if row and row != header]
 
 
 def _oracle_rows_live(dsn: str, user: str, password: str, owner: str, view: str):

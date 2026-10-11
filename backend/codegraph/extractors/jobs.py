@@ -11,7 +11,7 @@ import re
 
 from ..model import Kind, Rel
 from ..pipeline.facts import FileFacts
-from ..text import words
+from ..text import decode_source, words
 
 NAME = "jobs"
 VERSION = "2"
@@ -125,7 +125,7 @@ def extract_cron(path: str, src: str, f: FileFacts):
 
 def extract(path: str, data: bytes, rules) -> FileFacts:
     f = FileFacts(path, NAME)
-    src = data.decode("utf-8", "replace")
+    src = decode_source(data)
     head = src[:4000]
     f.node(f"file:{path}", Kind.CONFIG, path.rsplit("/", 1)[-1], 1, src.count("\n") + 1, words(path),
            keys=[f"file:{path}"], scheduler="jp1" if is_jp1(path, head) else "cron")

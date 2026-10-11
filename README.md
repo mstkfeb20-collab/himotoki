@@ -6,6 +6,14 @@
 
 対象として想定しているのは、Java と Oracle / PostgreSQL を使い、ジョブスケジューラ（JP1 / cron）・運用シェル・Office 設計書を抱えた業務システム（SoR）のリポジトリです。特定のフレームワークに合わせたコードを書くのではなく、**フレームワークの知識を YAML のルールパックとして外出し**しています。そのため、社内フレームワークにもルールの追加だけで対応できます。
 
+**はじめて使う方は [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)** を見てください。インストールからデモ、自分のシステムのデータの置き方までを順に説明しています。最短は次の 3 行です（Python 3.11 以上と Git が必要。Node.js は不要）。
+
+```bash
+git clone https://github.com/mstkfeb20-collab/codegraph.git && cd codegraph
+python3 -m venv .venv && source .venv/bin/activate      # Windows: py -m venv .venv && .venv\Scripts\activate
+pip install ./backend && codegraph demo                  # サンプルを取り込んでビュワーを開く
+```
+
 ![モジュール単位にまとめたグラフと取込状況](docs/screenshots/v2-aggregated.png)
 
 ## このツールがやること・やらないこと
@@ -169,7 +177,7 @@ codegraph index --system sor --repo order-web=/src/order-web --repo /src/invento
 codegraph diff --graph sor --repo order-web --base main --head feature/x   # 変更したリポジトリを指定
 ```
 
-自作のサンプル `samples/sor-env`（受注・在庫・出荷の 3 サーバ）で、受注の NOTE 列の拡張が、出力 SQL → CSV → sftp 送信 → ファイル監視ジョブ → 取り込み → 出荷側の SHIPMENT_REQ.NOTE まで届くことを確認しています。
+自作のサンプル `backend/codegraph/demo/sor-env`（受注・在庫・出荷の 3 サーバ）で、受注の NOTE 列の拡張が、出力 SQL → CSV → sftp 送信 → ファイル監視ジョブ → 取り込み → 出荷側の SHIPMENT_REQ.NOTE まで届くことを確認しています。
 
 ### 3. 増分・スナップショット・規模
 
@@ -210,10 +218,14 @@ SVN は対象外です（git 前提。必要なら git-svn で移行・ミラー
 
 ### ローカル（開発）
 
+利用者向けの手順は [GETTING_STARTED](docs/GETTING_STARTED.md) にあります。`codegraph init <フォルダ>` で作るワークスペース（`repos/` `docs/` `db/` `rules/` `settings.yaml`）の中では、`codegraph index` を引数なしで実行すると `repos/`（複数ならシステム単位）・`docs/`・`db/` の Oracle 辞書 CSV をまとめて取り込み、`rules/` のルールも読み込みます。`codegraph doctor` は環境とワークスペースを確認して、次にすることを表示します。
+
+以下は個別のコマンドです。
+
 ```bash
 cd backend
 pip install -e .            # `codegraph` コマンドが使えるようになる（python -m codegraph.cli でも同じ）
-export CODEGRAPH_DATA_DIR=./data
+export CODEGRAPH_DATA_DIR=./data   # ワークスペースの中では不要
 
 # インデックス（設計書・ジョブ定義・運用シェルのフォルダは --docs）
 codegraph index --repo /path/to/repo --docs /path/to/ops-and-docs [--ref release/1.2]
@@ -234,7 +246,7 @@ codegraph serve --port 8765            # ビュワー http://localhost:8765
 codegraph mcp                          # MCP サーバ（stdio）
 ```
 
-ビュワーの開発サーバは `cd frontend && npm install && npm run dev` で起動します（ビルド済みなら backend が `frontend/dist` を配信します）。
+ビュワーはビルド済みのものを Python パッケージ（`backend/codegraph/web`）に同梱しているので、利用者は Node.js を入れる必要がありません。ビュワーを改造するときは `cd frontend && npm install && npm run dev` で開発サーバを起動し、`npm run build` で同梱分も更新します（更新し忘れはテストで検出します）。ソースの文字コードは UTF-8 と Shift_JIS（Windows-31J）を自動で判別します。
 
 `serve` は既定で 127.0.0.1 だけで待ち受けます。ほかのマシンから使う場合は `CODEGRAPH_API_TOKEN` と `CODEGRAPH_ALLOWED_HOSTS` が必要です（無いと起動しません）。
 
@@ -442,11 +454,12 @@ v1 からの回帰確認です。正解リストは `eval/ground_truth.json`、�
 
 ### テスト
 
-`backend/tests`（44 件、すべてオフライン）:
+`backend/tests`（51 件、すべてオフライン）:
 
 - 小さな固定リポジトリでの一連の操作
 - 一時リポジトリでの仕組みの検証: 社内フレームワークのルールパック、JP1→シェル→データファイル→後続ジョブ、Excel の見出し検出と CRUD 表、DB辞書のずれと実行時SQLの対応、キャッシュの増分、差分モード、Webhook の解釈、SQL の端のケース
 - サーバ間連携とトランザクション（`test_sor_system.py`）: 3 リポジトリのシステム単位のインデックス、SOAP・REST・JMS・JNDI・DB リンク・ファイル連携のつながり、トランザクション境界と注意点、NOTE 拡張が出荷サーバまで届くこと、API
+- 利用開始（`test_getting_started.py`）: 同梱ビュワーがソースと一致していること、ワークスペースの作成と検出、引数なしの取り込み、デモ、環境確認、Shift_JIS のソース
 - AI判定の予算（`test_llm_budget.py`）: 再調査での再利用、閾値、上限、上限なし、設定ファイル・環境変数・解析ごとの指定の優先順位
 - 攻撃が失敗することの確認（`test_security.py`）: ファイル読み取りの迂回、CORS・Host 偽装・クロスサイト WebSocket、認証、パス制限、Webhook 偽装、シンボリックリンク、XXE、zip 爆弾
 

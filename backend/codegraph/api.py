@@ -692,8 +692,19 @@ async def ws_run(ws: WebSocket, run_id: str):
 
 
 # ------------------------------------------------------------- frontend
-_DIST = os.environ.get("CODEGRAPH_FRONTEND", os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist"))
-if os.path.isdir(_DIST):
+def viewer_dir() -> str | None:
+    """Built viewer: CODEGRAPH_FRONTEND, a fresh `npm run build` in a checkout, or the
+    copy shipped inside the package (so no Node.js is needed to use the tool)."""
+    here = os.path.dirname(__file__)
+    for d in (os.environ.get("CODEGRAPH_FRONTEND"), os.path.join(here, "..", "..", "frontend", "dist"),
+              os.path.join(here, "web")):
+        if d and os.path.isfile(os.path.join(d, "index.html")):
+            return d
+    return None
+
+
+_DIST = viewer_dir()
+if _DIST:
     app.mount("/assets", StaticFiles(directory=os.path.join(_DIST, "assets")), name="assets")
 
     @app.get("/{path:path}")
