@@ -212,6 +212,7 @@ himotoki diff --graph sor --repo order-web --base main --head feature/x   # 変�
   - `list_graphs`・`search_elements`・`get_element`・`neighbors`
   - `analyze_requirement`・`analyze_change`・`index_gaps`
   - 開発への引き渡し: `list_runs`（解析の一覧）・`get_handoff`（確定した影響範囲の作業指示）・`verify_change`（実装後の差分と予測の照合）
+  - 学習: `learned_knowledge`（過去の判断・実績から学んだこと）
 
   Claude Code への登録: `claude mcp add --transport stdio --env HIMOTOKI_DATA_DIR=<ワークスペース> himotoki -- himotoki mcp`
 
@@ -247,6 +248,7 @@ himotoki runtime --csv sql_stats.csv --name ora-rt               # V$SQL など�
 himotoki report                       # 取込状況（未解決・ずれ・実行時SQLの対応）
 himotoki analyze "要求文"            # 要求から
 himotoki diff --base main --head feature/x   # 差分から（回帰確認の範囲）
+himotoki knowledge                     # 過去の判断・実績から学んだこと（analyze --no-learning で使わずに解析）
 himotoki runs                          # 解析の一覧（run ID・承認・確定件数）
 himotoki handoff <run ID> --out 作業指示.md   # 確定した影響範囲を開発向けの作業指示に
 himotoki verify <run ID> --base main --head feature/x [--repo order-web] [--actual-days 3]  # 実装後に予測と照合
@@ -299,6 +301,7 @@ docker compose up --build     # http://localhost:8765/?token=<HIMOTOKI_API_TOKEN
 | 差分から始める | 「新しい解析」→「変更差分から」で比較元・変更後を指定 |
 | 全数として確定する | 全数判定タブの条件をすべて満たすと承認できる。判断を変えると承認は自動で外れる |
 | 規模を見る・報告する | 規模タブ、レポート（Markdown） |
+| 使うほど精度を上げる | 確定・除外の判断と、実装との照合結果を、システムごとに学習する。次の解析から、よく除外される経路・要素は確度を下げ（前回の除外理由を表示）、よく確定される経路は上げ、実際には変更されたのに除外・未確定だった要素と、依存関係からは見つからず実際に一緒に変更された要素（学習した関係）は必ず「要確認」以上で出す。リストの「学習」バッジ、詳細の「過去の判断・実績」、右下の「学習」タブで中身を確認でき、項目ごとに無効にできる。「新しい解析」で解析ごとに切ることもできる |
 | 開発へ渡す | 右上の「開発へ渡す」: 確定した要素をファイルごとにまとめた作業指示（理由・コメント・トランザクションの注意・関連する設計書・呼び出し元・テスト・除外・未判定）をコピー／ダウンロード。Claude Code に MCP で登録するコマンドと依頼文もここから。実装後は「実績と照合」で作業前・作業後のブランチを指定し、予測が当たった割合・予測漏れ（候補にあったが判断が違った／候補に無かった）・変更されなかった予測を確認、実績の人日で規模を補正 |
 
 ## 「これで全数」の判断
@@ -381,6 +384,8 @@ AI（Claude）を使うのは「要求の構造化」と「候補の判定」と
 | GET | /api/index/report | 取込状況（未解決参照・ずれ・実行時SQLの対応・エラー） |
 | POST | /api/sources/catalog・/api/sources/runtime | DB辞書・実行時SQLの取込 |
 | POST | /api/runs | 要求から解析（`llm_max_items`・`llm_min_score` で今回だけAIの上限・閾値を変更） |
+| GET | /api/knowledge | このシステムで学習したこと（経路の傾向・要素の履歴・学習した関係） |
+| POST | /api/knowledge/ignore | 学習した項目を無効にする／戻す（kind: pattern・edge・node・link） |
 | GET | /api/runs/{id}/handoff | 開発向けの作業指示（JSON と Markdown。`pending=false` で未判定を除く） |
 | POST | /api/runs/{id}/verify | 実装後の差分と予測の照合（base, head、システム単位では repo、任意で actual_days） |
 | POST | /api/runs/diff | 差分から解析（base, head。システム単位のグラフでは repo も） |
@@ -465,11 +470,12 @@ v1 からの回帰確認です。正解リストは `eval/ground_truth.json`、�
 
 ### テスト
 
-`backend/tests`（54 件、すべてオフライン）:
+`backend/tests`（58 件、すべてオフライン）:
 
 - 小さな固定リポジトリでの一連の操作
 - 一時リポジトリでの仕組みの検証: 社内フレームワークのルールパック、JP1→シェル→データファイル→後続ジョブ、Excel の見出し検出と CRUD 表、DB辞書のずれと実行時SQLの対応、キャッシュの増分、差分モード、Webhook の解釈、SQL の端のケース
 - サーバ間連携とトランザクション（`test_sor_system.py`）: 3 リポジトリのシステム単位のインデックス、SOAP・REST・JMS・JNDI・DB リンク・ファイル連携のつながり、トランザクション境界と注意点、NOTE 拡張が出荷サーバまで届くこと、API
+- 学習（`test_learning.py`）: 繰り返し除外された要素の確度が下がり理由が出ること、経路の傾向は一定件数の判断までは動かないこと、判断を戻すと学習も戻ること、再調査は同じ解析として数えること、照合で見つかった関係が次の解析で候補に出ること、取り込み直しても残ること、解析ごと・項目ごとの無効化、API と MCP
 - 開発への引き渡し（`test_handoff.py`）: 作業指示の内容（ファイルごと・コメント・トランザクションの注意・定義場所・除外・未判定）、実装後の照合（当たり・判断の見直し・グラフの欠け・変更されなかった予測・規模の補正）、MCP と API
 - 利用開始（`test_getting_started.py`）: 同梱ビュワーがソースと一致していること、ワークスペースの作成と検出、引数なしの取り込み、デモ、環境確認、Shift_JIS のソース
 - AI判定の予算（`test_llm_budget.py`）: 再調査での再利用、閾値、上限、上限なし、設定ファイル・環境変数・解析ごとの指定の優先順位
@@ -487,6 +493,7 @@ Oracle 辞書の CSV 取込（`samples/tour-env/db/oracle_catalog`）は、パ�
 - **設計書**: 表の見出し行を語彙で探す方式です。結合セルが多い帳票型や図だけの設計書からは取り出せません。`.xls` / `.doc` には LibreOffice が必要です。
 - **静的解析の限界**: リフレクション・動的SQL・外部システム連携は依存グラフでは追えません。横断検索・独立再探索・実行時SQLとの突き合わせで補う形です。
 - **規模の係数は初期値**です。実績の登録による補正が前提です。
+- **学習は同じシステムでの解析が重なってから効きます**。経路の傾向は 5 件、要素の履歴は 2 回の解析で反映を始めます。少ない件数で強く効かせない作りのため、使い始めは変化がほとんどありません。工数の補正は全体の倍率のみで、要素の種類ごとの補正はまだありません。
 - **予測と実績の照合は要素の単位**です。差分の行を含む最小の要素で数えるため、同じ要素の中の別の箇所を直した場合も「当たり」になります。設計書の更新は差分に出ないため、照合の対象外です。
 
 ## ディレクトリ

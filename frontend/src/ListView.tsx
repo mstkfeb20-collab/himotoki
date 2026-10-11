@@ -157,6 +157,8 @@ export default function ListView({ run, filters, selected, onSelect, onChanged, 
             <div className="meta">
               <span>{KIND_JA[c.kind] || c.kind}</span>
               <TxBadge c={c} />
+              {(c.learned?.length || 0) > 0 && <span className="lnb" title={c.learned!.map((n) => n.message).join("\n")}>
+                学習{c.learned!.some((n) => n.type === "missed_before" || n.type === "learned_link") ? "・実績" : ""}</span>}
               {where(c) && <span className="mono">{where(c)}</span>}
               {byLabel(c) && <span className="by">{byLabel(c)}</span>}
             </div>

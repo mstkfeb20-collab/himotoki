@@ -1,4 +1,4 @@
-import type { GraphInfo, Handoff, IndexReport, NodeDetail, RunEvent, RunState, RunSummary, Verification, WorkspaceUsage } from "./types";
+import type { GraphInfo, Handoff, KnowledgeSummary, IndexReport, NodeDetail, RunEvent, RunState, RunSummary, Verification, WorkspaceUsage } from "./types";
 
 async function req<T>(method: string, url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
@@ -43,7 +43,7 @@ export const api = {
   runs: () => req<RunSummary[]>("GET", "/api/runs"),
   run: (id: string) => req<RunState>("GET", `/api/runs/${id}`),
   createRun: (requirement: string, opts: { title?: string; depth?: number; pace?: number; graph?: string | null;
-    llm_max_items?: string | number; llm_min_score?: number }) =>
+    llm_max_items?: string | number; llm_min_score?: number; learning?: boolean }) =>
     req<{ id: string }>("POST", "/api/runs", { requirement, ...opts }),
   decide: (id: string, node_id: string, status: string, reason = "", extra: Record<string, unknown> = {}) =>
     req<any>("POST", `/api/runs/${id}/decisions`, { node_id, status, reason, ...extra }),
@@ -59,6 +59,10 @@ export const api = {
   diff: (a: string, b: string) => req<any>("GET", `/api/runs/${a}/diff/${b}`),
   ask: (id: string, node_ids: string[], question: string) =>
     req<{ answer: string; llm: string }>("POST", `/api/runs/${id}/ask`, { node_ids, question }),
+  knowledge: (graph?: string | null) =>
+    req<KnowledgeSummary>("GET", `/api/knowledge${graph ? `?graph=${encodeURIComponent(graph)}` : ""}`),
+  knowledgeIgnore: (graph: string | null | undefined, kind: string, key: string, ignore: boolean) =>
+    req<KnowledgeSummary>("POST", "/api/knowledge/ignore", { graph: graph || null, kind, key, ignore }),
   report: (id: string) => req<string>("GET", `/api/runs/${id}/report`),
   handoff: (id: string, pending = true) => req<Handoff>("GET", `/api/runs/${id}/handoff?pending=${pending}`),
   verify: (id: string, body: { base: string; head: string; repo?: string | null; actual_days?: number | null }) =>

@@ -184,6 +184,16 @@ def verify_change(run_id: str, base: str, head: str, repo: str | None = None,
 
 
 @mcp.tool()
+def learned_knowledge(graph: str | None = None) -> dict:
+    """What earlier analyses of this system learned from reviewers' decisions and from
+    verifications of implemented changes: path patterns that are usually confirmed or
+    excluded, elements with a history (excluded repeatedly, missed in reality, over-predicted),
+    and links between elements the dependency graph does not know but past changes showed."""
+    e = _engine(graph)
+    return e.knowledge.summary(e.store)
+
+
+@mcp.tool()
 def index_gaps(graph: str | None = None) -> dict:
     """Where the graph is known to be incomplete: unresolved references by namespace,
     DDL vs database drift, runtime SQL that no code explains."""

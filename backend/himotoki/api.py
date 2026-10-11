@@ -137,6 +137,14 @@ class RunReq(BaseModel):
     # AI-judgement budget for this run (omit to use settings.yaml / HIMOTOKI_LLM_*)
     llm_min_score: float | None = Field(None, ge=0.0, le=1.0)
     llm_max_items: int | str | None = None          # number, or "unlimited"
+    learning: bool = True                            # use what earlier reviews / verifications taught
+
+
+class KnowledgeIgnoreReq(BaseModel):
+    graph: str | None = Field(None, max_length=NAME)
+    kind: str = Field(pattern="^(pattern|edge|node|link)$")
+    key: str = Field(min_length=1, max_length=2000)
+    ignore: bool = True
 
 
 class VerifyReq(BaseModel):
@@ -412,7 +420,7 @@ def runs(graph: str | None = None):
 @app.post("/api/runs")
 def create_run(req: RunReq):
     e = eng(req.graph)
-    params = {"depth": req.depth, "min_score": req.min_score, "pace": req.pace}
+    params = {"depth": req.depth, "min_score": req.min_score, "pace": req.pace, "learning": req.learning}
     if req.llm_min_score is not None:
         params["llm_min_score"] = req.llm_min_score
     if req.llm_max_items is not None:
@@ -560,6 +568,21 @@ def diff(a: str, b: str):
 def ask(run_id: str, req: AskReq):
     e = run_engine(run_id)
     return {"answer": e.ask(run_id, req.node_ids, req.question), "llm": e.llm.name}
+
+
+@app.get("/api/knowledge")
+def knowledge(graph: str | None = None):
+    """What this system's analyses have learned from people's decisions and verifications."""
+    e = eng(graph)
+    return e.knowledge.summary(e.store)
+
+
+@app.post("/api/knowledge/ignore")
+def knowledge_ignore(req: KnowledgeIgnoreReq):
+    """Switch one learned item off (or back on)."""
+    e = eng(req.graph)
+    e.knowledge.ignore(req.kind, req.key, "user", req.ignore)
+    return e.knowledge.summary(e.store)
 
 
 @app.get("/api/runs/{run_id}/handoff")

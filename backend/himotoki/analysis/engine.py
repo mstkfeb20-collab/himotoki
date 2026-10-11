@@ -57,7 +57,10 @@ STOP_TERMS = {"name", "type", "date", "list", "page", "view", "form", "find", "n
               "integer", "id", "description", "field", "column", "validation", "required", "address",
               "first", "last", "test", "tests", "main", "java", "html"}
 
+from .knowledge import LEARNED_REL  # noqa: E402
+
 REL_JA = {
+    LEARNED_REL: "と一緒に変更された実績がある",
     Rel.BINDS: "を画面で表示・入力している",
     Rel.MAPS_TO: "が対応付けられた列・テーブル",
     Rel.DEFINES: "を定義しているSQL",
@@ -150,6 +153,9 @@ class Engine:
         self.runs = RunStore(data_dir)
         self.bus = EventBus()
         self.estimator = Estimator(data_dir)
+        from .knowledge import Knowledge
+        self.knowledge = Knowledge(data_dir)       # learned from decisions and verifications (this graph)
+        self._learned: dict = {}
         self._locks: dict[str, threading.RLock] = defaultdict(threading.RLock)
         self._states: dict[str, dict] = {}
         self.reload()
@@ -258,6 +264,8 @@ class Engine:
             self.emit(st, "run.started", {"requirement": st["requirement"], "llm": self.llm.name,
                                           "parent_id": st["parent_id"]})
             with lock:
+                if st["params"].get("learning", True):
+                    self._learned[run_id] = self.knowledge.snapshot()
                 if st["parent_id"]:
                     self._copy_parent(st)
                 self._phase(st, "structure", 0.05, "要求を構造化中")
@@ -286,6 +294,7 @@ class Engine:
                 st["phase"] = "done"
                 st["progress"] = 1.0
                 self._save(st)
+            self._learned.pop(run_id, None)
             self.emit(st, "run.done", self.summary(st), pace=False)
         except Exception as e:  # pragma: no cover - surfaced to the viewer
             st["status"] = "error"
@@ -336,6 +345,11 @@ class Engine:
                 if reason:
                     c["seed_reason"] = reason
             return False
+        learned_notes = []
+        L = self._learned.get(st["id"])
+        if L is not None and origin != "human":
+            mult, learned_notes = L.node(node_id)
+            score = min(0.99, score * mult)
         info = virtual or {"kind": node.kind, "name": node.name, "file": node.file, "line": node.line,
                            "layer": node.layer, "group": node.props.get("group")}
         kind = info["kind"]
@@ -349,6 +363,8 @@ class Engine:
             "change_type": None, "difficulty": None, "decision": None, "assignee": None,
             "comments": [], "found_at": _now(),
         }
+        if learned_notes:
+            cands[node_id]["learned"] = [dict(n) for n in learned_notes]
         if node is not None and node.props.get("tx_risks"):
             # transaction risks found at index time travel with the candidate (list, inspector, report)
             cands[node_id]["tx_risks"] = [{k: r.get(k) for k in ("code", "level", "message", "at", "root", "line")}
@@ -358,7 +374,7 @@ class Engine:
             cands[node_id]["tx"] = {k: t.get(k) for k in ("boundary", "source", "members", "tables", "remote")}
         self.emit(st, "candidate", {k: cands[node_id].get(k) for k in
                                     ("node_id", "kind", "layer", "group", "name", "score", "origin", "parent",
-                                     "via_rel", "intent_ids", "seed_reason", "tx_risks", "tx")
+                                     "via_rel", "intent_ids", "seed_reason", "tx_risks", "tx", "learned")
                                     if k in cands[node_id]})
         return True
 
@@ -524,6 +540,7 @@ class Engine:
         boost = set(st["params"].get("boost") or [])
         min_score = st["params"]["min_score"]
         frontier = list(seeds)
+        L = self._learned.get(st["id"])
         in_rels = list(self.prop_by_dir["in"])
         out_rels = list(self.prop_by_dir["out"])
         # data flows (export SQL -> file -> transfer -> file watch -> import) are followed
@@ -596,10 +613,19 @@ class Engine:
                                ("test" in boost and on.kind in (Kind.TEST_CLASS, Kind.TEST_METHOD)) or \
                                ("data" in boost and on.layer == "data"):
                                 weight = min(0.95, weight * 1.2)
+                            lm = 1.0
+                            if L is not None:     # what reviews of this system taught about this kind of step
+                                lm = L.pattern(e.rel, node.kind, on.kind) * L.edge(nid, other, e.rel)
+                                weight = min(0.98, weight * lm)
                             s2 = score * weight * e.conf
                             if s2 < (flow_min if rule.get("flow") else min_score):
                                 continue
                             if self._add_candidate(st, other, s2, origin, iid, parent=nid, rel=e.rel):
+                                if abs(lm - 1.0) >= 0.15:
+                                    st["candidates"][other].setdefault("learned", []).append({
+                                        "type": "path", "factor": round(lm, 2),
+                                        "message": f"この経路（{node.kind}→{on.kind}・{e.rel}）は過去の判断で"
+                                                   f"{'確定されることが多い' if lm > 1 else '除外されることが多い'}"})
                                 nxt.append((other, s2))
                                 if rule.get("flow"):
                                     flow_ids.add(other)
@@ -609,6 +635,19 @@ class Engine:
                                 flow_ids.add(other)
                                 nxt.append((other, max(s2, st["candidates"][other]["score"])))
                             break
+                # changes the graph did not reach in earlier verifications of this system
+                if L is not None and not past:
+                    for lk in L.links.get(nid, []):
+                        if not lk["active"]:
+                            continue
+                        s2 = score * lk["weight"]
+                        if s2 >= min_score and self._add_candidate(st, lk["dst"], s2, "learned", iid, parent=nid,
+                                                                   rel=LEARNED_REL):
+                            st["candidates"][lk["dst"]].setdefault("learned", []).append({
+                                "type": "learned_link", "factor": lk["weight"],
+                                "message": f"過去の実装で、{node.name} と一緒に変更された（{lk['count']} 回）。"
+                                           "依存関係からは見つからなかったつながり"})
+                            nxt.append((lk["dst"], s2))
                 # design documents usually describe the class, not each member
                 if node.kind in (Kind.METHOD, Kind.FIELD) and not past:
                     for ce in self.store.in_edges(nid, [Rel.CONTAINS]):
@@ -768,8 +807,10 @@ class Engine:
                 continue
             iid = (c["intent_ids"] or ["I1"])[0]
             item = {"id": nid, "kind": c["kind"], "name": c["name"], "score": c["score"],
-                    "path_reason": self.path_reason(st, nid), "change_type": c["change_type"],
-                    "data_flow": bool(c.get("data_flow"))}
+                    "path_reason": self.path_reason(st, nid),
+                    "history": "／".join(n["message"] for n in c.get("learned", [])),
+                    "change_type": c["change_type"], "data_flow": bool(c.get("data_flow")),
+                    "learned": [n["type"] for n in c.get("learned", [])]}
             if not self.llm.available:
                 rule_items[iid].append((item, "rule"))
             elif c["score"] < budget.min_score:
@@ -1065,6 +1106,24 @@ class Engine:
         }
 
     # ------------------------------------------------------- human actions
+    def root_of(self, st) -> str:
+        """Re-investigations belong to the analysis they started from: learning counts analyses, not runs."""
+        seen = set()
+        while st.get("parent_id") and st["parent_id"] not in seen:
+            seen.add(st["parent_id"])
+            p = self.state(st["parent_id"])
+            if not p:
+                break
+            st = p
+        return st["id"]
+
+    def _learn(self, st, c, actor):
+        try:
+            parent = self.store.get(c["parent"]) if c.get("parent") else None
+            self.knowledge.record_decision(self.root_of(st), st["id"], c, parent.kind if parent else None, actor)
+        except Exception:          # learning is best-effort; a decision is never lost because of it
+            log.warning("could not record a decision for learning", exc_info=True)
+
     def decide(self, run_id, node_id, status, reason="", actor="user", change_type=None, difficulty=None):
         st = self.state(run_id)
         with self._locks[run_id]:
@@ -1081,6 +1140,7 @@ class Engine:
                 c["difficulty"] = difficulty
             self.emit(st, "decision", {"node_id": node_id, "decision": c["decision"], "actor": actor,
                                        "change_type": c["change_type"], "difficulty": c["difficulty"]}, pace=False)
+            self._learn(st, c, actor)
             self.recompute(st)
         return c
 
@@ -1099,6 +1159,7 @@ class Engine:
                     c["change_type"] = it["change_type"]
                 self.emit(st, "decision", {"node_id": c["node_id"], "decision": c["decision"], "actor": actor,
                                            "change_type": c["change_type"]}, pace=False)
+                self._learn(st, c, actor)
             self.recompute(st)
         return self.summary(st)
 

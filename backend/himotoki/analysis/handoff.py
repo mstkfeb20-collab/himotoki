@@ -224,6 +224,7 @@ def verify_change(engine, run_id: str, hunks: dict, base: str = "", head: str = 
                              "uncertain": "候補にあったが未確定（要確認）",
                              "not_impacted": "候補にあったが影響低と判定"}.get(status, "候補にあったが未確定")
             row["candidate_reason"] = (c.get("decision") or {}).get("reason") or c.get("reason")
+            row["candidate_id"] = c["node_id"]          # the element the reviewer actually judged
         missed.append(row)
     untouched = [{"node_id": nid, "name": cands[nid]["name"], "kind": cands[nid]["kind"], "file": cands[nid].get("file")}
                  for nid in sorted(predicted - touched_pred)
@@ -243,6 +244,14 @@ def verify_change(engine, run_id: str, hunks: dict, base: str = "", head: str = 
         hist.append({"ref": run_id, "predicted_days": st["estimate"]["days"], "actual_days": float(actual_days)})
         res["calibration"] = engine.estimator.calibrate(hist)
         res["predicted_days"], res["actual_days"] = st["estimate"]["days"], float(actual_days)
+    # what reality taught: hits, review misses, graph gaps (learned links from where the analysis started)
+    seed_c = [c for c in cands.values() if c.get("origin") == "seed" and _decision(c) != "excluded"]
+    seeds = [c["node_id"] for c in seed_c if _decision(c) == "confirmed"] or \
+        [c["node_id"] for c in sorted(seed_c, key=lambda c: -c["score"])[:3]] or sorted(predicted)[:3]
+    try:
+        engine.knowledge.record_verification(engine.root_of(st), run_id, res, seeds[:10], sorted(touched_pred))
+    except Exception:
+        pass
     with engine._locks[run_id]:
         st["verification"] = res
         engine._save(st)

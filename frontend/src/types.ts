@@ -25,6 +25,8 @@ export interface Candidate {
   assignee?: string | null;
   comments: { author: string; text: string; at: number }[];
   tx_risks?: TxRisk[];
+  learned?: { type: string; factor: number; message: string }[];
+  data_flow?: boolean;
   tx?: { boundary: string; source: string; members: number; tables: string[]; remote: string[] };
 }
 
@@ -149,4 +151,14 @@ export interface Handoff {
   estimate_days?: number; files: { file: string; items: { node_id: string; name: string }[] }[];
   other_targets: { node_id: string; name: string }[]; pending: { node_id: string; name: string }[];
   excluded: { node_id: string; name: string }[]; tests_to_run: { name: string }[]; markdown: string;
+}
+
+export interface KnowledgeSummary {
+  decisions: number; analyses: number; verifications: number;
+  thresholds: { pattern: number; edge: number; node: number };
+  patterns: { key: string; rel: string; parent_kind: string; kind: string; confirmed: number; excluded: number;
+    mult: number; active: boolean; ignored: boolean }[];
+  nodes: { node_id: string; name: string; mult: number; notes: { type: string; message: string }[];
+    confirmed: number; excluded: number; missed: number; untouched: number; ignored: boolean }[];
+  links: { key: string; src: string; src_name: string; dst: string; dst_name: string; count: number; weight: number; ignored: boolean }[];
 }

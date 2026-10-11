@@ -52,8 +52,10 @@ def main(argv=None):
     p.add_argument("--llm-max-items", help="AI-judged candidates for this run: a number, or 'unlimited'")
     p.add_argument("--llm-min-score", type=float, help="candidates below this score are judged by rules")
     p.add_argument("--json", action="store_true")
+    p.add_argument("--no-learning", action="store_true", help="過去の判断・実績から学んだ補正を使わない")
     p = sub.add_parser("diff"); p.add_argument("--base", required=True); p.add_argument("--head", required=True)
     p.add_argument("--graph"); p.add_argument("--repo", help="repository of a system graph that changed")
+    p = sub.add_parser("knowledge", help="過去の判断・実績から学んだこと"); p.add_argument("--graph")
     p = sub.add_parser("runs", help="これまでの解析の一覧（run ID・承認・確定件数）"); p.add_argument("--graph")
     p = sub.add_parser("handoff", help="確定した影響範囲を開発向けの作業指示（Markdown）にする")
     p.add_argument("run_id"); p.add_argument("--out", help="書き出すファイル（省略時は画面に表示）")
@@ -140,6 +142,20 @@ def main(argv=None):
                                                  "external", "runtime", "drift", "transactions", "errors", "error_samples")},
                          ensure_ascii=False, indent=1))
         return
+    if a.cmd == "knowledge":
+        e = ws.engine(a.graph)
+        if e is None:
+            sys.exit("index a repository first")
+        k = e.knowledge.summary(e.store)
+        print(f"判断 {k['decisions']} 件（解析 {k['analyses']} 回）・実績との照合 {k['verifications']} 回")
+        for p_ in k["patterns"]:
+            state = "無効" if p_["ignored"] else ("反映中" if p_["active"] else f"件数不足（{k['thresholds']['pattern']} 件で反映）")
+            print(f"  経路 {p_['parent_kind']}→{p_['kind']}（{p_['rel']}）確定 {p_['confirmed']}・除外 {p_['excluded']} → ×{p_['mult']} {state}")
+        for n in k["nodes"]:
+            print(f"  要素 {n['name']} ×{n['mult']}: " + "／".join(x["message"] for x in n["notes"]) + (" 無効" if n["ignored"] else ""))
+        for l in k["links"]:
+            print(f"  学習した関係 {l['src_name']} → {l['dst_name']}（{l['count']} 回）" + (" 無効" if l["ignored"] else ""))
+        return
     if a.cmd in ("runs", "handoff", "verify"):
         return _handoff_cmds(a, ws)
     e = ws.engine(a.graph)
@@ -155,7 +171,7 @@ def main(argv=None):
                                                               "added_files": added}, background=False)
         print(e.scope_markdown(e.state(rid), f"{a.base}..{a.head}"))
         return
-    params = {"depth": a.depth}
+    params = {"depth": a.depth, "learning": not a.no_learning}
     if a.llm_max_items is not None:
         params["llm_max_items"] = a.llm_max_items
     if a.llm_min_score is not None:

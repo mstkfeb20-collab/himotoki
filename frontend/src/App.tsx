@@ -7,11 +7,11 @@ import ListView from "./ListView";
 import ReqAid from "./ReqAid";
 import Tour from "./Tour";
 import { isFiltered, sizeOf, visibleCandidates } from "./sizing";
-import { ChecksPanel, DiffPanel, EstimatePanel, IndexPanel, LogPanel } from "./Panels";
+import { ChecksPanel, DiffPanel, EstimatePanel, IndexPanel, LogPanel, KnowledgePanel } from "./Panels";
 import type { Candidate, RunEvent, RunState, RunSummary, WorkspaceUsage } from "./types";
 
 const LAYERS: [string, string][] = [["feature", "機能"], ["code", "コード"], ["data", "データ"], ["test", "テスト"], ["doc", "設計書"]];
-type Side = "checks" | "estimate" | "log" | "diff" | "index";
+type Side = "checks" | "estimate" | "log" | "diff" | "index" | "learn";
 
 export default function App() {
   const [status, setStatus] = useState<any>(null);
@@ -232,7 +232,7 @@ export default function App() {
           {run && (
             <div className="pane sidepanel">
               <div className="tabs">
-                {([["checks", "全数判定"], ["estimate", "規模"], ["log", "ログ"], ["diff", "差分"], ["index", "取込状況"]] as [Side, string][]).map(([k, l]) => (
+                {([["checks", "全数判定"], ["estimate", "規模"], ["log", "ログ"], ["diff", "差分"], ["index", "取込状況"], ["learn", "学習"]] as [Side, string][]).map(([k, l]) => (
                   <button key={k} className={side === k ? "tab on" : "tab"} aria-selected={side === k} role="tab" onClick={() => setSide(k)}>{l}</button>
                 ))}
               </div>
@@ -243,6 +243,7 @@ export default function App() {
                 {side === "log" && <LogPanel events={events} onSelect={select} />}
                 {side === "diff" && <DiffPanel run={run} onOpenRun={setRunId} />}
                 {side === "index" && <IndexPanel graph={runGraph} />}
+                {side === "learn" && <KnowledgePanel graph={runGraph} onSelect={select} />}
               </div>
             </div>
           )}
@@ -400,6 +401,7 @@ function NewRun({ status, onClose, onCreated, onIndexed, initialReq }: { status:
   const [pace, setPace] = useState(0.03);
   const [aiMax, setAiMax] = useState("");          // empty = server setting
   const [aiMin, setAiMin] = useState("");
+  const [learning, setLearning] = useState(true);
   const [aiDefault, setAiDefault] = useState<{ min_score: number; max_items: number | "unlimited" } | null>(null);
   useEffect(() => { api.llmSettings().then((r) => setAiDefault(r.effective)).catch(() => {}); }, []);
   const [idx, setIdx] = useState<any>(status?.index);
@@ -425,7 +427,7 @@ function NewRun({ status, onClose, onCreated, onIndexed, initialReq }: { status:
         ? await api.diffRun(base, head, graph || null, title || undefined, changedRepo || null)
         : await api.createRun(req, { title: title || undefined, depth, pace, graph: graph || null,
             ...(aiMax.trim() ? { llm_max_items: aiMax.trim() } : {}),
-            ...(aiMin.trim() ? { llm_min_score: Number(aiMin) } : {}) });
+            ...(aiMin.trim() ? { llm_min_score: Number(aiMin) } : {}), learning });
       onCreated(r.id);
     }
     catch (e: any) { setErr(e.message); }
@@ -496,6 +498,8 @@ function NewRun({ status, onClose, onCreated, onIndexed, initialReq }: { status:
             <p className="muted small">上限を超えた候補と低スコアの候補はルールで判定し、要確認として残ります。</p>
           </div>
         )}
+        {mode === "req" && <label className="row small learnopt"><input type="checkbox" checked={learning} onChange={(e) => setLearning(e.target.checked)} />
+          過去の判断・実績から学んだ補正を使う（このシステムで確定・除外した経路や要素、実装の照合結果）</label>}
         <p className="muted small">判定方式: {status?.llm === "claude" ? "Claude API" : "ルールベース（ANTHROPIC_API_KEY を設定するとClaudeで判定）"}・ストア: {status?.store}</p>
         {err && <p className="warn small">{err}</p>}
         <div className="actions end"><button className="btn ghost" onClick={onClose}>閉じる</button>

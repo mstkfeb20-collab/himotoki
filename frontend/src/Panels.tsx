@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
 import { LAYERS_JA, sizeOf } from "./sizing";
-import type { IndexReport, RunEvent, RunState } from "./types";
+import type { IndexReport, KnowledgeSummary, RunEvent, RunState } from "./types";
 
 export function ChecksPanel({ run, onSelect, onChanged }: {
   run: RunState; onSelect: (ids: string[], focus?: boolean) => void; onChanged: () => void;
@@ -261,6 +261,54 @@ export function AiUsage({ run }: { run: RunState }) {
           <td className="sample">${(u.cost_usd ?? 0).toFixed(4)} × {u.jpy_per_usd ?? "—"}円{u.model ? `・${u.model}` : ""}</td></tr>
         {!!u.unpriced_calls && <tr><td colSpan={3} className="warn small">単価が未設定のモデルの呼び出し {u.unpriced_calls} 回は費用に含まれていません（settings.yaml の pricing）</td></tr>}
       </tbody></table>
+    </div>
+  );
+}
+
+
+const REL_SHORT: Record<string, string> = { READS: "読む", WRITES: "書く", CALLS: "呼ぶ", REFERENCES: "参照", EXECUTES: "実行",
+  DEFINES: "定義", CONTAINS: "含む", BINDS: "画面項目", MAPS_TO: "対応", RUNS: "起動", DESCRIBES: "記載", LEARNED: "実績" };
+
+/** What this system's analyses learned from people's decisions and verified changes; each item can be switched off. */
+export function KnowledgePanel({ graph, onSelect }: { graph?: string | null; onSelect: (ids: string[], f?: boolean) => void }) {
+  const [k, setK] = useState<KnowledgeSummary | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  useEffect(() => { setK(null); api.knowledge(graph).then(setK).catch((e) => setErr(e.message)); }, [graph]);
+  const toggle = async (kind: string, key: string, ignore: boolean) => {
+    try { setK(await api.knowledgeIgnore(graph, kind, key, ignore)); } catch (e: any) { setErr(e.message); }
+  };
+  if (err) return <p className="warn small">{err}</p>;
+  if (!k) return <p className="muted small">読み込み中…</p>;
+  const sw = (kind: string, key: string, ignored: boolean) => (
+    <button className="btn small ghost" onClick={() => toggle(kind, key, !ignored)}>{ignored ? "有効に戻す" : "無効にする"}</button>);
+  return (
+    <div className="stack knowledge">
+      <p className="small">判断 <b>{k.decisions}</b> 件（解析 {k.analyses} 回）・実装との照合 <b>{k.verifications}</b> 回から学んだ補正です。
+        次の解析から確度と並び順に反映されます（解析ごとに「新しい解析」で切れます）。</p>
+      {k.decisions === 0 && k.verifications === 0 && <p className="muted small">まだ学んだことはありません。候補を確定・除外したり、「開発へ渡す」→「実績と照合」を行うと、ここにたまっていきます。</p>}
+      {k.nodes.length > 0 && <>
+        <div className="k">要素ごとの履歴</div>
+        <ul className="klist">{k.nodes.map((n) => (
+          <li key={n.node_id} className={n.ignored ? "off" : ""}>
+            <div className="row between"><button className="link" onClick={() => onSelect([n.node_id], true)}>{n.name}</button>
+              <span className="row"><span className="mono small">×{n.mult}</span>{sw("node", n.node_id, n.ignored)}</span></div>
+            <div className="muted small">{n.notes.map((x) => x.message).join("／")}</div>
+          </li>))}</ul>
+      </>}
+      {k.links.length > 0 && <>
+        <div className="k">学習した関係（依存関係には無いが、一緒に変更された）</div>
+        <ul className="klist">{k.links.map((l) => (
+          <li key={l.key} className={l.ignored ? "off" : ""}><div className="row between">
+            <span className="small">{l.src_name} → <b>{l.dst_name}</b> <span className="muted">（{l.count} 回）</span></span>{sw("link", l.key, l.ignored)}</div></li>))}</ul>
+      </>}
+      {k.patterns.length > 0 && <>
+        <div className="k">経路の傾向（{k.thresholds.pattern} 件の判断で反映）</div>
+        <ul className="klist">{k.patterns.slice(0, 30).map((p) => (
+          <li key={p.key} className={p.ignored ? "off" : ""}><div className="row between">
+            <span className="small">{p.parent_kind} →（{REL_SHORT[p.rel] || p.rel}）→ {p.kind}
+              <span className="muted">　確定 {p.confirmed}・除外 {p.excluded}</span></span>
+            <span className="row"><span className="mono small">{p.active ? `×${p.mult}` : "件数不足"}</span>{sw("pattern", p.key, p.ignored)}</span></div></li>))}</ul>
+      </>}
     </div>
   );
 }

@@ -10,7 +10,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 const ORIGIN_LABEL: Record<string, string> = {
   seed: "要求から直接", pattern: "変更パターン", graph: "依存の追跡", grep: "横断検索", shadow: "独立再探索",
-  crud: "CRUD確認", human: "人が追加", focus: "再調査の起点",
+  crud: "CRUD確認", human: "人が追加", focus: "再調査の起点", learned: "過去の実績から",
 };
 const LAYER_LABEL: Record<string, string> = { feature: "機能", code: "コード", data: "データ", test: "テスト", doc: "設計書" };
 
@@ -137,6 +137,14 @@ function Single({ run, c, onSelect, onChanged, busy }: {
       <div className="row conf"><div className="bar"><div style={{ width: `${conf * 100}%` }} className={`fill s-${st}`} /></div>
         <span className="mono small">確度 {conf.toFixed(2)}</span></div>
       <p className="reason">{c.reason || c.seed_reason}</p>
+      {(c.learned?.length || 0) > 0 && (
+        <section className="txbox learnbox" aria-label="過去の判断・実績">
+          <div className="k">過去の判断・実績（このシステムで学んだこと）</div>
+          <ul>{c.learned!.map((n, i) => (
+            <li key={i} className={n.factor > 1 ? "tx-medium" : ""}>{n.message}
+              {n.factor !== 1 && <span className="mono dim small">（確度 ×{n.factor}）</span>}</li>))}</ul>
+        </section>
+      )}
       {(c.tx || (c.tx_risks?.length || 0) > 0) && (
         <section className="txbox" aria-label="トランザクション・連携上の注意">
           <div className="k">トランザクション・連携{c.tx ? ` — 境界 ${c.tx.boundary}（${c.tx.source}、${c.tx.members}要素）` : ""}</div>

@@ -101,6 +101,9 @@ class RuleBasedLLM:
             # derived tests and documents need stronger evidence than code to be called impacted
             hi = 0.6 if it["kind"] in (Kind.TEST_CLASS, Kind.TEST_METHOD, Kind.DOC) else 0.5
             verdict = "impacted" if s >= hi else "uncertain" if s >= 0.3 else "not_impacted"
+            learned = set(it.get("learned") or [])
+            if verdict != "impacted" and learned & {"missed_before", "learned_link"}:
+                verdict = "uncertain"       # reality proved the analysis wrong here before: always look again
             if verdict == "not_impacted" and it.get("data_flow"):
                 # on the path a changed value takes to another job or server (file export,
                 # transfer, file watch, import): layouts and lengths there need a look
@@ -167,12 +170,15 @@ class ClaudeLLM(RuleBasedLLM):
         system = ("You judge whether code elements must change to implement a requirement intent. "
                   "For each item answer JSON only: {\"results\":[{\"id\":str,\"verdict\":"
                   "\"impacted|uncertain|not_impacted\",\"confidence\":0-1,\"reason\":str (Japanese, one "
-                  "sentence),\"change_type\":\"add|modify|delete|test|doc\"}]}")
+                  "sentence),\"change_type\":\"add|modify|delete|test|doc\"}]} "
+                  "An item's optional \"history\" is what reviewers of this system decided before and what "
+                  "verified changes showed; weigh it, but judge this intent on its own merits.")
         results = []
         step = max(1, int(batch_size))
         for i in range(0, len(items), step):
             chunk = items[i:i + step]
-            body = json.dumps([{k: it[k] for k in ("id", "kind", "name", "path_reason", "snippet")}
+            # "history": what reviewers and verified changes of this system taught about the element
+            body = json.dumps([{k: it[k] for k in ("id", "kind", "name", "path_reason", "snippet", "history") if it.get(k)}
                                for it in chunk], ensure_ascii=False)
             try:
                 data = _extract_json(self._ask(system, f"Intent: {intent['summary']} "
