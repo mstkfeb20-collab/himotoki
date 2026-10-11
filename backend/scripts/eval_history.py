@@ -74,13 +74,20 @@ def main():
     ap.add_argument("--strip", default=r"^[A-Z][A-Z0-9]+-\d+\s*:\s*", help="regex removed from the message (ticket id)")
     ap.add_argument("--stride", type=int, default=1, help="take every n-th qualifying commit")
     ap.add_argument("--cache-graphs", help="keep each commit's graph here and reuse it (re-runs only re-analyse)")
+    ap.add_argument("--resume", action="store_true", help="keep the rows already in --out and skip those commits")
+    ap.add_argument("--max-commits", type=int, help="stop after this many new commits (run in slices)")
     ap.add_argument("--only", help="comma-separated short shas to evaluate (from an earlier sample)")
     a = ap.parse_args()
     ws = Workspace(a.data)
     rows = []
+    if a.resume and a.out and os.path.exists(a.out):
+        with open(a.out) as f:
+            rows = json.load(f)["rows"]
+    done = {r["sha"] for r in rows}
     # one checkout moved from parent to parent (a worktree per commit would need gigabytes)
     wt = os.path.join(os.path.abspath(a.data), "eval-checkout")
     if not os.path.isdir(wt):
+        git(a.repo, "worktree", "prune")       # a data folder deleted by hand leaves a stale entry
         git(a.repo, "worktree", "add", "--detach", wt, "HEAD")
     commits = sample(a.repo, a.n, a.max_files, a.since, a.subject, a.skip, a.stride)
     if a.only:
@@ -88,6 +95,9 @@ def main():
         commits = [c for c in commits if c["sha"][:8] in keep]
     if a.cache_graphs:
         os.makedirs(a.cache_graphs, exist_ok=True)
+    commits = [c for c in commits if c["sha"][:8] not in done]
+    if a.max_commits is not None:
+        commits = commits[:a.max_commits]
     for c in commits:
         t0 = time.time()
         name = "eval"
@@ -133,6 +143,9 @@ def main():
         print(f"{r['sha']} {r['found_any']}/{r['changed']} any, {r['found_impacted']} impacted, "
               f"{r['candidates']} cands, idx {r['seconds_index']}s  {msg[:60]}", flush=True)
         r["missed_kinds"] = sorted({os.path.splitext(f)[1] for f in r["missed"]})
+        if a.out:     # written after every commit, so an interrupted run can --resume
+            with open(a.out, "w") as f:
+                json.dump({"rows": rows}, f, ensure_ascii=False, indent=1)
     tot = sum(r["changed"] for r in rows)
     summary = {
         "commits": len(rows), "changed_files": tot,

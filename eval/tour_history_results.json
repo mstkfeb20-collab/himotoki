@@ -2,11 +2,15 @@
  "summary": {
   "commits": 25,
   "changed_files": 92,
-  "recall_any": 0.739,
+  "recall_any": 0.728,
   "recall_impacted": 0.228,
   "commits_with_any_hit": 23,
-  "median_candidates": 114,
-  "median_seconds_index": 0.26
+  "recall_top20": 0.38,
+  "recall_top50": 0.543,
+  "recall_top100": 0.609,
+  "commits_with_hit_top20": 13,
+  "median_candidates": 109,
+  "median_seconds_index": 0.34
  },
  "rows": [
   {
@@ -17,24 +21,47 @@
    "found_impacted": 0,
    "candidates": 18,
    "candidate_files": 16,
-   "seconds_index": 0.68,
-   "seconds_total": 1.2,
+   "seconds_index": 0.76,
+   "seconds_total": 1.4,
    "missed": [
     "terasoluna-tourreservation-env/src/main/resources/logback.xml"
+   ],
+   "ranks": {
+    "terasoluna-tourreservation-env/src/main/resources/META-INF/spring/terasoluna-tourreservation-env.xml": 9,
+    "terasoluna-tourreservation-env/src/main/resources/log4jdbc.properties": 10,
+    "terasoluna-tourreservation-env/src/main/resources/logback.xml": null
+   },
+   "found_top20": 2,
+   "found_top50": 2,
+   "found_top100": 2,
+   "missed_kinds": [
+    ".xml"
    ]
   },
   {
    "sha": "b25a07da",
    "message": "Change password encoder for bcrypt to pbkdf2",
    "changed": 3,
-   "found_any": 2,
+   "found_any": 1,
    "found_impacted": 0,
-   "candidates": 151,
-   "candidate_files": 79,
-   "seconds_index": 0.23,
-   "seconds_total": 0.9,
+   "candidates": 132,
+   "candidate_files": 75,
+   "seconds_index": 0.28,
+   "seconds_total": 1.5,
    "missed": [
-    "terasoluna-tourreservation-initdb/src/main/sqls/postgres/00110_create_all_tables.sql"
+    "terasoluna-tourreservation-initdb/src/main/sqls/postgres/00110_create_all_tables.sql",
+    "terasoluna-tourreservation-initdb/src/main/sqls/postgres/00250_insert_customer.sql"
+   ],
+   "ranks": {
+    "terasoluna-tourreservation-initdb/src/main/sqls/postgres/00110_create_all_tables.sql": null,
+    "terasoluna-tourreservation-initdb/src/main/sqls/postgres/00250_insert_customer.sql": null,
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/applicationContext.xml": 56
+   },
+   "found_top20": 0,
+   "found_top50": 0,
+   "found_top100": 1,
+   "missed_kinds": [
+    ".sql"
    ]
   },
   {
@@ -45,10 +72,20 @@
    "found_impacted": 0,
    "candidates": 75,
    "candidate_files": 40,
-   "seconds_index": 0.35,
-   "seconds_total": 0.9,
+   "seconds_index": 0.58,
+   "seconds_total": 1.6,
    "missed": [
     "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/application.properties"
+   ],
+   "ranks": {
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ReservationReportPdfStamperView.java": 62,
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/application.properties": null
+   },
+   "found_top20": 0,
+   "found_top50": 0,
+   "found_top100": 1,
+   "missed_kinds": [
+    ".properties"
    ]
   },
   {
@@ -57,12 +94,22 @@
    "changed": 2,
    "found_any": 1,
    "found_impacted": 0,
-   "candidates": 114,
-   "candidate_files": 45,
-   "seconds_index": 0.19,
-   "seconds_total": 0.8,
+   "candidates": 64,
+   "candidate_files": 26,
+   "seconds_index": 0.25,
+   "seconds_total": 1.2,
    "missed": [
     "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/application.properties"
+   ],
+   "ranks": {
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ReservationReportPdfStamperView.java": 30,
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/application.properties": null
+   },
+   "found_top20": 0,
+   "found_top50": 1,
+   "found_top100": 1,
+   "missed_kinds": [
+    ".properties"
    ]
   },
   {
@@ -71,11 +118,19 @@
    "changed": 2,
    "found_any": 2,
    "found_impacted": 2,
-   "candidates": 61,
+   "candidates": 59,
    "candidate_files": 26,
-   "seconds_index": 0.21,
-   "seconds_total": 0.8,
-   "missed": []
+   "seconds_index": 0.34,
+   "seconds_total": 1.2,
+   "missed": [],
+   "ranks": {
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ManageReservationController.java": 1,
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ReservationReportPdfStamperView.java": 2
+   },
+   "found_top20": 2,
+   "found_top50": 2,
+   "found_top100": 2,
+   "missed_kinds": []
   },
   {
    "sha": "695f2bc4",
@@ -85,10 +140,20 @@
    "found_impacted": 0,
    "candidates": 114,
    "candidate_files": 84,
-   "seconds_index": 0.32,
-   "seconds_total": 0.9,
+   "seconds_index": 0.29,
+   "seconds_total": 1.4,
    "missed": [
     "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ManageReservationController.java"
+   ],
+   "ranks": {
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ManageReservationController.java": null,
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ReservationReportPdfStamperView.java": 93
+   },
+   "found_top20": 0,
+   "found_top50": 0,
+   "found_top100": 1,
+   "missed_kinds": [
+    ".java"
    ]
   },
   {
@@ -97,12 +162,22 @@
    "changed": 2,
    "found_any": 1,
    "found_impacted": 0,
-   "candidates": 56,
+   "candidates": 54,
    "candidate_files": 37,
-   "seconds_index": 0.21,
-   "seconds_total": 0.7,
+   "seconds_index": 0.25,
+   "seconds_total": 1.3,
    "missed": [
     "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/application.properties"
+   ],
+   "ranks": {
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ReservationReportPdfStamperView.java": 4,
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/application.properties": null
+   },
+   "found_top20": 1,
+   "found_top50": 1,
+   "found_top100": 1,
+   "missed_kinds": [
+    ".properties"
    ]
   },
   {
@@ -111,13 +186,25 @@
    "changed": 3,
    "found_any": 1,
    "found_impacted": 0,
-   "candidates": 165,
-   "candidate_files": 63,
-   "seconds_index": 0.2,
-   "seconds_total": 0.9,
+   "candidates": 160,
+   "candidate_files": 61,
+   "seconds_index": 0.26,
+   "seconds_total": 1.3,
    "missed": [
     "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ManageReservationController.java",
     "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/application.properties"
+   ],
+   "ranks": {
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ManageReservationController.java": null,
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ReservationReportPdfStamperView.java": 50,
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/application.properties": null
+   },
+   "found_top20": 0,
+   "found_top50": 1,
+   "found_top100": 1,
+   "missed_kinds": [
+    ".java",
+    ".properties"
    ]
   },
   {
@@ -125,12 +212,22 @@
    "message": "change to add PDF name to model in Controller class processing",
    "changed": 4,
    "found_any": 4,
-   "found_impacted": 1,
-   "candidates": 398,
-   "candidate_files": 161,
-   "seconds_index": 0.25,
-   "seconds_total": 1.5,
-   "missed": []
+   "found_impacted": 2,
+   "candidates": 311,
+   "candidate_files": 150,
+   "seconds_index": 0.27,
+   "seconds_total": 1.7,
+   "missed": [],
+   "ranks": {
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/DownloadPDFOutput.java": 1,
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ManageReservationController.java": 2,
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ManageReservationHelper.java": 16,
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ReservationReportPdfStamperView.java": 15
+   },
+   "found_top20": 4,
+   "found_top50": 4,
+   "found_top100": 4,
+   "missed_kinds": []
   },
   {
    "sha": "309d0cc4",
@@ -140,9 +237,17 @@
    "found_impacted": 0,
    "candidates": 19,
    "candidate_files": 14,
-   "seconds_index": 0.24,
-   "seconds_total": 0.8,
-   "missed": []
+   "seconds_index": 0.25,
+   "seconds_total": 1.0,
+   "missed": [],
+   "ranks": {
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ReservationReportPdfStamperView.java": 1,
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/application.properties": 6
+   },
+   "found_top20": 2,
+   "found_top50": 2,
+   "found_top100": 2,
+   "missed_kinds": []
   },
   {
    "sha": "b34a7dcf",
@@ -150,11 +255,19 @@
    "changed": 2,
    "found_any": 2,
    "found_impacted": 2,
-   "candidates": 235,
-   "candidate_files": 65,
-   "seconds_index": 0.29,
-   "seconds_total": 1.2,
-   "missed": []
+   "candidates": 150,
+   "candidate_files": 36,
+   "seconds_index": 0.26,
+   "seconds_total": 1.3,
+   "missed": [],
+   "ranks": {
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ManageReservationController.java": 5,
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ReservationReportPdfView.java": 1
+   },
+   "found_top20": 2,
+   "found_top50": 2,
+   "found_top100": 2,
+   "missed_kinds": []
   },
   {
    "sha": "87d61a9e",
@@ -164,12 +277,26 @@
    "found_impacted": 0,
    "candidates": 57,
    "candidate_files": 38,
-   "seconds_index": 0.25,
-   "seconds_total": 0.9,
+   "seconds_index": 0.35,
+   "seconds_total": 1.3,
    "missed": [
     "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/DownloadPDFOutput.java",
     "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ManageReservationHelper.java",
     "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/application.properties"
+   ],
+   "ranks": {
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/DownloadPDFOutput.java": null,
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ManageReservationController.java": 15,
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ManageReservationHelper.java": null,
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/application.properties": null,
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/spring-mvc.xml": 19
+   },
+   "found_top20": 2,
+   "found_top50": 2,
+   "found_top100": 2,
+   "missed_kinds": [
+    ".java",
+    ".properties"
    ]
   },
   {
@@ -178,23 +305,53 @@
    "changed": 7,
    "found_any": 7,
    "found_impacted": 5,
-   "candidates": 100,
+   "candidates": 101,
    "candidate_files": 39,
-   "seconds_index": 0.22,
-   "seconds_total": 0.8,
-   "missed": []
+   "seconds_index": 0.26,
+   "seconds_total": 1.3,
+   "missed": [],
+   "ranks": {
+    "terasoluna-tourreservation-domain/src/main/java/org/terasoluna/tourreservation/domain/repository/age/AgeRepository.java": 3,
+    "terasoluna-tourreservation-domain/src/main/java/org/terasoluna/tourreservation/domain/repository/customer/CustomerRepository.java": 4,
+    "terasoluna-tourreservation-domain/src/main/java/org/terasoluna/tourreservation/domain/repository/reserve/ReserveRepository.java": 2,
+    "terasoluna-tourreservation-domain/src/main/java/org/terasoluna/tourreservation/domain/service/customer/CustomerServiceImpl.java": 10,
+    "terasoluna-tourreservation-domain/src/main/java/org/terasoluna/tourreservation/domain/service/reserve/AuthorizedReserveSharedServiceImpl.java": 12,
+    "terasoluna-tourreservation-domain/src/main/java/org/terasoluna/tourreservation/domain/service/tourinfo/PriceCalculateSharedServiceImpl.java": 25,
+    "terasoluna-tourreservation-domain/src/main/java/org/terasoluna/tourreservation/domain/service/userdetails/ReservationUserDetailsService.java": 26
+   },
+   "found_top20": 5,
+   "found_top50": 7,
+   "found_top100": 7,
+   "missed_kinds": []
   },
   {
    "sha": "242c1d78",
    "message": "findOne -> findById delete -> deleteById",
    "changed": 11,
    "found_any": 11,
-   "found_impacted": 8,
-   "candidates": 101,
+   "found_impacted": 7,
+   "candidates": 95,
    "candidate_files": 39,
-   "seconds_index": 0.3,
-   "seconds_total": 0.9,
-   "missed": []
+   "seconds_index": 0.38,
+   "seconds_total": 1.5,
+   "missed": [],
+   "ranks": {
+    "terasoluna-tourreservation-domain/src/main/java/org/terasoluna/tourreservation/domain/repository/age/AgeRepository.java": 5,
+    "terasoluna-tourreservation-domain/src/main/java/org/terasoluna/tourreservation/domain/repository/customer/CustomerRepository.java": 7,
+    "terasoluna-tourreservation-domain/src/main/java/org/terasoluna/tourreservation/domain/repository/reserve/ReserveRepository.java": 1,
+    "terasoluna-tourreservation-domain/src/main/java/org/terasoluna/tourreservation/domain/service/customer/CustomerServiceImpl.java": 8,
+    "terasoluna-tourreservation-domain/src/main/java/org/terasoluna/tourreservation/domain/service/reserve/AuthorizedReserveSharedServiceImpl.java": 21,
+    "terasoluna-tourreservation-domain/src/main/java/org/terasoluna/tourreservation/domain/service/reserve/ReserveServiceImpl.java": 16,
+    "terasoluna-tourreservation-domain/src/main/java/org/terasoluna/tourreservation/domain/service/tourinfo/PriceCalculateSharedServiceImpl.java": 70,
+    "terasoluna-tourreservation-domain/src/main/java/org/terasoluna/tourreservation/domain/service/userdetails/ReservationUserDetailsService.java": 71,
+    "terasoluna-tourreservation-domain/src/main/resources/org/terasoluna/tourreservation/domain/repository/age/AgeRepository.xml": 3,
+    "terasoluna-tourreservation-domain/src/main/resources/org/terasoluna/tourreservation/domain/repository/customer/CustomerRepository.xml": 10,
+    "terasoluna-tourreservation-domain/src/main/resources/org/terasoluna/tourreservation/domain/repository/reserve/ReserveRepository.xml": 2
+   },
+   "found_top20": 8,
+   "found_top50": 9,
+   "found_top100": 11,
+   "missed_kinds": []
   },
   {
    "sha": "1a800ce2",
@@ -204,9 +361,17 @@
    "found_impacted": 0,
    "candidates": 114,
    "candidate_files": 47,
-   "seconds_index": 0.21,
-   "seconds_total": 0.9,
-   "missed": []
+   "seconds_index": 0.25,
+   "seconds_total": 1.3,
+   "missed": [],
+   "ranks": {
+    "terasoluna-tourreservation-domain/src/main/resources/META-INF/spring/terasoluna-tourreservation-codelist.xml": 15,
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/spring-mvc.xml": 66
+   },
+   "found_top20": 1,
+   "found_top50": 1,
+   "found_top100": 2,
+   "missed_kinds": []
   },
   {
    "sha": "3fb91829",
@@ -214,11 +379,21 @@
    "changed": 4,
    "found_any": 4,
    "found_impacted": 0,
-   "candidates": 144,
+   "candidates": 139,
    "candidate_files": 46,
-   "seconds_index": 0.39,
-   "seconds_total": 1.1,
-   "missed": []
+   "seconds_index": 0.54,
+   "seconds_total": 1.7,
+   "missed": [],
+   "ranks": {
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managecustomer/CustomerForm.java": 28,
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/searchtour/SearchTourForm.java": 29,
+    "terasoluna-tourreservation-web/src/main/resources/ValidationMessages_en.properties": 25,
+    "terasoluna-tourreservation-web/src/main/resources/ValidationMessages_ja.properties": 23
+   },
+   "found_top20": 0,
+   "found_top50": 4,
+   "found_top100": 4,
+   "missed_kinds": []
   },
   {
    "sha": "3af28f9f",
@@ -226,10 +401,10 @@
    "changed": 9,
    "found_any": 0,
    "found_impacted": 0,
-   "candidates": 24,
-   "candidate_files": 21,
-   "seconds_index": 0.31,
-   "seconds_total": 0.7,
+   "candidates": 23,
+   "candidate_files": 20,
+   "seconds_index": 0.43,
+   "seconds_total": 1.3,
    "missed": [
     "terasoluna-tourreservation-domain/src/main/java/org/terasoluna/tourreservation/domain/service/reserve/ReserveServiceImpl.java",
     "terasoluna-tourreservation-domain/src/main/resources/META-INF/dozer/domain-mapping.xml",
@@ -240,6 +415,24 @@
     "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/searchtour/SearchTourController.java",
     "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/applicationContext.xml",
     "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/spring-mvc.xml"
+   ],
+   "ranks": {
+    "terasoluna-tourreservation-domain/src/main/java/org/terasoluna/tourreservation/domain/service/reserve/ReserveServiceImpl.java": null,
+    "terasoluna-tourreservation-domain/src/main/resources/META-INF/dozer/domain-mapping.xml": null,
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managecustomer/ManageCustomerController.java": null,
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ManageReservationController.java": null,
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ManageReservationHelper.java": null,
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/reservetour/ReserveTourHelper.java": null,
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/searchtour/SearchTourController.java": null,
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/applicationContext.xml": null,
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/spring-mvc.xml": null
+   },
+   "found_top20": 0,
+   "found_top50": 0,
+   "found_top100": 0,
+   "missed_kinds": [
+    ".java",
+    ".xml"
    ]
   },
   {
@@ -248,11 +441,26 @@
    "changed": 9,
    "found_any": 9,
    "found_impacted": 3,
-   "candidates": 272,
+   "candidates": 270,
    "candidate_files": 169,
-   "seconds_index": 0.4,
-   "seconds_total": 1.3,
-   "missed": []
+   "seconds_index": 0.67,
+   "seconds_total": 2.1,
+   "missed": [],
+   "ranks": {
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/managereservation/ManageReservationController.java": 112,
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/reservetour/ReserveTourController.java": 119,
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/spring-mvc.xml": 129,
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/spring-security.xml": 138,
+    "terasoluna-tourreservation-web/src/main/webapp/WEB-INF/views/common/top.jsp": 4,
+    "terasoluna-tourreservation-web/src/main/webapp/WEB-INF/views/login/form.jsp": 6,
+    "terasoluna-tourreservation-web/src/main/webapp/WEB-INF/views/menu/menu.jsp": 18,
+    "terasoluna-tourreservation-web/src/main/webapp/WEB-INF/views/reservetour/reserveForm.jsp": 3,
+    "terasoluna-tourreservation-web/src/main/webapp/WEB-INF/views/searchtour/searchForm.jsp": 223
+   },
+   "found_top20": 4,
+   "found_top50": 4,
+   "found_top100": 4,
+   "missed_kinds": []
   },
   {
    "sha": "3e2989aa",
@@ -262,9 +470,17 @@
    "found_impacted": 0,
    "candidates": 93,
    "candidate_files": 62,
-   "seconds_index": 0.26,
-   "seconds_total": 1.1,
-   "missed": []
+   "seconds_index": 0.27,
+   "seconds_total": 1.4,
+   "missed": [],
+   "ranks": {
+    "terasoluna-tourreservation-domain/src/main/resources/META-INF/spring/tourreservation-infra.xml": 28,
+    "terasoluna-tourreservation-env/src/main/resources/META-INF/spring/terasoluna-tourreservation-env.xml": 38
+   },
+   "found_top20": 0,
+   "found_top50": 2,
+   "found_top100": 2,
+   "missed_kinds": []
   },
   {
    "sha": "4b102c77",
@@ -272,13 +488,23 @@
    "changed": 2,
    "found_any": 0,
    "found_impacted": 0,
-   "candidates": 218,
-   "candidate_files": 67,
-   "seconds_index": 0.3,
-   "seconds_total": 1.3,
+   "candidates": 109,
+   "candidate_files": 47,
+   "seconds_index": 0.35,
+   "seconds_total": 1.4,
    "missed": [
     "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/spring-security.xml",
     "terasoluna-tourreservation-web/src/main/webapp/WEB-INF/web.xml"
+   ],
+   "ranks": {
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/spring-security.xml": null,
+    "terasoluna-tourreservation-web/src/main/webapp/WEB-INF/web.xml": null
+   },
+   "found_top20": 0,
+   "found_top50": 0,
+   "found_top100": 0,
+   "missed_kinds": [
+    ".xml"
    ]
   },
   {
@@ -287,12 +513,23 @@
    "changed": 3,
    "found_any": 2,
    "found_impacted": 0,
-   "candidates": 117,
+   "candidates": 116,
    "candidate_files": 44,
-   "seconds_index": 0.22,
-   "seconds_total": 0.9,
+   "seconds_index": 0.27,
+   "seconds_total": 1.4,
    "missed": [
     "terasoluna-tourreservation-web/src/main/webapp/WEB-INF/web.xml"
+   ],
+   "ranks": {
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/spring-mvc.xml": 25,
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/spring-security.xml": 26,
+    "terasoluna-tourreservation-web/src/main/webapp/WEB-INF/web.xml": null
+   },
+   "found_top20": 0,
+   "found_top50": 2,
+   "found_top100": 2,
+   "missed_kinds": [
+    ".xml"
    ]
   },
   {
@@ -301,12 +538,22 @@
    "changed": 2,
    "found_any": 1,
    "found_impacted": 0,
-   "candidates": 31,
-   "candidate_files": 15,
+   "candidates": 28,
+   "candidate_files": 14,
    "seconds_index": 0.42,
-   "seconds_total": 0.9,
+   "seconds_total": 1.2,
    "missed": [
     "terasoluna-tourreservation-web/src/main/webapp/WEB-INF/views/reservetour/reserveForm.jsp"
+   ],
+   "ranks": {
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/spring-security.xml": 8,
+    "terasoluna-tourreservation-web/src/main/webapp/WEB-INF/views/reservetour/reserveForm.jsp": null
+   },
+   "found_top20": 1,
+   "found_top50": 1,
+   "found_top100": 1,
+   "missed_kinds": [
+    ".jsp"
    ]
   },
   {
@@ -317,9 +564,19 @@
    "found_impacted": 0,
    "candidates": 257,
    "candidate_files": 164,
-   "seconds_index": 0.39,
-   "seconds_total": 1.2,
-   "missed": []
+   "seconds_index": 0.44,
+   "seconds_total": 2.0,
+   "missed": [],
+   "ranks": {
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/spring-mvc.xml": 141,
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/spring-security.xml": 150,
+    "terasoluna-tourreservation-web/src/main/webapp/WEB-INF/views/menu/menu.jsp": 17,
+    "terasoluna-tourreservation-web/src/main/webapp/WEB-INF/web.xml": 157
+   },
+   "found_top20": 1,
+   "found_top50": 1,
+   "found_top100": 1,
+   "missed_kinds": []
   },
   {
    "sha": "4a174b3f",
@@ -327,11 +584,20 @@
    "changed": 3,
    "found_any": 3,
    "found_impacted": 0,
-   "candidates": 235,
+   "candidates": 234,
    "candidate_files": 143,
-   "seconds_index": 0.35,
-   "seconds_total": 1.1,
-   "missed": []
+   "seconds_index": 0.46,
+   "seconds_total": 1.8,
+   "missed": [],
+   "ranks": {
+    "terasoluna-tourreservation-domain/src/main/java/org/terasoluna/tourreservation/domain/service/reserve/ReserveServiceImpl.java": 44,
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/spring-mvc.xml": 111,
+    "terasoluna-tourreservation-web/src/main/resources/META-INF/spring/spring-security.xml": 120
+   },
+   "found_top20": 0,
+   "found_top50": 1,
+   "found_top100": 1,
+   "missed_kinds": []
   },
   {
    "sha": "600c030f",
@@ -339,11 +605,19 @@
    "changed": 2,
    "found_any": 2,
    "found_impacted": 0,
-   "candidates": 252,
+   "candidates": 250,
    "candidate_files": 148,
-   "seconds_index": 0.25,
-   "seconds_total": 1.0,
-   "missed": []
+   "seconds_index": 0.41,
+   "seconds_total": 1.9,
+   "missed": [],
+   "ranks": {
+    "terasoluna-tourreservation-web/src/main/java/org/terasoluna/tourreservation/app/searchtour/SearchTourController.java": 123,
+    "terasoluna-tourreservation-web/src/main/webapp/WEB-INF/views/menu/menu.jsp": 23
+   },
+   "found_top20": 0,
+   "found_top50": 1,
+   "found_top100": 1,
+   "missed_kinds": []
   }
  ]
 }

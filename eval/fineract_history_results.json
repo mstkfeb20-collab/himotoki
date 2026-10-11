@@ -1,0 +1,1652 @@
+{
+ "repo": "apache/fineract",
+ "conditions": "30 commits since 2025-06-01, subject ^FINERACT-, stride 6, ticket id stripped, rule-based judge",
+ "before": {
+  "summary": {
+   "commits": 30,
+   "changed_files": 156,
+   "recall_any": 0.75,
+   "recall_impacted": 0.372,
+   "commits_with_any_hit": 26,
+   "recall_top20": 0.115,
+   "recall_top50": 0.256,
+   "recall_top100": 0.353,
+   "commits_with_hit_top20": 11,
+   "median_candidates": 3262,
+   "median_seconds_index": 37.59
+  },
+  "rows": [
+   {
+    "sha": "9ea8f8af",
+    "message": "Return clientNonPersonDetails from GET /clients/{clientId}",
+    "changed": 4,
+    "found_any": 4,
+    "found_impacted": 3,
+    "candidates": 7888,
+    "candidate_files": 1620,
+    "seconds_index": 32.45,
+    "seconds_total": 93.6,
+    "missed": [],
+    "ranks": {
+     "fineract-core/src/main/java/org/apache/fineract/portfolio/client/data/ClientNonPersonData.java": 162,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/client/api/ClientsApiResourceSwagger.java": 62,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/client/domain/ClientNonPerson.java": 158,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/client/service/ClientReadPlatformServiceImpl.java": 498
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 1,
+    "missed_kinds": []
+   },
+   {
+    "sha": "a98a6da8",
+    "message": "Fix applyRecordedPauses to handle resets as well",
+    "changed": 5,
+    "found_any": 5,
+    "found_impacted": 2,
+    "candidates": 396,
+    "candidate_files": 228,
+    "seconds_index": 33.7,
+    "seconds_total": 60.6,
+    "missed": [],
+    "ranks": {
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanBreachPauseUtils.java": 56,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanBreachScheduleEvaluationUtils.java": 72,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanActiveBreachResetResolver.java": 76,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachScheduleServiceImpl.java": 1,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/validator/WorkingCapitalLoanBreachActionParseAndValidator.java": 273
+    },
+    "found_top20": 1,
+    "found_top50": 1,
+    "found_top100": 4,
+    "missed_kinds": []
+   },
+   {
+    "sha": "048cf93c",
+    "message": "Balloon loan not working as expected",
+    "changed": 4,
+    "found_any": 0,
+    "found_impacted": 0,
+    "candidates": 4818,
+    "candidate_files": 1169,
+    "seconds_index": 36.53,
+    "seconds_total": 85.0,
+    "missed": [
+     "fineract-progressive-loan/src/main/java/org/apache/fineract/portfolio/loanproduct/calc/ProgressiveEMICalculator.java",
+     "fineract-progressive-loan/src/main/java/org/apache/fineract/portfolio/loanproduct/calc/data/LoanInterestScheduleModelModifiers.java",
+     "fineract-progressive-loan/src/main/java/org/apache/fineract/portfolio/loanproduct/calc/data/ProgressiveLoanInterestScheduleModel.java",
+     "fineract-progressive-loan/src/main/java/org/apache/fineract/portfolio/loanproduct/calc/data/RepaymentPeriod.java"
+    ],
+    "ranks": {
+     "fineract-progressive-loan/src/main/java/org/apache/fineract/portfolio/loanproduct/calc/ProgressiveEMICalculator.java": null,
+     "fineract-progressive-loan/src/main/java/org/apache/fineract/portfolio/loanproduct/calc/data/LoanInterestScheduleModelModifiers.java": null,
+     "fineract-progressive-loan/src/main/java/org/apache/fineract/portfolio/loanproduct/calc/data/ProgressiveLoanInterestScheduleModel.java": null,
+     "fineract-progressive-loan/src/main/java/org/apache/fineract/portfolio/loanproduct/calc/data/RepaymentPeriod.java": null
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 0,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "23425b0c",
+    "message": "Working Capital single active delinquency tag",
+    "changed": 5,
+    "found_any": 5,
+    "found_impacted": 3,
+    "candidates": 3654,
+    "candidate_files": 1352,
+    "seconds_index": 36.95,
+    "seconds_total": 97.9,
+    "missed": [],
+    "ranks": {
+     "fineract-loan/src/main/java/org/apache/fineract/portfolio/delinquency/helper/InstallmentDelinquencyAggregator.java": 1924,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/mapper/WorkingCapitalLoanDelinquencyRangeScheduleTagHistoryMapper.java": 3238,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDelinquencyClassificationServiceImpl.java": 123,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDelinquencyRangeScheduleServiceImpl.java": 122,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDelinquencyReadPlatformServiceImpl.java": 109
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 0,
+    "missed_kinds": []
+   },
+   {
+    "sha": "11b00b2c",
+    "message": "Add remove external asset owner tagging data from excluded transaction events and journal entries",
+    "changed": 5,
+    "found_any": 4,
+    "found_impacted": 2,
+    "candidates": 3273,
+    "candidate_files": 1580,
+    "seconds_index": 38.25,
+    "seconds_total": 85.9,
+    "missed": [
+     "fineract-loan/src/main/java/org/apache/fineract/portfolio/loanaccount/domain/LoanRepository.java"
+    ],
+    "ranks": {
+     "fineract-investor/src/main/java/org/apache/fineract/investor/data/attribute/ExcludedTransactionTypesExternalAssetOwnerLoanProductAttribute.java": 26,
+     "fineract-investor/src/main/java/org/apache/fineract/investor/enricher/LoanTransactionDataV1Enricher.java": 1199,
+     "fineract-investor/src/main/java/org/apache/fineract/investor/service/ExternalAssetOwnerJournalEntryServiceImpl.java": 38,
+     "fineract-loan/src/main/java/org/apache/fineract/portfolio/loanaccount/domain/LoanRepository.java": null,
+     "fineract-loan/src/main/java/org/apache/fineract/portfolio/loanaccount/domain/LoanTransactionRepository.java": 1423
+    },
+    "found_top20": 0,
+    "found_top50": 2,
+    "found_top100": 2,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "20a571b7",
+    "message": "WC - Undo disbursal reverses the discount fee and amortization journal entries",
+    "changed": 11,
+    "found_any": 11,
+    "found_impacted": 7,
+    "candidates": 2684,
+    "candidate_files": 1033,
+    "seconds_index": 35.65,
+    "seconds_total": 75.5,
+    "missed": [],
+    "ranks": {
+     "fineract-accounting/src/main/java/org/apache/fineract/accounting/journalentry/domain/JournalEntryRepository.java": 190,
+     "fineract-provider/src/main/java/org/apache/fineract/accounting/journalentry/service/AccrualWithDeferredRevenueAmortizationAccountingProcessorForWorkingCapitalLoan.java": 37,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanChargeOffWriteServiceImpl.java": 59,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanChargeWritePlatformServiceImpl.java": 114,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDiscountFeeAmortizationService.java": 20,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDiscountFeeAmortizationServiceImpl.java": 32,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanRecoveryPaymentWriteServiceImpl.java": 910,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanTransactionProcessor.java": 35,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanTransactionReprocessingServiceImpl.java": 49,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanWriteOffWriteServiceImpl.java": 118,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanWritePlatformServiceImpl.java": 45
+    },
+    "found_top20": 1,
+    "found_top50": 6,
+    "found_top100": 7,
+    "missed_kinds": []
+   },
+   {
+    "sha": "e6932552",
+    "message": "Consistent breach reprocessing",
+    "changed": 6,
+    "found_any": 5,
+    "found_impacted": 2,
+    "candidates": 4125,
+    "candidate_files": 1188,
+    "seconds_index": 38.19,
+    "seconds_total": 79.6,
+    "missed": [
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanActiveBreachResetResolver.java"
+    ],
+    "ranks": {
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/repository/WorkingCapitalLoanBreachScheduleRepository.java": 100,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanActiveBreachResetResolver.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachActionWriteServiceImpl.java": 122,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachScheduleService.java": 20,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachScheduleServiceImpl.java": 19,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/validator/WorkingCapitalLoanBreachActionParseAndValidator.java": 92
+    },
+    "found_top20": 2,
+    "found_top50": 2,
+    "found_top100": 4,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "43395ae3",
+    "message": "add response schemas for the group savings endpoints",
+    "changed": 2,
+    "found_any": 2,
+    "found_impacted": 1,
+    "candidates": 3120,
+    "candidate_files": 1031,
+    "seconds_index": 37.59,
+    "seconds_total": 105.5,
+    "missed": [],
+    "ranks": {
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/DepositAccountOnHoldFundTransactionsApiResource.java": 2178,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsAccountTransactionsApiResourceSwagger.java": 49
+    },
+    "found_top20": 0,
+    "found_top50": 1,
+    "found_top100": 1,
+    "missed_kinds": []
+   },
+   {
+    "sha": "492762f0",
+    "message": "Fix negative balance on accelerated-maturity charge-off",
+    "changed": 2,
+    "found_any": 2,
+    "found_impacted": 1,
+    "candidates": 2556,
+    "candidate_files": 785,
+    "seconds_index": 38.94,
+    "seconds_total": 76.8,
+    "missed": [],
+    "ranks": {
+     "fineract-progressive-loan/src/main/java/org/apache/fineract/portfolio/loanaccount/domain/transactionprocessor/impl/AdvancedPaymentScheduleTransactionProcessor.java": 30,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/service/LoanRepaymentScheduleService.java": 1022
+    },
+    "found_top20": 0,
+    "found_top50": 1,
+    "found_top100": 1,
+    "missed_kinds": []
+   },
+   {
+    "sha": "714e5712",
+    "message": "WC - Write-off does not release the remaining deferred discount fee",
+    "changed": 6,
+    "found_any": 6,
+    "found_impacted": 4,
+    "candidates": 2444,
+    "candidate_files": 985,
+    "seconds_index": 35.69,
+    "seconds_total": 68.8,
+    "missed": [],
+    "ranks": {
+     "fineract-provider/src/main/java/org/apache/fineract/accounting/journalentry/service/AccrualWithDeferredRevenueAmortizationAccountingProcessorForWorkingCapitalLoan.java": 36,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanChargeOffWriteServiceImpl.java": 164,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDiscountFeeAmortizationService.java": 37,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDiscountFeeAmortizationServiceImpl.java": 52,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanTransactionReprocessingServiceImpl.java": 1483,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanWriteOffWriteServiceImpl.java": 45
+    },
+    "found_top20": 0,
+    "found_top50": 3,
+    "found_top100": 4,
+    "missed_kinds": []
+   },
+   {
+    "sha": "851b6ade",
+    "message": "add missing deposit request and response schema fields",
+    "changed": 7,
+    "found_any": 4,
+    "found_impacted": 4,
+    "candidates": 5156,
+    "candidate_files": 1436,
+    "seconds_index": 39.25,
+    "seconds_total": 108.0,
+    "missed": [
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/interestratechart/api/InterestRateChartsApiResourceSwagger.java",
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsAccountsApiResourceSwagger.java",
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsProductsApiResourceSwagger.java"
+    ],
+    "ranks": {
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/interestratechart/api/InterestRateChartsApiResourceSwagger.java": null,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/FixedDepositAccountsApiResourceSwagger.java": 221,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/FixedDepositProductsApiResourceSwagger.java": 225,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/RecurringDepositAccountsApiResourceSwagger.java": 223,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/RecurringDepositProductsApiResourceSwagger.java": 228,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsAccountsApiResourceSwagger.java": null,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsProductsApiResourceSwagger.java": null
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 0,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "bb72fb8c",
+    "message": "Working Capital Loan - Recovery payment transaction",
+    "changed": 14,
+    "found_any": 8,
+    "found_impacted": 2,
+    "candidates": 4749,
+    "candidate_files": 1310,
+    "seconds_index": 40.69,
+    "seconds_total": 104.6,
+    "missed": [
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/WorkingCapitalLoanConstants.java",
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanApiResourceSwagger.java",
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/data/WorkingCapitalLoanBalanceData.java",
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanBalance.java",
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml",
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/parts/0069_wc_business_events_extension.xml"
+    ],
+    "ranks": {
+     "fineract-core/src/main/java/org/apache/fineract/commands/service/CommandWrapperBuilder.java": 1001,
+     "fineract-provider/src/main/java/org/apache/fineract/accounting/journalentry/service/AccrualWithDeferredRevenueAmortizationAccountingProcessorForWorkingCapitalLoan.java": 591,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/WorkingCapitalLoanConstants.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanApiResourceSwagger.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanTransactionsApiResource.java": 3556,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanTransactionsApiResourceSwagger.java": 48,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/data/WorkingCapitalLoanBalanceData.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanBalance.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanTransaction.java": 42,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/serialization/WorkingCapitalLoanDataValidator.java": 3560,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanTransactionReadPlatformServiceImpl.java": 790,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanWritePlatformServiceImpl.java": 534,
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml": null,
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/parts/0069_wc_business_events_extension.xml": null
+    },
+    "found_top20": 0,
+    "found_top50": 2,
+    "found_top100": 2,
+    "missed_kinds": [
+     ".java",
+     ".xml"
+    ]
+   },
+   {
+    "sha": "08b54ec9",
+    "message": "Enforce NOT NULL on WC submitted_on_date columns",
+    "changed": 3,
+    "found_any": 0,
+    "found_impacted": 0,
+    "candidates": 2018,
+    "candidate_files": 572,
+    "seconds_index": 40.14,
+    "seconds_total": 97.0,
+    "missed": [
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanNearBreachAction.java",
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanPeriodPaymentRateChange.java",
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml"
+    ],
+    "ranks": {
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanNearBreachAction.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanPeriodPaymentRateChange.java": null,
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml": null
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 0,
+    "missed_kinds": [
+     ".java",
+     ".xml"
+    ]
+   },
+   {
+    "sha": "72a2c65b",
+    "message": "expose the note and transfer-fee fields typed clients need",
+    "changed": 2,
+    "found_any": 0,
+    "found_impacted": 0,
+    "candidates": 3501,
+    "candidate_files": 1174,
+    "seconds_index": 44.05,
+    "seconds_total": 89.9,
+    "missed": [
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsAccountTransactionsApiResourceSwagger.java",
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsAccountsApiResourceSwagger.java"
+    ],
+    "ranks": {
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsAccountTransactionsApiResourceSwagger.java": null,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsAccountsApiResourceSwagger.java": null
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 0,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "9072969d",
+    "message": "Journal Entry Aggregation - update reader query to default to null instead of ''",
+    "changed": 2,
+    "found_any": 1,
+    "found_impacted": 1,
+    "candidates": 1881,
+    "candidate_files": 631,
+    "seconds_index": 36.4,
+    "seconds_total": 77.0,
+    "missed": [
+     "fineract-provider/src/main/resources/db/changelog/tenant/changelog-tenant.xml"
+    ],
+    "ranks": {
+     "fineract-provider/src/main/java/org/apache/fineract/infrastructure/jobs/service/aggregationjob/JournalEntryAggregationJobReader.java": 9,
+     "fineract-provider/src/main/resources/db/changelog/tenant/changelog-tenant.xml": null
+    },
+    "found_top20": 1,
+    "found_top50": 1,
+    "found_top100": 1,
+    "missed_kinds": [
+     ".xml"
+    ]
+   },
+   {
+    "sha": "8f9377c1",
+    "message": "Increase note length to TEXT",
+    "changed": 4,
+    "found_any": 3,
+    "found_impacted": 3,
+    "candidates": 3641,
+    "candidate_files": 1002,
+    "seconds_index": 37.13,
+    "seconds_total": 74.8,
+    "missed": [
+     "fineract-provider/src/main/resources/db/changelog/tenant/changelog-tenant.xml"
+    ],
+    "ranks": {
+     "fineract-core/src/main/java/org/apache/fineract/portfolio/note/data/NoteCreateRequest.java": 18,
+     "fineract-core/src/main/java/org/apache/fineract/portfolio/note/data/NoteUpdateRequest.java": 20,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/note/domain/Note.java": 36,
+     "fineract-provider/src/main/resources/db/changelog/tenant/changelog-tenant.xml": null
+    },
+    "found_top20": 2,
+    "found_top50": 3,
+    "found_top100": 3,
+    "missed_kinds": [
+     ".xml"
+    ]
+   },
+   {
+    "sha": "f65ca12b",
+    "message": "Working Capital - Delinquency & Breach Grace Day calculation",
+    "changed": 3,
+    "found_any": 3,
+    "found_impacted": 0,
+    "candidates": 3176,
+    "candidate_files": 1162,
+    "seconds_index": 39.0,
+    "seconds_total": 86.1,
+    "missed": [],
+    "ranks": {
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanApplicationReadPlatformServiceImpl.java": 81,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachScheduleServiceImpl.java": 59,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDelinquencyRangeScheduleServiceImpl.java": 183
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 2,
+    "missed_kinds": []
+   },
+   {
+    "sha": "b88a8cf5",
+    "message": "Add support for payment rate modification with effective date instead of business date",
+    "changed": 10,
+    "found_any": 8,
+    "found_impacted": 1,
+    "candidates": 2948,
+    "candidate_files": 1747,
+    "seconds_index": 37.0,
+    "seconds_total": 89.3,
+    "missed": [
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/calc/DefaultProjectedAmortizationScheduleCalculator.java",
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/repository/WorkingCapitalLoanPeriodPaymentRateChangeRepository.java"
+    ],
+    "ranks": {
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/WorkingCapitalLoanConstants.java": 2422,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanApiResourceSwagger.java": 2431,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/calc/DefaultProjectedAmortizationScheduleCalculator.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/calc/ProjectedAmortizationScheduleCalculator.java": 2459,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/calc/ProjectedAmortizationScheduleModel.java": 31,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/repository/WorkingCapitalLoanPeriodPaymentRateChangeRepository.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/serialization/WorkingCapitalLoanDataValidator.java": 2503,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanAmortizationScheduleWriteService.java": 2511,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanAmortizationScheduleWriteServiceImpl.java": 2512,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanWritePlatformServiceImpl.java": 2549
+    },
+    "found_top20": 0,
+    "found_top50": 1,
+    "found_top100": 1,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "d09e4796",
+    "message": "WC - Breach reset: Split current period",
+    "changed": 6,
+    "found_any": 2,
+    "found_impacted": 2,
+    "candidates": 3402,
+    "candidate_files": 977,
+    "seconds_index": 36.79,
+    "seconds_total": 86.0,
+    "missed": [
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanBreachActionApiResourceSwagger.java",
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanBreachAction.java",
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/validator/WorkingCapitalLoanBreachActionParameters.java",
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml"
+    ],
+    "ranks": {
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanBreachActionApiResourceSwagger.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanBreachAction.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachResetServiceImpl.java": 37,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/validator/WorkingCapitalLoanBreachActionParameters.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/validator/WorkingCapitalLoanBreachActionParseAndValidator.java": 29,
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml": null
+    },
+    "found_top20": 0,
+    "found_top50": 2,
+    "found_top100": 2,
+    "missed_kinds": [
+     ".java",
+     ".xml"
+    ]
+   },
+   {
+    "sha": "cc22131d",
+    "message": "Working Capital loan mark as fraud",
+    "changed": 7,
+    "found_any": 5,
+    "found_impacted": 5,
+    "candidates": 5837,
+    "candidate_files": 1726,
+    "seconds_index": 36.8,
+    "seconds_total": 90.3,
+    "missed": [
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanApiResource.java",
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml"
+    ],
+    "ranks": {
+     "fineract-core/src/main/java/org/apache/fineract/commands/service/CommandWrapperBuilder.java": 57,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/WorkingCapitalLoanConstants.java": 61,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanApiResource.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanApiResourceSwagger.java": 6,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoan.java": 53,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/mapper/WorkingCapitalLoanMapper.java": 62,
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml": null
+    },
+    "found_top20": 1,
+    "found_top50": 1,
+    "found_top100": 5,
+    "missed_kinds": [
+     ".java",
+     ".xml"
+    ]
+   },
+   {
+    "sha": "54509ef1",
+    "message": "Add IRR based calculation for working capital schedule model, fix amortization rounding drift, add multiple payment rate change support",
+    "changed": 5,
+    "found_any": 5,
+    "found_impacted": 3,
+    "candidates": 2962,
+    "candidate_files": 1168,
+    "seconds_index": 37.41,
+    "seconds_total": 95.2,
+    "missed": [],
+    "ranks": {
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/calc/ProjectedAmortizationScheduleModel.java": 40,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/calc/TvmFunctions.java": 8,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/serialization/WorkingCapitalLoanApplicationDataValidator.java": 2859,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/serialization/WorkingCapitalLoanDataValidator.java": 2862,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanAmortizationScheduleWriteServiceImpl.java": 11
+    },
+    "found_top20": 2,
+    "found_top50": 3,
+    "found_top100": 3,
+    "missed_kinds": []
+   },
+   {
+    "sha": "a8ace3a1",
+    "message": "Remove orphaned CashierWritePlatformService and ModifyCashierCommandHandler",
+    "changed": 3,
+    "found_any": 3,
+    "found_impacted": 3,
+    "candidates": 1076,
+    "candidate_files": 644,
+    "seconds_index": 36.07,
+    "seconds_total": 66.6,
+    "missed": [],
+    "ranks": {
+     "fineract-branch/src/main/java/org/apache/fineract/organisation/teller/handler/DeleteCashierAllocationCommandHandler.java": 13,
+     "fineract-branch/src/main/java/org/apache/fineract/organisation/teller/handler/ModifyCashierCommandHandler.java": 2,
+     "fineract-branch/src/main/java/org/apache/fineract/organisation/teller/service/CashierWritePlatformService.java": 1
+    },
+    "found_top20": 3,
+    "found_top50": 3,
+    "found_top100": 3,
+    "missed_kinds": []
+   },
+   {
+    "sha": "a3157c47",
+    "message": "Validate required datatables based on legal form during client creation",
+    "changed": 2,
+    "found_any": 2,
+    "found_impacted": 0,
+    "candidates": 3262,
+    "candidate_files": 1176,
+    "seconds_index": 37.13,
+    "seconds_total": 80.6,
+    "missed": [],
+    "ranks": {
+     "fineract-provider/src/main/java/org/apache/fineract/infrastructure/dataqueries/service/EntityDatatableChecksWritePlatformServiceImpl.java": 412,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/client/data/ClientDataValidator.java": 1472
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 0,
+    "missed_kinds": []
+   },
+   {
+    "sha": "d17d5cf2",
+    "message": "Working Capital Delinquency Disable and Enable",
+    "changed": 13,
+    "found_any": 11,
+    "found_impacted": 5,
+    "candidates": 2374,
+    "candidate_files": 1002,
+    "seconds_index": 39.67,
+    "seconds_total": 98.3,
+    "missed": [
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/repository/WorkingCapitalLoanDelinquencyRangeScheduleTagHistoryRepository.java",
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml"
+    ],
+    "ranks": {
+     "fineract-loan/src/main/java/org/apache/fineract/portfolio/delinquency/domain/DelinquencyAction.java": 1046,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/InternalWorkingCapitalLoanApiResource.java": 129,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanDelinquencyActionApiResource.java": 22,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/repository/WorkingCapitalLoanDelinquencyActionRepository.java": 11,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/repository/WorkingCapitalLoanDelinquencyRangeScheduleRepository.java": 20,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/repository/WorkingCapitalLoanDelinquencyRangeScheduleTagHistoryRepository.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDelinquencyActionWriteServiceImpl.java": 102,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDelinquencyClassificationService.java": 25,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDelinquencyClassificationServiceImpl.java": 124,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDelinquencyRangeScheduleService.java": 16,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDelinquencyRangeScheduleServiceImpl.java": 116,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/validator/WorkingCapitalLoanDelinquencyActionParseAndValidator.java": 103,
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml": null
+    },
+    "found_top20": 3,
+    "found_top50": 5,
+    "found_top100": 5,
+    "missed_kinds": [
+     ".java",
+     ".xml"
+    ]
+   },
+   {
+    "sha": "ec473efd",
+    "message": "Add breach past due calculation to wc loans",
+    "changed": 8,
+    "found_any": 5,
+    "found_impacted": 1,
+    "candidates": 2944,
+    "candidate_files": 823,
+    "seconds_index": 36.26,
+    "seconds_total": 76.2,
+    "missed": [
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/data/WorkingCapitalLoanBalanceData.java",
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanBalance.java",
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml"
+    ],
+    "ranks": {
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/cob/workingcapitalloan/businessstep/BreachScheduleBusinessStep.java": 112,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanApiResourceSwagger.java": 1,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/data/WorkingCapitalLoanBalanceData.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanBalance.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachResetServiceImpl.java": 2185,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachScheduleService.java": 134,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachScheduleServiceImpl.java": 82,
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml": null
+    },
+    "found_top20": 1,
+    "found_top50": 1,
+    "found_top100": 2,
+    "missed_kinds": [
+     ".java",
+     ".xml"
+    ]
+   },
+   {
+    "sha": "9ceb65fd",
+    "message": "Fix NPE modifying a loan application when schedule fields are omitted",
+    "changed": 2,
+    "found_any": 1,
+    "found_impacted": 0,
+    "candidates": 4343,
+    "candidate_files": 1210,
+    "seconds_index": 40.21,
+    "seconds_total": 110.7,
+    "missed": [
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/starter/LoanAccountConfiguration.java"
+    ],
+    "ranks": {
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/service/LoanAssemblerImpl.java": 3410,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/starter/LoanAccountConfiguration.java": null
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 0,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "edf568a3",
+    "message": "Fix named PPI survey score overview",
+    "changed": 2,
+    "found_any": 2,
+    "found_impacted": 2,
+    "candidates": 416,
+    "candidate_files": 161,
+    "seconds_index": 38.43,
+    "seconds_total": 70.1,
+    "missed": [],
+    "ranks": {
+     "fineract-provider/src/main/java/org/apache/fineract/infrastructure/survey/api/SurveyApiResource.java": 11,
+     "fineract-provider/src/main/java/org/apache/fineract/infrastructure/survey/service/ReadSurveyServiceImpl.java": 21
+    },
+    "found_top20": 1,
+    "found_top50": 2,
+    "found_top100": 2,
+    "missed_kinds": []
+   },
+   {
+    "sha": "984b9d92",
+    "message": "added operationIds to Savings and Loans modules to harden feign method names",
+    "changed": 9,
+    "found_any": 9,
+    "found_impacted": 0,
+    "candidates": 2540,
+    "candidate_files": 1069,
+    "seconds_index": 38.77,
+    "seconds_total": 89.9,
+    "missed": [],
+    "ranks": {
+     "fineract-loan/src/main/java/org/apache/fineract/portfolio/loanaccount/api/LoanScheduleApiResource.java": 1202,
+     "fineract-loan/src/main/java/org/apache/fineract/portfolio/loanaccount/rescheduleloan/api/RescheduleLoansApiResource.java": 1252,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/api/LoanChargesApiResource.java": 1786,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/api/LoanTransactionsApiResource.java": 1804,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/api/LoansApiResource.java": 1813,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/FixedDepositAccountTransactionsApiResource.java": 1944,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/FixedDepositAccountsApiResource.java": 1946,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/RecurringDepositAccountTransactionsApiResource.java": 1963,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsAccountChargesApiResource.java": 1979
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 0,
+    "missed_kinds": []
+   },
+   {
+    "sha": "e3c82615",
+    "message": "Fix bulk-import template HTTP 500 when a client or office name contains an apostrophe",
+    "changed": 2,
+    "found_any": 0,
+    "found_impacted": 0,
+    "candidates": 3346,
+    "candidate_files": 1242,
+    "seconds_index": 39.0,
+    "seconds_total": 90.1,
+    "missed": [
+     "fineract-provider/src/main/java/org/apache/fineract/infrastructure/bulkimport/populator/AbstractWorkbookPopulator.java",
+     "fineract-provider/src/main/java/org/apache/fineract/infrastructure/bulkimport/populator/loanrepayment/LoanRepaymentWorkbookPopulator.java"
+    ],
+    "ranks": {
+     "fineract-provider/src/main/java/org/apache/fineract/infrastructure/bulkimport/populator/AbstractWorkbookPopulator.java": null,
+     "fineract-provider/src/main/java/org/apache/fineract/infrastructure/bulkimport/populator/loanrepayment/LoanRepaymentWorkbookPopulator.java": null
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 0,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "6ce02e67",
+    "message": "Add effective end date to retrieve wc loan breach action api",
+    "changed": 2,
+    "found_any": 1,
+    "found_impacted": 1,
+    "candidates": 4079,
+    "candidate_files": 1285,
+    "seconds_index": 40.79,
+    "seconds_total": 95.0,
+    "missed": [
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/data/WorkingCapitalLoanBreachActionData.java"
+    ],
+    "ranks": {
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/data/WorkingCapitalLoanBreachActionData.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachActionReadServiceImpl.java": 108
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 0,
+    "missed_kinds": [
+     ".java"
+    ]
+   }
+  ]
+ },
+ "after": {
+  "summary": {
+   "commits": 30,
+   "changed_files": 156,
+   "recall_any": 0.654,
+   "recall_impacted": 0.385,
+   "commits_with_any_hit": 27,
+   "recall_top20": 0.25,
+   "recall_top50": 0.397,
+   "recall_top100": 0.474,
+   "commits_with_hit_top20": 18,
+   "median_candidates": 774
+  },
+  "rows": [
+   {
+    "sha": "9ea8f8af",
+    "message": "Return clientNonPersonDetails from GET /clients/{clientId}",
+    "changed": 4,
+    "found_any": 4,
+    "found_impacted": 3,
+    "candidates": 1286,
+    "candidate_files": 391,
+    "seconds_index": 0.0,
+    "seconds_total": 28.8,
+    "missed": [],
+    "ranks": {
+     "fineract-core/src/main/java/org/apache/fineract/portfolio/client/data/ClientNonPersonData.java": 7,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/client/api/ClientsApiResourceSwagger.java": 2,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/client/domain/ClientNonPerson.java": 3,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/client/service/ClientReadPlatformServiceImpl.java": 203
+    },
+    "found_top20": 3,
+    "found_top50": 3,
+    "found_top100": 3,
+    "missed_kinds": []
+   },
+   {
+    "sha": "a98a6da8",
+    "message": "Fix applyRecordedPauses to handle resets as well",
+    "changed": 5,
+    "found_any": 5,
+    "found_impacted": 2,
+    "candidates": 283,
+    "candidate_files": 162,
+    "seconds_index": 0.0,
+    "seconds_total": 27.7,
+    "missed": [],
+    "ranks": {
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanBreachPauseUtils.java": 4,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanBreachScheduleEvaluationUtils.java": 20,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanActiveBreachResetResolver.java": 24,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachScheduleServiceImpl.java": 1,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/validator/WorkingCapitalLoanBreachActionParseAndValidator.java": 143
+    },
+    "found_top20": 3,
+    "found_top50": 4,
+    "found_top100": 4,
+    "missed_kinds": []
+   },
+   {
+    "sha": "048cf93c",
+    "message": "Balloon loan not working as expected",
+    "changed": 4,
+    "found_any": 0,
+    "found_impacted": 0,
+    "candidates": 641,
+    "candidate_files": 229,
+    "seconds_index": 0.0,
+    "seconds_total": 29.8,
+    "missed": [
+     "fineract-progressive-loan/src/main/java/org/apache/fineract/portfolio/loanproduct/calc/ProgressiveEMICalculator.java",
+     "fineract-progressive-loan/src/main/java/org/apache/fineract/portfolio/loanproduct/calc/data/LoanInterestScheduleModelModifiers.java",
+     "fineract-progressive-loan/src/main/java/org/apache/fineract/portfolio/loanproduct/calc/data/ProgressiveLoanInterestScheduleModel.java",
+     "fineract-progressive-loan/src/main/java/org/apache/fineract/portfolio/loanproduct/calc/data/RepaymentPeriod.java"
+    ],
+    "ranks": {
+     "fineract-progressive-loan/src/main/java/org/apache/fineract/portfolio/loanproduct/calc/ProgressiveEMICalculator.java": null,
+     "fineract-progressive-loan/src/main/java/org/apache/fineract/portfolio/loanproduct/calc/data/LoanInterestScheduleModelModifiers.java": null,
+     "fineract-progressive-loan/src/main/java/org/apache/fineract/portfolio/loanproduct/calc/data/ProgressiveLoanInterestScheduleModel.java": null,
+     "fineract-progressive-loan/src/main/java/org/apache/fineract/portfolio/loanproduct/calc/data/RepaymentPeriod.java": null
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 0,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "23425b0c",
+    "message": "Working Capital single active delinquency tag",
+    "changed": 5,
+    "found_any": 4,
+    "found_impacted": 3,
+    "candidates": 683,
+    "candidate_files": 186,
+    "seconds_index": 0.0,
+    "seconds_total": 29.0,
+    "missed": [
+     "fineract-loan/src/main/java/org/apache/fineract/portfolio/delinquency/helper/InstallmentDelinquencyAggregator.java"
+    ],
+    "ranks": {
+     "fineract-loan/src/main/java/org/apache/fineract/portfolio/delinquency/helper/InstallmentDelinquencyAggregator.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/mapper/WorkingCapitalLoanDelinquencyRangeScheduleTagHistoryMapper.java": 346,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDelinquencyClassificationServiceImpl.java": 25,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDelinquencyRangeScheduleServiceImpl.java": 24,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDelinquencyReadPlatformServiceImpl.java": 16
+    },
+    "found_top20": 1,
+    "found_top50": 3,
+    "found_top100": 3,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "11b00b2c",
+    "message": "Add remove external asset owner tagging data from excluded transaction events and journal entries",
+    "changed": 5,
+    "found_any": 3,
+    "found_impacted": 2,
+    "candidates": 428,
+    "candidate_files": 173,
+    "seconds_index": 0.0,
+    "seconds_total": 30.0,
+    "missed": [
+     "fineract-loan/src/main/java/org/apache/fineract/portfolio/loanaccount/domain/LoanRepository.java",
+     "fineract-loan/src/main/java/org/apache/fineract/portfolio/loanaccount/domain/LoanTransactionRepository.java"
+    ],
+    "ranks": {
+     "fineract-investor/src/main/java/org/apache/fineract/investor/data/attribute/ExcludedTransactionTypesExternalAssetOwnerLoanProductAttribute.java": 18,
+     "fineract-investor/src/main/java/org/apache/fineract/investor/enricher/LoanTransactionDataV1Enricher.java": 416,
+     "fineract-investor/src/main/java/org/apache/fineract/investor/service/ExternalAssetOwnerJournalEntryServiceImpl.java": 30,
+     "fineract-loan/src/main/java/org/apache/fineract/portfolio/loanaccount/domain/LoanRepository.java": null,
+     "fineract-loan/src/main/java/org/apache/fineract/portfolio/loanaccount/domain/LoanTransactionRepository.java": null
+    },
+    "found_top20": 1,
+    "found_top50": 2,
+    "found_top100": 2,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "20a571b7",
+    "message": "WC - Undo disbursal reverses the discount fee and amortization journal entries",
+    "changed": 11,
+    "found_any": 10,
+    "found_impacted": 7,
+    "candidates": 774,
+    "candidate_files": 263,
+    "seconds_index": 0.0,
+    "seconds_total": 31.4,
+    "missed": [
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanRecoveryPaymentWriteServiceImpl.java"
+    ],
+    "ranks": {
+     "fineract-accounting/src/main/java/org/apache/fineract/accounting/journalentry/domain/JournalEntryRepository.java": 138,
+     "fineract-provider/src/main/java/org/apache/fineract/accounting/journalentry/service/AccrualWithDeferredRevenueAmortizationAccountingProcessorForWorkingCapitalLoan.java": 23,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanChargeOffWriteServiceImpl.java": 42,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanChargeWritePlatformServiceImpl.java": 226,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDiscountFeeAmortizationService.java": 5,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDiscountFeeAmortizationServiceImpl.java": 18,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanRecoveryPaymentWriteServiceImpl.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanTransactionProcessor.java": 21,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanTransactionReprocessingServiceImpl.java": 33,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanWriteOffWriteServiceImpl.java": 65,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanWritePlatformServiceImpl.java": 8
+    },
+    "found_top20": 3,
+    "found_top50": 7,
+    "found_top100": 8,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "e6932552",
+    "message": "Consistent breach reprocessing",
+    "changed": 6,
+    "found_any": 5,
+    "found_impacted": 2,
+    "candidates": 1046,
+    "candidate_files": 384,
+    "seconds_index": 34.86,
+    "seconds_total": 89.3,
+    "missed": [
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanActiveBreachResetResolver.java"
+    ],
+    "ranks": {
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/repository/WorkingCapitalLoanBreachScheduleRepository.java": 691,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanActiveBreachResetResolver.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachActionWriteServiceImpl.java": 64,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachScheduleService.java": 4,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachScheduleServiceImpl.java": 3,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/validator/WorkingCapitalLoanBreachActionParseAndValidator.java": 682
+    },
+    "found_top20": 2,
+    "found_top50": 2,
+    "found_top100": 3,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "43395ae3",
+    "message": "add response schemas for the group savings endpoints",
+    "changed": 2,
+    "found_any": 1,
+    "found_impacted": 1,
+    "candidates": 350,
+    "candidate_files": 94,
+    "seconds_index": 36.49,
+    "seconds_total": 88.7,
+    "missed": [
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/DepositAccountOnHoldFundTransactionsApiResource.java"
+    ],
+    "ranks": {
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/DepositAccountOnHoldFundTransactionsApiResource.java": null,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsAccountTransactionsApiResourceSwagger.java": 23
+    },
+    "found_top20": 0,
+    "found_top50": 1,
+    "found_top100": 1,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "492762f0",
+    "message": "Fix negative balance on accelerated-maturity charge-off",
+    "changed": 2,
+    "found_any": 2,
+    "found_impacted": 1,
+    "candidates": 1030,
+    "candidate_files": 674,
+    "seconds_index": 31.83,
+    "seconds_total": 65.4,
+    "missed": [],
+    "ranks": {
+     "fineract-progressive-loan/src/main/java/org/apache/fineract/portfolio/loanaccount/domain/transactionprocessor/impl/AdvancedPaymentScheduleTransactionProcessor.java": 13,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/service/LoanRepaymentScheduleService.java": 87
+    },
+    "found_top20": 1,
+    "found_top50": 1,
+    "found_top100": 2,
+    "missed_kinds": []
+   },
+   {
+    "sha": "714e5712",
+    "message": "WC - Write-off does not release the remaining deferred discount fee",
+    "changed": 6,
+    "found_any": 5,
+    "found_impacted": 4,
+    "candidates": 1246,
+    "candidate_files": 777,
+    "seconds_index": 31.8,
+    "seconds_total": 82.7,
+    "missed": [
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanTransactionReprocessingServiceImpl.java"
+    ],
+    "ranks": {
+     "fineract-provider/src/main/java/org/apache/fineract/accounting/journalentry/service/AccrualWithDeferredRevenueAmortizationAccountingProcessorForWorkingCapitalLoan.java": 18,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanChargeOffWriteServiceImpl.java": 111,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDiscountFeeAmortizationService.java": 19,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDiscountFeeAmortizationServiceImpl.java": 42,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanTransactionReprocessingServiceImpl.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanWriteOffWriteServiceImpl.java": 13
+    },
+    "found_top20": 3,
+    "found_top50": 4,
+    "found_top100": 4,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "851b6ade",
+    "message": "add missing deposit request and response schema fields",
+    "changed": 7,
+    "found_any": 4,
+    "found_impacted": 4,
+    "candidates": 1636,
+    "candidate_files": 355,
+    "seconds_index": 33.57,
+    "seconds_total": 88.3,
+    "missed": [
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/interestratechart/api/InterestRateChartsApiResourceSwagger.java",
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsAccountsApiResourceSwagger.java",
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsProductsApiResourceSwagger.java"
+    ],
+    "ranks": {
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/interestratechart/api/InterestRateChartsApiResourceSwagger.java": null,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/FixedDepositAccountsApiResourceSwagger.java": 4,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/FixedDepositProductsApiResourceSwagger.java": 8,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/RecurringDepositAccountsApiResourceSwagger.java": 6,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/RecurringDepositProductsApiResourceSwagger.java": 11,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsAccountsApiResourceSwagger.java": null,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsProductsApiResourceSwagger.java": null
+    },
+    "found_top20": 4,
+    "found_top50": 4,
+    "found_top100": 4,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "bb72fb8c",
+    "message": "Working Capital Loan - Recovery payment transaction",
+    "changed": 14,
+    "found_any": 9,
+    "found_impacted": 3,
+    "candidates": 896,
+    "candidate_files": 266,
+    "seconds_index": 35.26,
+    "seconds_total": 89.3,
+    "missed": [
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/WorkingCapitalLoanConstants.java",
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanApiResourceSwagger.java",
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/data/WorkingCapitalLoanBalanceData.java",
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml",
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/parts/0069_wc_business_events_extension.xml"
+    ],
+    "ranks": {
+     "fineract-core/src/main/java/org/apache/fineract/commands/service/CommandWrapperBuilder.java": 37,
+     "fineract-provider/src/main/java/org/apache/fineract/accounting/journalentry/service/AccrualWithDeferredRevenueAmortizationAccountingProcessorForWorkingCapitalLoan.java": 87,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/WorkingCapitalLoanConstants.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanApiResourceSwagger.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanTransactionsApiResource.java": 263,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanTransactionsApiResourceSwagger.java": 12,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/data/WorkingCapitalLoanBalanceData.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanBalance.java": 435,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanTransaction.java": 6,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/serialization/WorkingCapitalLoanDataValidator.java": 270,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanTransactionReadPlatformServiceImpl.java": 177,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanWritePlatformServiceImpl.java": 59,
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml": null,
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/parts/0069_wc_business_events_extension.xml": null
+    },
+    "found_top20": 2,
+    "found_top50": 3,
+    "found_top100": 5,
+    "missed_kinds": [
+     ".java",
+     ".xml"
+    ]
+   },
+   {
+    "sha": "08b54ec9",
+    "message": "Enforce NOT NULL on WC submitted_on_date columns",
+    "changed": 3,
+    "found_any": 2,
+    "found_impacted": 2,
+    "candidates": 1618,
+    "candidate_files": 543,
+    "seconds_index": 35.99,
+    "seconds_total": 90.5,
+    "missed": [
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml"
+    ],
+    "ranks": {
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanNearBreachAction.java": 101,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanPeriodPaymentRateChange.java": 102,
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml": null
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 0,
+    "missed_kinds": [
+     ".xml"
+    ]
+   },
+   {
+    "sha": "72a2c65b",
+    "message": "expose the note and transfer-fee fields typed clients need",
+    "changed": 2,
+    "found_any": 0,
+    "found_impacted": 0,
+    "candidates": 435,
+    "candidate_files": 133,
+    "seconds_index": 37.27,
+    "seconds_total": 88.4,
+    "missed": [
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsAccountTransactionsApiResourceSwagger.java",
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsAccountsApiResourceSwagger.java"
+    ],
+    "ranks": {
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsAccountTransactionsApiResourceSwagger.java": null,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsAccountsApiResourceSwagger.java": null
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 0,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "9072969d",
+    "message": "Journal Entry Aggregation - update reader query to default to null instead of ''",
+    "changed": 2,
+    "found_any": 1,
+    "found_impacted": 1,
+    "candidates": 280,
+    "candidate_files": 84,
+    "seconds_index": 0.0,
+    "seconds_total": 22.8,
+    "missed": [
+     "fineract-provider/src/main/resources/db/changelog/tenant/changelog-tenant.xml"
+    ],
+    "ranks": {
+     "fineract-provider/src/main/java/org/apache/fineract/infrastructure/jobs/service/aggregationjob/JournalEntryAggregationJobReader.java": 5,
+     "fineract-provider/src/main/resources/db/changelog/tenant/changelog-tenant.xml": null
+    },
+    "found_top20": 1,
+    "found_top50": 1,
+    "found_top100": 1,
+    "missed_kinds": [
+     ".xml"
+    ]
+   },
+   {
+    "sha": "8f9377c1",
+    "message": "Increase note length to TEXT",
+    "changed": 4,
+    "found_any": 3,
+    "found_impacted": 3,
+    "candidates": 841,
+    "candidate_files": 340,
+    "seconds_index": 32.78,
+    "seconds_total": 81.4,
+    "missed": [
+     "fineract-provider/src/main/resources/db/changelog/tenant/changelog-tenant.xml"
+    ],
+    "ranks": {
+     "fineract-core/src/main/java/org/apache/fineract/portfolio/note/data/NoteCreateRequest.java": 52,
+     "fineract-core/src/main/java/org/apache/fineract/portfolio/note/data/NoteUpdateRequest.java": 54,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/note/domain/Note.java": 33,
+     "fineract-provider/src/main/resources/db/changelog/tenant/changelog-tenant.xml": null
+    },
+    "found_top20": 0,
+    "found_top50": 1,
+    "found_top100": 3,
+    "missed_kinds": [
+     ".xml"
+    ]
+   },
+   {
+    "sha": "f65ca12b",
+    "message": "Working Capital - Delinquency & Breach Grace Day calculation",
+    "changed": 3,
+    "found_any": 3,
+    "found_impacted": 0,
+    "candidates": 430,
+    "candidate_files": 111,
+    "seconds_index": 34.42,
+    "seconds_total": 82.2,
+    "missed": [],
+    "ranks": {
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanApplicationReadPlatformServiceImpl.java": 44,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachScheduleServiceImpl.java": 50,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDelinquencyRangeScheduleServiceImpl.java": 126
+    },
+    "found_top20": 0,
+    "found_top50": 2,
+    "found_top100": 2,
+    "missed_kinds": []
+   },
+   {
+    "sha": "b88a8cf5",
+    "message": "Add support for payment rate modification with effective date instead of business date",
+    "changed": 10,
+    "found_any": 5,
+    "found_impacted": 2,
+    "candidates": 817,
+    "candidate_files": 359,
+    "seconds_index": 32.35,
+    "seconds_total": 82.3,
+    "missed": [
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/WorkingCapitalLoanConstants.java",
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/calc/DefaultProjectedAmortizationScheduleCalculator.java",
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/calc/ProjectedAmortizationScheduleCalculator.java",
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/serialization/WorkingCapitalLoanDataValidator.java",
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanAmortizationScheduleWriteService.java"
+    ],
+    "ranks": {
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/WorkingCapitalLoanConstants.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanApiResourceSwagger.java": 1,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/calc/DefaultProjectedAmortizationScheduleCalculator.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/calc/ProjectedAmortizationScheduleCalculator.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/calc/ProjectedAmortizationScheduleModel.java": 38,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/repository/WorkingCapitalLoanPeriodPaymentRateChangeRepository.java": 755,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/serialization/WorkingCapitalLoanDataValidator.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanAmortizationScheduleWriteService.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanAmortizationScheduleWriteServiceImpl.java": 485,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanWritePlatformServiceImpl.java": 754
+    },
+    "found_top20": 1,
+    "found_top50": 2,
+    "found_top100": 2,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "d09e4796",
+    "message": "WC - Breach reset: Split current period",
+    "changed": 6,
+    "found_any": 3,
+    "found_impacted": 2,
+    "candidates": 1124,
+    "candidate_files": 482,
+    "seconds_index": 34.49,
+    "seconds_total": 85.9,
+    "missed": [
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanBreachAction.java",
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/validator/WorkingCapitalLoanBreachActionParameters.java",
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml"
+    ],
+    "ranks": {
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanBreachActionApiResourceSwagger.java": 286,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanBreachAction.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachResetServiceImpl.java": 11,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/validator/WorkingCapitalLoanBreachActionParameters.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/validator/WorkingCapitalLoanBreachActionParseAndValidator.java": 1,
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml": null
+    },
+    "found_top20": 2,
+    "found_top50": 2,
+    "found_top100": 2,
+    "missed_kinds": [
+     ".java",
+     ".xml"
+    ]
+   },
+   {
+    "sha": "cc22131d",
+    "message": "Working Capital loan mark as fraud",
+    "changed": 7,
+    "found_any": 6,
+    "found_impacted": 5,
+    "candidates": 2212,
+    "candidate_files": 865,
+    "seconds_index": 33.09,
+    "seconds_total": 85.7,
+    "missed": [
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml"
+    ],
+    "ranks": {
+     "fineract-core/src/main/java/org/apache/fineract/commands/service/CommandWrapperBuilder.java": 14,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/WorkingCapitalLoanConstants.java": 24,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanApiResource.java": 123,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanApiResourceSwagger.java": 5,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoan.java": 13,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/mapper/WorkingCapitalLoanMapper.java": 25,
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml": null
+    },
+    "found_top20": 3,
+    "found_top50": 5,
+    "found_top100": 5,
+    "missed_kinds": [
+     ".xml"
+    ]
+   },
+   {
+    "sha": "54509ef1",
+    "message": "Add IRR based calculation for working capital schedule model, fix amortization rounding drift, add multiple payment rate change support",
+    "changed": 5,
+    "found_any": 3,
+    "found_impacted": 2,
+    "candidates": 593,
+    "candidate_files": 345,
+    "seconds_index": 31.36,
+    "seconds_total": 61.6,
+    "missed": [
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/serialization/WorkingCapitalLoanApplicationDataValidator.java",
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/serialization/WorkingCapitalLoanDataValidator.java"
+    ],
+    "ranks": {
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/calc/ProjectedAmortizationScheduleModel.java": 32,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/calc/TvmFunctions.java": 389,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/serialization/WorkingCapitalLoanApplicationDataValidator.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/serialization/WorkingCapitalLoanDataValidator.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanAmortizationScheduleWriteServiceImpl.java": 3
+    },
+    "found_top20": 1,
+    "found_top50": 2,
+    "found_top100": 2,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "a8ace3a1",
+    "message": "Remove orphaned CashierWritePlatformService and ModifyCashierCommandHandler",
+    "changed": 3,
+    "found_any": 3,
+    "found_impacted": 3,
+    "candidates": 776,
+    "candidate_files": 613,
+    "seconds_index": 31.99,
+    "seconds_total": 79.8,
+    "missed": [],
+    "ranks": {
+     "fineract-branch/src/main/java/org/apache/fineract/organisation/teller/handler/DeleteCashierAllocationCommandHandler.java": 11,
+     "fineract-branch/src/main/java/org/apache/fineract/organisation/teller/handler/ModifyCashierCommandHandler.java": 2,
+     "fineract-branch/src/main/java/org/apache/fineract/organisation/teller/service/CashierWritePlatformService.java": 1
+    },
+    "found_top20": 3,
+    "found_top50": 3,
+    "found_top100": 3,
+    "missed_kinds": []
+   },
+   {
+    "sha": "a3157c47",
+    "message": "Validate required datatables based on legal form during client creation",
+    "changed": 2,
+    "found_any": 2,
+    "found_impacted": 0,
+    "candidates": 620,
+    "candidate_files": 306,
+    "seconds_index": 33.51,
+    "seconds_total": 82.8,
+    "missed": [],
+    "ranks": {
+     "fineract-provider/src/main/java/org/apache/fineract/infrastructure/dataqueries/service/EntityDatatableChecksWritePlatformServiceImpl.java": 111,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/client/data/ClientDataValidator.java": 132
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 0,
+    "missed_kinds": []
+   },
+   {
+    "sha": "d17d5cf2",
+    "message": "Working Capital Delinquency Disable and Enable",
+    "changed": 13,
+    "found_any": 10,
+    "found_impacted": 5,
+    "candidates": 435,
+    "candidate_files": 106,
+    "seconds_index": 33.05,
+    "seconds_total": 80.9,
+    "missed": [
+     "fineract-loan/src/main/java/org/apache/fineract/portfolio/delinquency/domain/DelinquencyAction.java",
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/repository/WorkingCapitalLoanDelinquencyRangeScheduleTagHistoryRepository.java",
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml"
+    ],
+    "ranks": {
+     "fineract-loan/src/main/java/org/apache/fineract/portfolio/delinquency/domain/DelinquencyAction.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/InternalWorkingCapitalLoanApiResource.java": 90,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanDelinquencyActionApiResource.java": 21,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/repository/WorkingCapitalLoanDelinquencyActionRepository.java": 9,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/repository/WorkingCapitalLoanDelinquencyRangeScheduleRepository.java": 19,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/repository/WorkingCapitalLoanDelinquencyRangeScheduleTagHistoryRepository.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDelinquencyActionWriteServiceImpl.java": 44,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDelinquencyClassificationService.java": 24,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDelinquencyClassificationServiceImpl.java": 84,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDelinquencyRangeScheduleService.java": 15,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanDelinquencyRangeScheduleServiceImpl.java": 60,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/validator/WorkingCapitalLoanDelinquencyActionParseAndValidator.java": 45,
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml": null
+    },
+    "found_top20": 3,
+    "found_top50": 7,
+    "found_top100": 10,
+    "missed_kinds": [
+     ".java",
+     ".xml"
+    ]
+   },
+   {
+    "sha": "ec473efd",
+    "message": "Add breach past due calculation to wc loans",
+    "changed": 8,
+    "found_any": 4,
+    "found_impacted": 0,
+    "candidates": 569,
+    "candidate_files": 197,
+    "seconds_index": 34.43,
+    "seconds_total": 82.8,
+    "missed": [
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/data/WorkingCapitalLoanBalanceData.java",
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanBalance.java",
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachResetServiceImpl.java",
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml"
+    ],
+    "ranks": {
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/cob/workingcapitalloan/businessstep/BreachScheduleBusinessStep.java": 403,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanApiResourceSwagger.java": 30,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/data/WorkingCapitalLoanBalanceData.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanBalance.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachResetServiceImpl.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachScheduleService.java": 544,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachScheduleServiceImpl.java": 62,
+     "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml": null
+    },
+    "found_top20": 0,
+    "found_top50": 1,
+    "found_top100": 2,
+    "missed_kinds": [
+     ".java",
+     ".xml"
+    ]
+   },
+   {
+    "sha": "9ceb65fd",
+    "message": "Fix NPE modifying a loan application when schedule fields are omitted",
+    "changed": 2,
+    "found_any": 1,
+    "found_impacted": 0,
+    "candidates": 230,
+    "candidate_files": 132,
+    "seconds_index": 33.85,
+    "seconds_total": 79.9,
+    "missed": [
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/starter/LoanAccountConfiguration.java"
+    ],
+    "ranks": {
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/service/LoanAssemblerImpl.java": 222,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/starter/LoanAccountConfiguration.java": null
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 0,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "edf568a3",
+    "message": "Fix named PPI survey score overview",
+    "changed": 2,
+    "found_any": 2,
+    "found_impacted": 2,
+    "candidates": 272,
+    "candidate_files": 96,
+    "seconds_index": 29.33,
+    "seconds_total": 59.5,
+    "missed": [],
+    "ranks": {
+     "fineract-provider/src/main/java/org/apache/fineract/infrastructure/survey/api/SurveyApiResource.java": 7,
+     "fineract-provider/src/main/java/org/apache/fineract/infrastructure/survey/service/ReadSurveyServiceImpl.java": 13
+    },
+    "found_top20": 2,
+    "found_top50": 2,
+    "found_top100": 2,
+    "missed_kinds": []
+   },
+   {
+    "sha": "984b9d92",
+    "message": "added operationIds to Savings and Loans modules to harden feign method names",
+    "changed": 9,
+    "found_any": 0,
+    "found_impacted": 0,
+    "candidates": 661,
+    "candidate_files": 390,
+    "seconds_index": 32.2,
+    "seconds_total": 75.5,
+    "missed": [
+     "fineract-loan/src/main/java/org/apache/fineract/portfolio/loanaccount/api/LoanScheduleApiResource.java",
+     "fineract-loan/src/main/java/org/apache/fineract/portfolio/loanaccount/rescheduleloan/api/RescheduleLoansApiResource.java",
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/api/LoanChargesApiResource.java",
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/api/LoanTransactionsApiResource.java",
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/api/LoansApiResource.java",
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/FixedDepositAccountTransactionsApiResource.java",
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/FixedDepositAccountsApiResource.java",
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/RecurringDepositAccountTransactionsApiResource.java",
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsAccountChargesApiResource.java"
+    ],
+    "ranks": {
+     "fineract-loan/src/main/java/org/apache/fineract/portfolio/loanaccount/api/LoanScheduleApiResource.java": null,
+     "fineract-loan/src/main/java/org/apache/fineract/portfolio/loanaccount/rescheduleloan/api/RescheduleLoansApiResource.java": null,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/api/LoanChargesApiResource.java": null,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/api/LoanTransactionsApiResource.java": null,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/loanaccount/api/LoansApiResource.java": null,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/FixedDepositAccountTransactionsApiResource.java": null,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/FixedDepositAccountsApiResource.java": null,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/RecurringDepositAccountTransactionsApiResource.java": null,
+     "fineract-provider/src/main/java/org/apache/fineract/portfolio/savings/api/SavingsAccountChargesApiResource.java": null
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 0,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "e3c82615",
+    "message": "Fix bulk-import template HTTP 500 when a client or office name contains an apostrophe",
+    "changed": 2,
+    "found_any": 1,
+    "found_impacted": 0,
+    "candidates": 936,
+    "candidate_files": 332,
+    "seconds_index": 32.62,
+    "seconds_total": 77.5,
+    "missed": [
+     "fineract-provider/src/main/java/org/apache/fineract/infrastructure/bulkimport/populator/AbstractWorkbookPopulator.java"
+    ],
+    "ranks": {
+     "fineract-provider/src/main/java/org/apache/fineract/infrastructure/bulkimport/populator/AbstractWorkbookPopulator.java": null,
+     "fineract-provider/src/main/java/org/apache/fineract/infrastructure/bulkimport/populator/loanrepayment/LoanRepaymentWorkbookPopulator.java": 448
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 0,
+    "missed_kinds": [
+     ".java"
+    ]
+   },
+   {
+    "sha": "6ce02e67",
+    "message": "Add effective end date to retrieve wc loan breach action api",
+    "changed": 2,
+    "found_any": 1,
+    "found_impacted": 1,
+    "candidates": 857,
+    "candidate_files": 328,
+    "seconds_index": 32.9,
+    "seconds_total": 79.8,
+    "missed": [
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/data/WorkingCapitalLoanBreachActionData.java"
+    ],
+    "ranks": {
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/data/WorkingCapitalLoanBreachActionData.java": null,
+     "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachActionReadServiceImpl.java": 77
+    },
+    "found_top20": 0,
+    "found_top50": 0,
+    "found_top100": 1,
+    "missed_kinds": [
+     ".java"
+    ]
+   }
+  ]
+ }
+}
