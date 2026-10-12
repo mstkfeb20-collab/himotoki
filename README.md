@@ -485,6 +485,10 @@ AI（Claude）を使うのは「要求の構造化」と「候補の判定」と
 
 1 コミットの取り込みは 1〜3 秒（約 1,300 ファイル）でした。
 
+### Claude Code 単体との比較（手順のみ）
+
+同じ影響調査の課題を、まっさらな Claude Code に「単体」と「himotoki の MCP あり」で解かせ、漏れ・余計な指摘・トークン・時間を比べる手順と道具を `eval/agent_compare/` に置いています（課題は Fineract・marumie の各 6 件。答えが見えないよう、git の履歴を除いたソースと Web の禁止で実行）。
+
 ### Apache OFBiz（規模・未知のフレームワーク）
 
 `samples/rules/ofbiz.yaml` だけで取り込み、Java・Groovy・XML・FTL を含む 3,515 ファイルを処理しました（2 CPU）。

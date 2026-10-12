@@ -1,0 +1,86 @@
+{
+ "repo": "~/work/fineract",
+ "tasks": [
+  {
+   "id": "6ce02e67",
+   "sha": "6ce02e67d9304c9a55cdeca6159a1aa51f938e06",
+   "parent": "0b87e480554adbb07fab52e9044ffdf4b10c640d",
+   "requirement": "Add effective end date to retrieve wc loan breach action api",
+   "truth": [
+    "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/data/WorkingCapitalLoanBreachActionData.java",
+    "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachActionReadServiceImpl.java"
+   ]
+  },
+  {
+   "id": "a3157c47",
+   "sha": "a3157c47c41a888c33b0d30325ad3caddb5905a2",
+   "parent": "c1fb469357324ab0d405f533cbaa6cb3b004f19e",
+   "requirement": "Validate required datatables based on legal form during client creation",
+   "truth": [
+    "fineract-provider/src/main/java/org/apache/fineract/infrastructure/dataqueries/service/EntityDatatableChecksWritePlatformServiceImpl.java",
+    "fineract-provider/src/main/java/org/apache/fineract/portfolio/client/data/ClientDataValidator.java"
+   ]
+  },
+  {
+   "id": "8f9377c1",
+   "sha": "8f9377c1f0a675d8a3deef4933598d11465cfa77",
+   "parent": "836495e154c960eef4f9e52a627bfebf74442d49",
+   "requirement": "Increase note length to TEXT",
+   "truth": [
+    "fineract-core/src/main/java/org/apache/fineract/portfolio/note/data/NoteCreateRequest.java",
+    "fineract-core/src/main/java/org/apache/fineract/portfolio/note/data/NoteUpdateRequest.java",
+    "fineract-provider/src/main/java/org/apache/fineract/portfolio/note/domain/Note.java",
+    "fineract-provider/src/main/resources/db/changelog/tenant/changelog-tenant.xml"
+   ]
+  },
+  {
+   "id": "11b00b2c",
+   "sha": "11b00b2c3db455a255ac62c7c82e622aaadf41de",
+   "parent": "b2506a496c42014e052558df34154c50e7aeed8e",
+   "requirement": "Add remove external asset owner tagging data from excluded transaction events and journal entries",
+   "truth": [
+    "fineract-investor/src/main/java/org/apache/fineract/investor/data/attribute/ExcludedTransactionTypesExternalAssetOwnerLoanProductAttribute.java",
+    "fineract-investor/src/main/java/org/apache/fineract/investor/enricher/LoanTransactionDataV1Enricher.java",
+    "fineract-investor/src/main/java/org/apache/fineract/investor/service/ExternalAssetOwnerJournalEntryServiceImpl.java",
+    "fineract-loan/src/main/java/org/apache/fineract/portfolio/loanaccount/domain/LoanRepository.java",
+    "fineract-loan/src/main/java/org/apache/fineract/portfolio/loanaccount/domain/LoanTransactionRepository.java"
+   ]
+  },
+  {
+   "id": "d09e4796",
+   "sha": "d09e4796e40220bf54be3e12ed95135b03bc94ee",
+   "parent": "7cb63225214f18e5e8f32b202b0ead7be1f074d0",
+   "requirement": "WC - Breach reset: Split current period",
+   "truth": [
+    "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanBreachActionApiResourceSwagger.java",
+    "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanBreachAction.java",
+    "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanBreachResetServiceImpl.java",
+    "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/validator/WorkingCapitalLoanBreachActionParameters.java",
+    "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/validator/WorkingCapitalLoanBreachActionParseAndValidator.java",
+    "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml"
+   ]
+  },
+  {
+   "id": "bb72fb8c",
+   "sha": "bb72fb8c266597b9591ed38cad6dbf3993dcd058",
+   "parent": "9bc9a867b887b3c0ba3d25d731c7fb1284126163",
+   "requirement": "Working Capital Loan - Recovery payment transaction",
+   "truth": [
+    "fineract-core/src/main/java/org/apache/fineract/commands/service/CommandWrapperBuilder.java",
+    "fineract-provider/src/main/java/org/apache/fineract/accounting/journalentry/service/AccrualWithDeferredRevenueAmortizationAccountingProcessorForWorkingCapitalLoan.java",
+    "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/WorkingCapitalLoanConstants.java",
+    "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanApiResourceSwagger.java",
+    "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanTransactionsApiResource.java",
+    "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/api/WorkingCapitalLoanTransactionsApiResourceSwagger.java",
+    "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/data/WorkingCapitalLoanBalanceData.java",
+    "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanBalance.java",
+    "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/domain/WorkingCapitalLoanTransaction.java",
+    "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/serialization/WorkingCapitalLoanDataValidator.java",
+    "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanTransactionReadPlatformServiceImpl.java",
+    "fineract-working-capital-loan/src/main/java/org/apache/fineract/portfolio/workingcapitalloan/service/WorkingCapitalLoanWritePlatformServiceImpl.java",
+    "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/module-changelog-master.xml",
+    "fineract-working-capital-loan/src/main/resources/db/changelog/tenant/module/workingcapitalloan/parts/0069_wc_business_events_extension.xml"
+   ]
+  }
+ ]
+}

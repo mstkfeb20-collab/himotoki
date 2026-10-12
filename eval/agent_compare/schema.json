@@ -1,0 +1,7 @@
+{"type": "object",
+ "properties": {
+   "files": {"type": "array", "items": {"type": "object",
+     "properties": {"path": {"type": "string"}, "reason": {"type": "string"}},
+     "required": ["path", "reason"]}},
+   "notes": {"type": "string"}},
+ "required": ["files"]}

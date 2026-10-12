@@ -1,0 +1,89 @@
+{
+ "repo": "~/work/marumie",
+ "tasks": [
+  {
+   "id": "dd759920",
+   "sha": "dd759920e60f03111b27a03d691578c3eca01fa0",
+   "parent": "6a14d7252133c1b8a2791a7d1f845810aa0dce57",
+   "requirement": "調研費の「調研費とは」の説明文を新しい文言に差し替える",
+   "truth": [
+    "webapp/src/client/components/research-fund/ResearchFundFlowSection.tsx",
+    "webapp/src/client/components/research-fund/ResearchFundPartySection.tsx"
+   ]
+  },
+  {
+   "id": "726f9a77",
+   "sha": "726f9a774b87ba8bda35d340095d68697458f57d",
+   "parent": "b2625aced3792eebf30ff8fe48c7d5d2388f9de0",
+   "requirement": "組織セレクタ・ヘッダーナビ・フッターを調研費の最終デザインに合わせる",
+   "truth": [
+    "webapp/src/client/components/layout/footer/Footer.tsx",
+    "webapp/src/client/components/layout/header/OrganizationYearSheet.tsx",
+    "webapp/src/client/lib/header-navigation.ts"
+   ]
+  },
+  {
+   "id": "95e5a928",
+   "sha": "95e5a928a6945226f9d7274540ea1cfba605f1f3",
+   "parent": "29ea4ccc27ab41980ab44159d6fcc1136f5506f7",
+   "requirement": "unstable_cacheにtagsを追加しrevalidateTagによるキャッシュ無効化を修正",
+   "truth": [
+    "webapp/src/app/api/refresh/route.ts",
+    "webapp/src/server/contexts/public-finance/presentation/loaders/load-organizations.ts",
+    "webapp/src/server/contexts/public-finance/presentation/loaders/load-top-page-data.ts",
+    "webapp/src/server/contexts/public-finance/presentation/loaders/load-transactions-page-data.ts"
+   ]
+  },
+  {
+   "id": "3d429176",
+   "sha": "3d42917625577fccdbb29eabed572bf593a1f171",
+   "parent": "72855e6a2b08d287c775cf9ebb0ab8bd37ed0ef2",
+   "requirement": "確認済の仕訳を選んで、まとめて下書きに戻す・破棄できるようにする",
+   "truth": [
+    "admin/src/client/components/research-fund/JournalReview.tsx",
+    "admin/src/server/contexts/research-fund/application/usecases/manage-journal-review-usecase.ts",
+    "admin/src/server/contexts/research-fund/domain/repositories/journal-review-repository.interface.ts",
+    "admin/src/server/contexts/research-fund/infrastructure/repositories/prisma-journal-review.repository.ts",
+    "admin/src/server/contexts/research-fund/presentation/actions/manage-journal-review.ts"
+   ]
+  },
+  {
+   "id": "74e0e449",
+   "sha": "74e0e44988f53165e3c03477c742e4624d88826f",
+   "parent": "51edab0138beff5ec886ecf4c869a675063061c1",
+   "requirement": "BS科目の未払金・未払費用を分割し、未収入金を追加する",
+   "truth": [
+    "admin/src/server/contexts/data-import/domain/services/transaction-validator.ts",
+    "admin/src/server/contexts/data-import/infrastructure/mf/mf-record-converter.ts",
+    "shared/accounting/account-category.ts",
+    "webapp/src/server/contexts/public-finance/application/usecases/get-balance-sheet-usecase.ts",
+    "webapp/src/server/contexts/public-finance/domain/models/balance-sheet.ts",
+    "webapp/src/server/contexts/public-finance/domain/repositories/balance-sheet-repository.interface.ts",
+    "webapp/src/server/contexts/public-finance/infrastructure/repositories/prisma-balance-sheet.repository.ts"
+   ]
+  },
+  {
+   "id": "d6b721bf",
+   "sha": "d6b721bf01a7b049925dc9c02c5f5fd93d31aa19",
+   "parent": "3f57f2a0afa7c0c7dee8661ccc7cd226cd054155",
+   "requirement": "取引先マスタ・寄付者マスタ画面をリデザインする",
+   "truth": [
+    "admin/src/client/components/counterparts/AddressInput.tsx",
+    "admin/src/client/components/counterparts/CounterpartDetailClient.tsx",
+    "admin/src/client/components/counterparts/CounterpartFormContent.tsx",
+    "admin/src/client/components/counterparts/CounterpartFormDialog.tsx",
+    "admin/src/client/components/counterparts/CounterpartMasterClient.tsx",
+    "admin/src/client/components/counterparts/CounterpartTable.tsx",
+    "admin/src/client/components/counterparts/DeleteCounterpartButton.tsx",
+    "admin/src/client/components/donors/DeleteDonorButton.tsx",
+    "admin/src/client/components/donors/DonorFormContent.tsx",
+    "admin/src/client/components/donors/DonorFormDialog.tsx",
+    "admin/src/client/components/donors/DonorMasterClient.tsx",
+    "admin/src/client/components/donors/DonorTable.tsx",
+    "admin/src/client/components/ui/StaticPagination.tsx",
+    "admin/src/client/components/ui/button.tsx",
+    "admin/src/client/lib/index.ts"
+   ]
+  }
+ ]
+}
