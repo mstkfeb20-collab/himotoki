@@ -1,0 +1,190 @@
+{
+ "repo": "~/work/sor-bench",
+ "tasks": [
+  {
+   "id": "cr01",
+   "sha": "2822791c585faca7dbdf653f20d049d18529ae70",
+   "parent": "3c3c1c9ef2924452406da0c6c4e104c9136a2c7a",
+   "requirement": "受注一覧画面の検索結果が最大500件までしか表示されず、月末の受注確認で何度も条件を変えて検索し直している。最大1000件まで表示できるようにしてほしい。",
+   "truth": [
+    "ap-server/src/main/java/jp/co/tkm/hanbai/common/Constants.java",
+    "ap-server/src/main/resources/messages_ja.properties",
+    "ap-server/src/main/webapp/WEB-INF/jsp/juchu_list.jsp",
+    "docs/画面項目定義書.xlsx"
+   ],
+   "tests_changed": [],
+   "added": []
+  },
+  {
+   "id": "cr02",
+   "sha": "a1dedf2986040a53a97e493e42ffbc8564fe3067",
+   "parent": "3c3c1c9ef2924452406da0c6c4e104c9136a2c7a",
+   "requirement": "一部の得意先が20日締めに変更となるため、請求締めを20日締めでも実行できるようにしてほしい。20日締めの得意先は毎月21日の早朝に締めを行い、請求書発行・電子請求データ送信・会計への売掛計上まで月末締めと同じ流れで処理すること。",
+   "truth": [
+    "batch-server/jp1/HANBAI_MONTHLY.ajs",
+    "batch-server/shell/seikyu_shime.sh",
+    "batch-server/shell/sql/seikyu_shime.sql",
+    "db-server/plsql/PKG_SEIKYU_SHIME.pkb",
+    "db-server/plsql/PKG_SEIKYU_SHIME.pks",
+    "docs/基本設計書_販売管理システム.docx"
+   ],
+   "tests_changed": [],
+   "added": []
+  },
+  {
+   "id": "cr03",
+   "sha": "9f2aaa428ce6f5cf5859f06791040075a0fe3bb6",
+   "parent": "3c3c1c9ef2924452406da0c6c4e104c9136a2c7a",
+   "requirement": "受注入力画面に「客先注文番号」（得意先側の発注番号、半角英数20桁、任意入力）を追加してほしい。入力した番号は倉庫向けの出荷指示データと、請求書の明細にも出力すること。",
+   "truth": [
+    "ap-server/src/main/java/jp/co/tkm/hanbai/action/JuchuInputAction.java",
+    "ap-server/src/main/java/jp/co/tkm/hanbai/action/JuchuRegistAction.java",
+    "ap-server/src/main/java/jp/co/tkm/hanbai/check/JuchuValidator.java",
+    "ap-server/src/main/java/jp/co/tkm/hanbai/dao/JuchuDao.java",
+    "ap-server/src/main/java/jp/co/tkm/hanbai/dto/JuchuDto.java",
+    "ap-server/src/main/java/jp/co/tkm/hanbai/form/JuchuForm.java",
+    "ap-server/src/main/resources/messages_ja.properties",
+    "ap-server/src/main/webapp/WEB-INF/jsp/juchu_confirm.jsp",
+    "ap-server/src/main/webapp/WEB-INF/jsp/juchu_input.jsp",
+    "ap-server/src/main/webapp/js/juchu_check.js",
+    "batch-server/interface/layout/SHUKKA_SHIJI.layout",
+    "batch-server/src/main/java/jp/co/tkm/hanbai/batch/ShukkaShijiOutBatch.java",
+    "batch-server/src/main/resources/mapper/SeikyushoMapper.xml",
+    "batch-server/src/main/resources/report/SEIKYUSHO.xml",
+    "db-server/ddl/table/T_JUCHU.sql",
+    "docs/テーブル定義書.xlsx",
+    "docs/帳票定義書_請求書.xlsx",
+    "docs/画面項目定義書.xlsx",
+    "docs/連携ファイルレイアウト定義書.xlsx"
+   ],
+   "tests_changed": [
+    "ap-server/src/test/java/jp/co/tkm/hanbai/check/JuchuValidatorTest.java"
+   ],
+   "added": [
+    "db-server/ddl/alter/20261013_T_JUCHU_ADD_KYAKUSAKI_CHUMON_NO.sql"
+   ]
+  },
+  {
+   "id": "cr04",
+   "sha": "f1be1d3b8a35081b474c9e4bb04e6530b3d7f35c",
+   "parent": "3c3c1c9ef2924452406da0c6c4e104c9136a2c7a",
+   "requirement": "得意先数の増加により、得意先コード（TOKUI_CD）を6桁から8桁に拡張する。既存コードは先頭に「00」を付けて移行する（データ移行は別作業）。画面・帳票・連携ファイルも含め、8桁の得意先コードで業務が行えるようにすること。",
+   "truth": [
+    "ap-server/src/main/java/jp/co/tkm/hanbai/check/JuchuValidator.java",
+    "ap-server/src/main/java/jp/co/tkm/hanbai/common/Constants.java",
+    "ap-server/src/main/resources/messages_ja.properties",
+    "ap-server/src/main/webapp/WEB-INF/jsp/juchu_input.jsp",
+    "ap-server/src/main/webapp/WEB-INF/jsp/juchu_list.jsp",
+    "ap-server/src/main/webapp/WEB-INF/jsp/seikyu_list.jsp",
+    "ap-server/src/main/webapp/WEB-INF/jsp/shukka_shiji.jsp",
+    "ap-server/src/main/webapp/WEB-INF/jsp/tokui_search.jsp",
+    "ap-server/src/main/webapp/js/juchu_check.js",
+    "batch-server/interface/layout/NYUKIN_DATA.layout",
+    "batch-server/interface/layout/SEIKYU_DATA.layout",
+    "batch-server/interface/layout/SHUKKA_SHIJI.layout",
+    "batch-server/src/main/java/jp/co/tkm/hanbai/batch/NyukinTorikomiBatch.java",
+    "batch-server/src/main/java/jp/co/tkm/hanbai/batch/ShukkaShijiOutBatch.java",
+    "batch-server/src/main/resources/report/SEIKYUSHO.xml",
+    "db-server/ddl/table/M_TOKUI.sql",
+    "db-server/ddl/table/T_JUCHU.sql",
+    "db-server/ddl/table/T_NYUKIN.sql",
+    "db-server/ddl/table/T_SEIKYU.sql",
+    "db-server/ddl/table/W_NYUKIN_TORIKOMI.sql",
+    "db-server/plsql/PKG_SEIKYU_SHIME.pkb",
+    "docs/テーブル定義書.xlsx",
+    "docs/帳票定義書_請求書.xlsx",
+    "docs/画面項目定義書.xlsx",
+    "docs/連携ファイルレイアウト定義書.xlsx"
+   ],
+   "tests_changed": [
+    "ap-server/src/test/java/jp/co/tkm/hanbai/check/JuchuValidatorTest.java",
+    "batch-server/src/test/java/jp/co/tkm/hanbai/batch/NyukinTorikomiBatchTest.java"
+   ],
+   "added": [
+    "db-server/ddl/alter/20261013_TOKUI_CD_8KETA.sql"
+   ]
+  },
+  {
+   "id": "cr05",
+   "sha": "ef168303726825e4c8e57d1f885148e33c940945",
+   "parent": "3c3c1c9ef2924452406da0c6c4e104c9136a2c7a",
+   "requirement": "受注入力・受注確認画面の消費税が常に切捨てで計算されており、四捨五入や切上げの得意先では請求書の消費税と1円ずれることがある。受注側の消費税計算も得意先マスタの端数処理区分（切捨て／四捨五入／切上げ）に従うようにしてほしい。",
+   "truth": [
+    "ap-server/src/main/java/jp/co/tkm/hanbai/action/JuchuConfirmAction.java",
+    "ap-server/src/main/java/jp/co/tkm/hanbai/action/JuchuInputAction.java",
+    "ap-server/src/main/java/jp/co/tkm/hanbai/common/TaxUtil.java",
+    "ap-server/src/main/java/jp/co/tkm/hanbai/dao/TokuiDao.java",
+    "ap-server/src/main/java/jp/co/tkm/hanbai/dto/TokuiDto.java",
+    "ap-server/src/main/java/jp/co/tkm/hanbai/form/JuchuForm.java",
+    "ap-server/src/main/java/jp/co/tkm/hanbai/service/JuchuService.java",
+    "ap-server/src/main/webapp/WEB-INF/jsp/juchu_input.jsp",
+    "ap-server/src/main/webapp/WEB-INF/jsp/tokui_search.jsp",
+    "ap-server/src/main/webapp/js/juchu_check.js",
+    "docs/基本設計書_販売管理システム.docx",
+    "docs/画面項目定義書.xlsx"
+   ],
+   "tests_changed": [
+    "ap-server/src/test/java/jp/co/tkm/hanbai/common/TaxUtilTest.java"
+   ],
+   "added": []
+  },
+  {
+   "id": "cr06",
+   "sha": "15da1c7ec8d454f734f3b38bc032f67e65aad3b4",
+   "parent": "3c3c1c9ef2924452406da0c6c4e104c9136a2c7a",
+   "requirement": "仕入先から得意先へ直接納品する「直送」の取引を扱えるよう、受注区分に「直送」を追加してほしい。直送は自社倉庫から出荷しないので、在庫の引当や倉庫への出荷指示データ送信は行わず、出荷指示登録の時点で出荷済とし、通常どおり請求の対象とすること。",
+   "truth": [
+    "ap-server/src/main/java/jp/co/tkm/hanbai/action/JuchuConfirmAction.java",
+    "ap-server/src/main/java/jp/co/tkm/hanbai/common/KbnConst.java",
+    "ap-server/src/main/java/jp/co/tkm/hanbai/service/JuchuService.java",
+    "ap-server/src/main/java/jp/co/tkm/hanbai/service/ShukkaService.java",
+    "ap-server/src/main/webapp/WEB-INF/jsp/juchu_confirm.jsp",
+    "ap-server/src/main/webapp/WEB-INF/jsp/juchu_input.jsp",
+    "db-server/data/M_KBN_DATA.sql",
+    "db-server/ddl/table/T_JUCHU.sql",
+    "docs/テーブル定義書.xlsx",
+    "docs/基本設計書_販売管理システム.docx",
+    "docs/画面項目定義書.xlsx"
+   ],
+   "tests_changed": [],
+   "added": []
+  },
+  {
+   "id": "cr07",
+   "sha": "1de0bf72f66259bddd6af102a19eb933c3f258e9",
+   "parent": "3c3c1c9ef2924452406da0c6c4e104c9136a2c7a",
+   "requirement": "会計システムから受け取る入金データに、振込手数料（先方が差し引いて振り込んだ額）の項目が末尾に追加されることになった。入金の自動消込は「入金額＋振込手数料」が請求残と一致すれば消し込むようにし、請求書の御入金額や請求残にも手数料分を含めて扱うこと。",
+   "truth": [
+    "batch-server/interface/layout/NYUKIN_DATA.layout",
+    "batch-server/shell/sql/nyukin_keshikomi.sql",
+    "batch-server/src/main/java/jp/co/tkm/hanbai/batch/NyukinTorikomiBatch.java",
+    "db-server/ddl/table/T_NYUKIN.sql",
+    "db-server/ddl/table/W_NYUKIN_TORIKOMI.sql",
+    "db-server/ddl/view/V_SEIKYU_ZAN.sql",
+    "db-server/plsql/PKG_SEIKYU_SHIME.pkb",
+    "docs/テーブル定義書.xlsx",
+    "docs/基本設計書_販売管理システム.docx",
+    "docs/連携ファイルレイアウト定義書.xlsx"
+   ],
+   "tests_changed": [
+    "batch-server/src/test/java/jp/co/tkm/hanbai/batch/NyukinTorikomiBatchTest.java"
+   ],
+   "added": [
+    "db-server/ddl/alter/20261013_NYUKIN_ADD_TESURYO_GAKU.sql"
+   ]
+  },
+  {
+   "id": "cr08",
+   "sha": "f7bb792725fb5faf0e63e0719bf4a23af88e6cb7",
+   "parent": "3c3c1c9ef2924452406da0c6c4e104c9136a2c7a",
+   "requirement": "得意先から請求書の明細に納品日を載せてほしいと要望があった。請求書の明細行に「納品日」（出荷日）を追加して印字すること。",
+   "truth": [
+    "batch-server/src/main/resources/mapper/SeikyushoMapper.xml",
+    "batch-server/src/main/resources/report/SEIKYUSHO.xml",
+    "docs/帳票定義書_請求書.xlsx"
+   ],
+   "tests_changed": [],
+   "added": []
+  }
+ ]
+}

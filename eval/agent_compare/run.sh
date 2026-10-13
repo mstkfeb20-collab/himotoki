@@ -17,6 +17,8 @@ HINT='影響調査には himotoki の MCP ツールを使えます。最初に i
 # read-only investigation: file reading and searching only, no edits, no web
 ALLOW=(Read Grep Glob "Bash(grep *)" "Bash(rg *)" "Bash(find *)" "Bash(ls *)" "Bash(cat *)" "Bash(head *)"
        "Bash(tail *)" "Bash(wc *)" "Bash(sed -n *)" "Bash(git grep *)" "Bash(git ls-files *)" "mcp__himotoki")
+# ALLOW_PYTHON=1 lets both conditions run python3 (e.g. to read Excel / Word design documents)
+[ "${ALLOW_PYTHON:-0}" = 1 ] && ALLOW+=("Bash(python3 *)" "Bash(python *)")
 DENY=(WebFetch WebSearch Edit Write NotebookEdit)
 n=0
 for dir in "$OUT"/*/; do

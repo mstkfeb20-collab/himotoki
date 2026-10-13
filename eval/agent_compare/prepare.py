@@ -38,6 +38,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--tasks", required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--prompt", default="prompt.txt", help="prompt template in this folder ({requirement} is replaced)")
     ap.add_argument("--repo", help="the original repository (overrides the path in the tasks file)")
     ap.add_argument("--himotoki-ai", action="store_true",
                     help="let himotoki use the AI judge (its API cost is then NOT in Claude Code's figures)")
@@ -49,7 +50,7 @@ def main():
     cmd[0] = shutil.which(cmd[0]) or cmd[0]
     out = os.path.abspath(os.path.expanduser(a.out))
     os.makedirs(out, exist_ok=True)
-    prompt = open(os.path.join(HERE, "prompt.txt"), encoding="utf-8").read()
+    prompt = open(os.path.join(HERE, a.prompt), encoding="utf-8").read()
     for task in t["tasks"]:
         base = os.path.join(out, task["id"])
         if os.path.exists(base):
