@@ -27,7 +27,23 @@ for dir in "$OUT"/*/; do
   n=$((n + 1))
   for c in $order; do
     res="$dir/result-$c.json"
-    [ -s "$res" ] && { echo "$id $c: done already"; continue; }
+    # skip only a run that finished with an answer; failed or capped runs are run again
+    # (FORCE=1 runs everything again; the previous result is kept as result-X.prev.json)
+    if [ -s "$res" ] && [ "${FORCE:-0}" != 1 ]; then
+      st=$(python3 - "$res" <<'PY'
+import json, sys
+try:
+    r = json.load(open(sys.argv[1], encoding="utf-8"))
+except Exception as e:
+    print(f"unreadable ({type(e).__name__})"); sys.exit()
+ok = not r.get("is_error") and r.get("subtype") in (None, "success") and (r.get("structured_output") or {}).get("files") is not None
+print("ok" if ok else f"failed: {r.get('subtype')} {str(r.get('result') or '')[:120]}")
+PY
+)
+      if [ "$st" = ok ]; then echo "$id $c: done already"; continue; fi
+      echo "$id $c: previous run $st -> running again"
+    fi
+    [ -s "$res" ] && mv "$res" "${res%.json}.prev.json"
     p=$(cat "$dir/prompt.txt")
     [ "$c" = B ] && p="$p"$'\n\n'"$HINT"
     start=$(date +%s)
