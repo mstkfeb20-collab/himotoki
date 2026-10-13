@@ -1,4 +1,4 @@
-import type { GraphInfo, Handoff, KnowledgeSummary, IndexReport, NodeDetail, RunEvent, RunState, RunSummary, Verification, WorkspaceUsage } from "./types";
+import type { GraphInfo, Handoff, KnowledgeSummary, IndexReport, NodeDetail, RunEvent, RunState, RunSummary, Verification, WorkspaceUsage, DocCheck, DocSummary } from "./types";
 
 async function req<T>(method: string, url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
@@ -27,6 +27,10 @@ export const api = {
   indexSystem: (repos: Record<string, string>, graph: string, docs_dir?: string) =>
     req<{ status: string; graph: string }>("POST", "/api/index", { repos, graph, docs_dir: docs_dir || null }),
   indexStatus: (graph?: string | null) => req<any>("GET", `/api/index${graph ? `?graph=${encodeURIComponent(graph)}` : ""}`),
+  docs: (graph?: string | null) =>
+    req<DocSummary[]>("GET", `/api/docs${graph ? `?graph=${encodeURIComponent(graph)}` : ""}`),
+  docCheck: (path: string, graph?: string | null) =>
+    req<DocCheck>("GET", `/api/docs/check?path=${encodeURIComponent(path)}${graph ? `&graph=${encodeURIComponent(graph)}` : ""}`),
   indexReport: (graph?: string | null) =>
     req<IndexReport>("GET", `/api/index/report${graph ? `?graph=${encodeURIComponent(graph)}` : ""}`),
   diffRun: (base: string, head: string, graph?: string | null, title?: string, repo?: string | null) =>

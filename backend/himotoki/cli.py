@@ -10,6 +10,7 @@
   python -m himotoki.cli catalog oracle (--csv-dir DIR | --dsn DSN --user U --password P [--owner O]) [--name NAME]
   python -m himotoki.cli runtime (--pg DSN | --csv FILE) [--name NAME]
   python -m himotoki.cli report  [--graph NAME]                 what the graph knows it is missing
+  python -m himotoki.cli docs-check [FILE ...] [--graph NAME] [--html OUT]  did the design documents get read?
   python -m himotoki.cli analyze "要求文" [--graph NAME] [--json]
   python -m himotoki.cli diff    --base REF --head REF [--graph NAME]   regression scope of a change set
   python -m himotoki.cli serve   [--port 8765]
@@ -24,6 +25,42 @@ import argparse
 import json
 import os
 import sys
+
+
+def _docs_check(ws, a):
+    from .doccheck import check_document, check_graph_document, display_path, document_list, to_html
+    from .rules import load_rules
+    e = ws.engine(a.graph)
+    rules = load_rules()
+    reports = []
+    if a.files:
+        for f in a.files:
+            if not os.path.isfile(f):
+                sys.exit(f"ファイルがありません: {f}")
+            with open(f, "rb") as fh:
+                reports.append(check_document(display_path(e, f), fh.read(), rules, e.store if e else None))
+    else:
+        if e is None:
+            sys.exit("取り込み済みのグラフがありません。先に himotoki index を実行するか、設計書のファイルを指定してください")
+        for d in document_list(e.store):
+            r = check_graph_document(e, d["path"], rules)
+            if r is not None:
+                reports.append(r)
+        if not reports:
+            sys.exit("このグラフには設計書（Excel・Word・Markdown）がありません")
+    if a.json:
+        print(json.dumps(reports, ensure_ascii=False, indent=1))
+    else:
+        for r in reports:
+            s = r.get("summary", {})
+            warn = sum(1 for f in r.get("findings", []) if f["level"] in ("warn", "error"))
+            print(f"{r['path']}: 読んだ行 {s.get('rows_read', 0)}（結びついた行 {s.get('linked_rows', 0)}）・節 {s.get('sections', 0)}"
+                  f"・要確認 {warn}")
+            for f in r.get("findings", [])[:6]:
+                print(f"   {'!' if f['level'] != 'info' else '-'} {f['message'][:160]}")
+    with open(a.html, "w", encoding="utf-8") as fh:
+        fh.write(to_html(reports))
+    print(f"詳細: {os.path.abspath(a.html)}", file=sys.stderr)
 
 
 def main(argv=None):
@@ -48,6 +85,9 @@ def main(argv=None):
     p = sub.add_parser("runtime"); p.add_argument("--pg"); p.add_argument("--csv"); p.add_argument("--name", default="runtime")
     p.add_argument("--dialect")
     p = sub.add_parser("report"); p.add_argument("--graph")
+    p = sub.add_parser("docs-check", help="設計書が読めているかを確認する（原本と抽出結果を並べた HTML を出す）")
+    p.add_argument("files", nargs="*", help="設計書のファイル（省略時は、取り込み済みの設計書すべて）")
+    p.add_argument("--graph"); p.add_argument("--html", default="docs-check.html"); p.add_argument("--json", action="store_true")
     p = sub.add_parser("analyze"); p.add_argument("requirement"); p.add_argument("--graph"); p.add_argument("--depth", type=int, default=3)
     p.add_argument("--llm-max-items", help="AI-judged candidates for this run: a number, or 'unlimited'")
     p.add_argument("--llm-min-score", type=float, help="candidates below this score are judged by rules")
@@ -136,6 +176,8 @@ def main(argv=None):
         f = from_pg_stat_statements(a.pg, a.name) if a.pg else from_csv(a.csv, a.name, dialect=a.dialect)
         print(save_source(ws.root, f), sum(1 for n in f.nodes if n["kind"] == "RuntimeSql"), "statements")
         return
+    if a.cmd == "docs-check":
+        return _docs_check(ws, a)
     if a.cmd == "report":
         st = ws.stats(a.graph)
         print(json.dumps({k: st.get(k) for k in ("nodes", "edges", "by_kind", "unresolved", "unresolved_samples",
@@ -195,10 +237,6 @@ def main(argv=None):
     for c in top:
         print(f"  {c['confidence']:.2f}  {c['kind']:<12} {c['name'][:56]:<56} {c['reason'] or ''}")
     print(f"ビュワー: himotoki serve --open → http://localhost:8765/?run={rid}")
-
-
-if __name__ == "__main__":
-    main()
 
 
 def _serve(host: str, port: int, open_browser: bool = False, path: str = ""):
@@ -278,3 +316,7 @@ def _handoff_cmds(a, ws):
     except ValueError as ex:
         sys.exit(str(ex))
     print(verification_markdown(verify_change(e, a.run_id, hunks, a.base, a.head, a.actual_days)))
+
+
+if __name__ == "__main__":      # last, so every helper above is defined when run as python -m himotoki.cli
+    main()

@@ -275,7 +275,7 @@ export default function App() {
                   onOnlyLayer={(layer) => setFilters((f) => ({ ...f, layers: Object.fromEntries(Object.keys(f.layers).map((k) => [k, k === layer])) }))} />}
                 {side === "log" && <LogPanel events={events} onSelect={select} />}
                 {side === "diff" && <DiffPanel run={run} onOpenRun={setRunId} />}
-                {side === "index" && <IndexPanel graph={runGraph} />}
+                {side === "index" && <IndexPanel graph={runGraph} onSelect={select} />}
                 {side === "learn" && <KnowledgePanel graph={runGraph} onSelect={select} />}
               </div>
             </div>

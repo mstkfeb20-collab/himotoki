@@ -76,7 +76,7 @@ pip install ./backend && himotoki demo                  # サンプルを取り�
 | `sql` | *.sql、および他の抽出器が見つけた SQL 文字列 | sqlglot で CRUD・列を解析（失敗時は正規表現）。CREATE TABLE・コメント・PL/SQL・PL/pgSQL のオブジェクト |
 | `props` | *.properties・YAML | メッセージキー（全ロケール）・設定キー |
 | `jobs` | JP1/AJS の定義（ajsprint 形式）・crontab | ジョブネット・ジョブ・先行関係・起動するスクリプト |
-| `docs` | Excel・Word・Markdown（.xls/.doc は LibreOffice で変換） | 表の見出し行を自動で探し、行ごとに「設計書の項目」を作る。CRUD表（機能×テーブル）も検出 |
+| `docs` | Excel・Word・Markdown（.xls/.doc は LibreOffice で変換） | 表の見出し行を自動で探し、行ごとに「設計書の項目」を作る。CRUD表（機能×テーブル）も検出。読めたもの・読めなかったもの（表の外の文字、図形・テキストボックス・画像、意味の分からない見出し）は `himotoki docs-check` とビュワーの「設計書の取込確認」で原本と見比べられる |
 
 抽出結果は `FileFacts`（ノード、ファイル内の関係、`table:reserve` や `view:reservetour/reserveForm` のような**キーへの参照**）という共通形式で、ファイルごとに独立しています。そのため並列に処理でき、キャッシュも効きます。
 
@@ -248,6 +248,7 @@ himotoki runtime --pg "postgresql://user@host/db" --name prod-rt  # pg_stat_stat
 himotoki runtime --csv sql_stats.csv --name ora-rt               # V$SQL などのエクスポート
 
 himotoki report                       # 取込状況（未解決・ずれ・実行時SQLの対応）
+himotoki docs-check [FILE…]           # 設計書の取込確認（読めた表・読めなかった図形や文字・結びつき → HTML）
 himotoki analyze "要求文"            # 要求から
 himotoki diff --base main --head feature/x   # 差分から（回帰確認の範囲）
 himotoki knowledge                     # 過去の判断・実績から学んだこと（analyze --no-learning で使わずに解析）
@@ -387,6 +388,8 @@ AI（Claude）を使うのは「要求の構造化」と「候補の判定」と
 | GET | /api/requirements/example | チュートリアル用の練習の要求（リポジトリの項目から作成） |
 | POST | /api/index | インデックス（repo, docs_dir, ref, graph）。システム単位は `repos: {名前: パス}` と `graph` |
 | GET | /api/index/report | 取込状況（未解決参照・ずれ・実行時SQLの対応・エラー） |
+| GET | /api/docs | 取り込んだ設計書の一覧（読んだ行・節・結びつきの数） |
+| GET | /api/docs/check?path= | 設計書 1 本の取込確認（取り込み済みの設計書だけを読み直す） |
 | POST | /api/sources/catalog・/api/sources/runtime | DB辞書・実行時SQLの取込 |
 | POST | /api/runs | 要求から解析（`llm_max_items`・`llm_min_score` で今回だけAIの上限・閾値を変更） |
 | GET | /api/knowledge | このシステムで学習したこと（経路の傾向・要素の履歴・学習した関係） |
@@ -512,7 +515,7 @@ v1 からの回帰確認です。正解リストは `eval/ground_truth.json`、�
 
 ### テスト
 
-`backend/tests`（63 件、すべてオフライン）:
+`backend/tests`（67 件、すべてオフライン）:
 
 - 小さな固定リポジトリでの一連の操作
 - 一時リポジトリでの仕組みの検証: 社内フレームワークのルールパック、JP1→シェル→データファイル→後続ジョブ、Excel の見出し検出と CRUD 表、DB辞書のずれと実行時SQLの対応、キャッシュの増分、差分モード、Webhook の解釈、SQL の端のケース
@@ -520,6 +523,7 @@ v1 からの回帰確認です。正解リストは `eval/ground_truth.json`、�
 - 学習（`test_learning.py`）: 繰り返し除外された要素の確度が下がり理由が出ること、経路の傾向は一定件数の判断までは動かないこと、判断を戻すと学習も戻ること、再調査は同じ解析として数えること、照合で見つかった関係が次の解析で候補に出ること、取り込み直しても残ること、解析ごと・項目ごとの無効化、API と MCP
 - 開発への引き渡し（`test_handoff.py`）: 作業指示の内容（ファイルごと・コメント・トランザクションの注意・定義場所・除外・未判定）、実装後の照合（当たり・判断の見直し・グラフの欠け・変更されなかった予測・規模の補正）、MCP と API
 - 利用開始（`test_getting_started.py`）: 同梱ビュワーがソースと一致していること、ワークスペースの作成と検出、引数なしの取り込み、デモ、環境確認、Shift_JIS のソース
+- 設計書の取込確認（`test_doccheck.py`）: 方眼紙型の Excel（結合セル・図形・線・グラフ・コメント・表の外の文字）と見出しを認識できない Word の表を報告すること、意味の分からない見出しの指摘、グラフとの結びつき、取り込み済みの設計書以外は API から読めないこと、CLI の HTML
 - TypeScript（`test_typescript.py`）: tsconfig の `paths`・ワークスペースパッケージの `exports`・`export *` の再エクスポートを通じた解決、JSX のコンポーネント、Supabase・Prisma の読み書き、`implements` の実装関係、Next.js の画面・API、テスト、日本語の要求が画面の文言から画面とその部品に届くこと
 - 語の特異度（`test_specificity.py`）: システム中で一般的な語ほど重みが下がり、境界がシステムの規模に合わせて動くこと、連結した語（working capital loan → WorkingCapitalLoan）を識別子として見つけること
 - AI判定の予算（`test_llm_budget.py`）: 再調査での再利用、閾値、上限、上限なし、設定ファイル・環境変数・解析ごとの指定の優先順位

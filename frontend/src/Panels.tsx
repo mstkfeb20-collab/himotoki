@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
+import DocsCheckDialog from "./DocsCheck";
 import { LAYERS_JA, sizeOf } from "./sizing";
 import type { IndexReport, KnowledgeSummary, RunEvent, RunState } from "./types";
 
@@ -179,8 +180,9 @@ export function DiffPanel({ run, onOpenRun }: { run: RunState; onOpenRun: (id: s
 
 /** What the graph itself knows it is missing. Shown next to the run so that a
  * reviewer judging "is this complete?" sees the blind spots of the index too. */
-export function IndexPanel({ graph }: { graph?: string | null }) {
+export function IndexPanel({ graph, onSelect }: { graph?: string | null; onSelect?: (ids: string[]) => void }) {
   const [r, setR] = useState<IndexReport | null>(null);
+  const [docsOpen, setDocsOpen] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   useEffect(() => { setR(null); api.indexReport(graph).then(setR).catch((e) => setErr(e.message)); }, [graph]);
   if (err) return <p className="warn small">{err}</p>;
@@ -194,6 +196,14 @@ export function IndexPanel({ graph }: { graph?: string | null }) {
         <span className="mono small">{r.files} ファイル・ノード {r.nodes}・関係 {r.edges}</span></div>
       <p className="muted small">再抽出 {r.parsed}・キャッシュ {r.cached}・{r.seconds}秒{r.commit ? `・${r.commit.slice(0, 8)}` : ""}
         {r.rules?.length ? `・ルール ${r.rules.join(", ")}` : ""}</p>
+
+      <span className="k">設計書</span>
+      <div className="row between">
+        <span className="small">{r.by_extractor?.docs ? `${r.by_extractor.docs} ファイルを読みました` : "取り込まれていません"}</span>
+        <button className="btn small" onClick={() => setDocsOpen(true)}>設計書の取込確認</button>
+      </div>
+      {docsOpen && <DocsCheckDialog graph={graph} onClose={() => setDocsOpen(false)}
+        onSelect={onSelect ? (id) => { setDocsOpen(false); onSelect([id]); } : undefined} />}
 
       <span className="k">解決できなかった参照 {unresolved.length ? "" : "（なし）"}</span>
       {unresolved.length > 0 && (

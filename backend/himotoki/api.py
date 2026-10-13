@@ -390,6 +390,23 @@ def runtime(req: RuntimeReq):
             "note": "re-index to link it with the code"}
 
 
+@app.get("/api/docs")
+def docs_list(graph: str | None = None):
+    """Design documents in the graph, with how many rows / sections were read and linked."""
+    from .doccheck import document_list
+    return document_list(eng(graph).store)
+
+
+@app.get("/api/docs/check")
+def docs_check(path: str, graph: str | None = None):
+    """Read one indexed design document again and show what was read and what was not."""
+    from .doccheck import check_graph_document
+    rep = check_graph_document(eng(graph), path)
+    if rep is None:
+        raise HTTPException(404, "not an indexed design document")
+    return rep
+
+
 @app.get("/api/search")
 def search(q: str, k: int = 15, graph: str | None = None):
     return [{"id": n.id, "name": n.name, "kind": n.kind, "file": n.file, "score": round(s, 3)}

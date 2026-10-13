@@ -162,3 +162,28 @@ export interface KnowledgeSummary {
     confirmed: number; excluded: number; missed: number; untouched: number; ignored: boolean }[];
   links: { key: string; src: string; src_name: string; dst: string; dst_name: string; count: number; weight: number; ignored: boolean }[];
 }
+
+
+/** Design documents: what the extractor read from each one (himotoki/doccheck.py). */
+export interface DocSummary { path: string; name: string; rows: number; sections: number; linked: number; }
+export interface DocTarget { id: string; name: string; kind: string; file?: string | null; conf: number; rel: string; }
+export interface DocRow { id: string; cell: string; name: string; fields: Record<string, string>; targets: DocTarget[]; named: string[]; }
+export interface DocColumn { cell?: string; label: string; as: string | null; as_ja?: string | null; used?: boolean; }
+export interface DocSheet {
+  name: string; rows: number; cells: number; merged: number; read_cells: number;
+  tables: { header_row: number; columns: DocColumn[]; unrecognised: string[]; rows: number; linked: number; sample: DocRow[] }[];
+  crud_rows: number; crud_tables: string[];
+  uncovered: { row: number; cells: [string, string][] }[]; uncovered_rows: number; uncovered_cells: number;
+  header_candidates: { row: number; labels: string[] }[];
+  shapes: number; shape_texts: string[]; pictures: number; charts: number; connectors: number; comments: number;
+}
+export interface DocCheck {
+  path: string; format: "xlsx" | "docx" | "text"; errors: string[];
+  summary: { rows_read: number; sections: number; linked_rows: number; linked_sections: number; graph: boolean;
+             cells: number; read_cells: number; unread_drawings: number };
+  findings: { level: "error" | "warn" | "info"; where: string; message: string }[];
+  sheets?: DocSheet[];
+  sections?: { id: string; title: string; chars: number; cut: boolean; targets: DocTarget[]; mentions: number }[];
+  tables?: { name: string; rows: number; read_rows: number; linked: number; header: DocColumn[]; recognised: boolean; sample: DocRow[] }[];
+  textboxes?: string[]; pictures?: number; charts?: number;
+}
