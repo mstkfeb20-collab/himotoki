@@ -30,6 +30,7 @@
 
 - `tasks_fineract.json`: Fineract の 6 件（変更ファイル 2〜14）
 - `tasks_marumie.json`: marumie の 6 件（変更ファイル 2〜15）
+- `tasks_mirai-gikai.json`: mirai-gikai の 6 件（変更ファイル 2〜15。`git clone https://github.com/team-mirai/mirai-gikai.git ~/work/mirai-gikai`）
 
 ## 手順
 

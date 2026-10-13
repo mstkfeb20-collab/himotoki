@@ -1,0 +1,83 @@
+{
+ "repo": "~/work/mirai-gikai",
+ "tasks": [
+  {
+   "id": "7144ae06",
+   "sha": "7144ae06dc184428a689ad04dd1814b06622d7cd",
+   "parent": "c1a2a30c6027b7f728bf87c83f41a2e2b8841966",
+   "requirement": "SNSリンク更新し、noteとthreadsを追加",
+   "truth": [
+    "web/src/components/top/team-mirai.tsx",
+    "web/src/lib/social-links.ts"
+   ]
+  },
+  {
+   "id": "bf2a9f87",
+   "sha": "bf2a9f87ec6ea89ceb5c33146651364a57932b04",
+   "parent": "9c2e4e4796bc380b68b718d6584fe5036aef08c6",
+   "requirement": "MCPに upsert_mirai_stance ツールを追加",
+   "truth": [
+    "admin/src/features/mcp/server/create-handler.ts",
+    "admin/src/features/mirai-stance/server/repositories/mirai-stance-repository.ts"
+   ]
+  },
+  {
+   "id": "6391eaa8",
+   "sha": "6391eaa89a20e89fc3dc70325736905ef4915915",
+   "parent": "2841fed7f15ce3f8b9f4375a9166fffe8884229d",
+   "requirement": "adminにGoogleログイン機能を追加",
+   "truth": [
+    "admin/src/features/auth/client/components/login-form.tsx",
+    "admin/src/features/auth/client/lib/auth-client.ts",
+    "admin/src/middleware.ts"
+   ]
+  },
+  {
+   "id": "a53b28f9",
+   "sha": "a53b28f960a8dc0e353fac8130e30af8e8e9f3bd",
+   "parent": "9c4bb762f088c8bb58cf90fd0ff6331f027144f6",
+   "requirement": "ふりがな表示時の引用クラッシュを防ぐ",
+   "truth": [
+    "web/src/features/user-topic-analysis/client/components/clamped-quote.tsx",
+    "web/src/features/user-topic-analysis/shared/components/topic-card.tsx",
+    "web/src/lib/rubyful/initializer.tsx"
+   ]
+  },
+  {
+   "id": "759cf6c2",
+   "sha": "759cf6c28bf3db960c66079cea0f7a88b0a565d1",
+   "parent": "87ebc924fae53717ecdce6dc9a69d0bf16183e64",
+   "requirement": "モバイルでパンくずが固定ヘッダーに埋もれる問題を修正",
+   "truth": [
+    "web/src/components/layouts/main-layout.tsx",
+    "web/src/features/interview-config/client/components/interview-landing-section.tsx",
+    "web/src/features/user-topic-analysis/client/components/topic-filter-chips.tsx",
+    "web/src/features/user-topic-analysis/client/components/topic-list.tsx",
+    "web/src/features/user-topic-analysis/shared/components/topic-card.tsx"
+   ]
+  },
+  {
+   "id": "dce805f1",
+   "sha": "dce805f1ed170a66ca797ec98713345104f97b58",
+   "parent": "f7aad04602ddaf255fcf40a9c7f79283d00aa941",
+   "requirement": "インタビューシミュレーションを実装",
+   "truth": [
+    "admin/src/app/(protected)/bills/[id]/interview/[configId]/edit/page.tsx",
+    "admin/src/app/(protected)/bills/[id]/interview/new/page.tsx",
+    "admin/src/features/interview-config/client/components/interview-config-edit-client.tsx",
+    "admin/src/features/interview-config/client/components/interview-config-form.tsx",
+    "admin/src/features/interview-config/client/components/interview-config-list.tsx",
+    "admin/src/features/interview-config/client/components/interview-question-list.tsx",
+    "admin/src/features/interview-reports/server/components/session-list.tsx",
+    "packages/seed/main/run.ts",
+    "packages/seed/main/shipping-bill-data.ts",
+    "web/src/features/interview-session/shared/utils/build-summary-system-prompt.ts",
+    "web/src/features/interview-session/shared/utils/interview-logic/bill-clarification-guidance.ts",
+    "web/src/features/interview-session/shared/utils/interview-logic/bulk-mode.ts",
+    "web/src/features/interview-session/shared/utils/interview-logic/loop-mode.ts",
+    "web/src/features/interview-session/shared/utils/interview-logic/types.ts",
+    "web/src/features/interview-session/shared/utils/stage-transition-guidance.ts"
+   ]
+  }
+ ]
+}
