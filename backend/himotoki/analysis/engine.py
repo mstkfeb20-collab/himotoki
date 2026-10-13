@@ -217,8 +217,13 @@ class Engine:
     # ------------------------------------------------------------ indexes
     def reload(self) -> None:
         nodes = self.store.nodes()
-        self.search = NodeSearch(n for n in nodes if n.kind not in (Kind.REQUIREMENT, Kind.INTENT, Kind.CONFIG)
-                                 or not n.file)
+        gp = getattr(self.store, "path", None)
+        key = None
+        if gp and os.path.exists(gp):       # the graph file's identity: rebuilt whenever it changes
+            st = os.stat(gp)
+            key = f"{st.st_mtime_ns}:{st.st_size}:{len(nodes)}"
+        self.search = NodeSearch((n for n in nodes if n.kind not in (Kind.REQUIREMENT, Kind.INTENT, Kind.CONFIG)
+                                  or not n.file), cache=os.path.join(self.data_dir, "search.pkl"), key=key)
         vocab: dict[str, list[str]] = defaultdict(list)
         for n in nodes:
             if n.kind == Kind.MESSAGE:

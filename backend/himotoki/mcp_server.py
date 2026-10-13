@@ -6,6 +6,10 @@ Agents get structured answers (who calls this, which tables, which jobs, what a
 requirement or a change set reaches) instead of reading whole files, and the
 code itself never has to leave the network.
 
+For an agent working on a requirement: `impact_files` first (ranked files with the
+path that leads to each, about 2k tokens), then `get_element` / `neighbors` on what it
+names. The default graph is opened in the background at start-up.
+
 Hand-off to development: `list_runs` → `get_handoff` (the reviewed scope as a
 work order) → implement → `verify_change` (the actual diff against the
 prediction).
@@ -15,6 +19,8 @@ Claude Code:  claude mcp add --transport stdio --env HIMOTOKI_DATA_DIR=<workspac
 from __future__ import annotations
 
 import os
+import re
+import threading
 
 try:                                    # mcp >= 2
     from mcp.server.mcpserver import MCPServer as _Server
@@ -25,14 +31,25 @@ from .workspace import Workspace
 
 mcp = _Server("himotoki")
 _ws: Workspace | None = None
+_ws_lock = threading.Lock()
 
 
 def ws() -> Workspace:
     global _ws
-    if _ws is None:
-        from .setup_cmds import find_workspace
-        _ws = Workspace(os.environ.get("HIMOTOKI_DATA_DIR") or find_workspace() or "./data")
+    with _ws_lock:
+        if _ws is None:
+            from .setup_cmds import find_workspace
+            _ws = Workspace(os.environ.get("HIMOTOKI_DATA_DIR") or find_workspace() or "./data")
     return _ws
+
+
+def _preload():
+    """Open the default graph while the agent is still reading the task, so the first
+    tool call does not pay for loading it (a large graph takes seconds to tens of seconds)."""
+    try:
+        ws().engine(None)
+    except Exception:           # a missing or broken workspace is reported by the first tool call
+        pass
 
 
 def _run_engine(run_id: str):
@@ -67,14 +84,30 @@ def search_elements(query: str, limit: int = 15, graph: str | None = None) -> li
 
 
 @mcp.tool()
-def get_element(node_id: str, graph: str | None = None) -> dict:
-    """Details of one element: source excerpt, callers/callees, design documents, tests, change history."""
+def get_element(node_id: str, lines: int = 40, graph: str | None = None) -> dict:
+    """One element: where it is, its source (up to `lines` lines), what it calls and what calls it,
+    tables it reads / writes, design documents describing it and tests covering it. Compact:
+    relations are names and ids (follow them with get_element / neighbors)."""
     d = _engine(graph).node_detail(node_id)
     if not d:
         return {"error": f"not found: {node_id}"}
-    d["code"] = "\n".join(f"{l['n']}: {l['text']}" for l in d.get("code", [])[:80])
-    d["neighbors"] = d["neighbors"][:80]
-    return d
+    n = d["node"]
+    rel = lambda xs, k=25: [{"rel": x["rel"], "id": x["id"], "name": x["name"], "kind": x["kind"]} for x in xs[:k]]
+    nb = d.get("neighbors", [])
+    out = {
+        "id": n["id"], "kind": n["kind"], "name": n["name"], "file": n.get("file"), "line": n.get("line"),
+        "end_line": n.get("end_line"),
+        "code": "\n".join(f"{l['n']}: {l['text']}" for l in d.get("code", [])[:max(0, lines)]),
+        "used_by": rel([x for x in nb if x["dir"] == "in" and x["rel"] not in ("TESTS", "DESCRIBES", "CONTAINS")]),
+        "uses": rel([x for x in nb if x["dir"] == "out" and x["rel"] not in ("CONTAINS",)]),
+        "contains": [x["name"] for x in nb if x["dir"] == "out" and x["rel"] == "CONTAINS"][:30],
+        "docs": [{"id": x["id"], "name": x["name"], "text": (x.get("text") or "")[:300]} for x in d.get("docs", [])[:4]],
+        "tests": [x["name"] for x in d.get("tests", [])[:10]],
+    }
+    tx = (n.get("props") or {}).get("tx_risks")
+    if tx:
+        out["tx_risks"] = [r.get("message") for r in tx[:5]]
+    return out
 
 
 @mcp.tool()
@@ -97,8 +130,61 @@ def neighbors(node_id: str, direction: str = "both", relations: list[str] | None
     return out[:300]
 
 
+def _chain(e, st, nid, limit=4) -> str:
+    """Requirement -> ... -> element, as names, with the reason at the start."""
+    c = st["candidates"][nid]
+    ids = c.get("path") or [nid]
+    names = [st["candidates"][i]["name"] for i in ids if i in st["candidates"]]
+    if len(names) > limit:
+        names = names[:1] + ["…"] + names[-(limit - 2):]
+    root = st["candidates"].get(ids[0], c)
+    why = re.sub(r"（[^）]*）", "", root.get("seed_reason") or "")[:80]     # the long notes stay in the viewer
+    return (f"{why} ⇒ " if why else "") + " → ".join(names)
+
+
 @mcp.tool()
-def analyze_requirement(requirement: str, graph: str | None = None, top: int = 40,
+def impact_files(requirement: str, top: int = 10, graph: str | None = None) -> dict:
+    """START HERE for "what has to change for this requirement / ticket?". Ranks the files most
+    likely to change, each with its strongest elements and the path that leads there from the
+    requirement (identifier / wording matches, calls, data access, screens, design documents).
+    Deliberately short: read the files it names, confirm or widen with get_element / neighbors,
+    and treat the ranking as candidates, not a verdict. Also returns tables, jobs and design
+    documents reached outside the source files, and test files to look at."""
+    e = _engine(graph)
+    rid = e.start_run(requirement, background=False)
+    st = e.state(rid)
+    cands = sorted(st["candidates"].values(), key=lambda c: -(c.get("confidence") or c["score"]))
+    files, data, tests = {}, [], {}
+    for c in cands:
+        f = c.get("file")
+        sc = round(c.get("confidence") or c["score"], 2)
+        if c["kind"] in ("TestClass", "TestMethod"):
+            if f and f not in tests and len(tests) < 6:
+                tests[f] = sc
+            continue
+        if not f or f.startswith("design:"):
+            if len(data) < 8 and c["kind"] not in ("Column",):
+                data.append({"name": c["name"], "kind": c["kind"], "score": sc, "file": f,
+                             "why": _chain(e, st, c["node_id"], 3)})
+            continue
+        if f not in files:
+            if len(files) >= top:
+                continue
+            files[f] = {"file": f, "score": sc, "verdict": c.get("verdict"), "why": _chain(e, st, c["node_id"]),
+                        "elements": []}
+        if len(files[f]["elements"]) < 3:
+            files[f]["elements"].append({"id": c["node_id"], "name": c["name"], "kind": c["kind"], "line": c.get("line")})
+    all_files = {c.get("file") for c in cands if c.get("file") and not c["file"].startswith("design:")}
+    return {"run_id": rid,
+            "intents": [{"summary": i["summary"][:120], "keywords": (i.get("keywords") or [])[:8]} for i in st["intents"]],
+            "files": list(files.values()), "data_and_docs": data,
+            "tests": [{"file": f, "score": s} for f, s in tests.items()],
+            "more": {"files": len(all_files), "candidates": len(cands),
+                     "hint": "get_element(id) で中身とつながり、analyze_requirement で要素単位の一覧"}}
+
+
+@mcp.tool()
+def analyze_requirement(requirement: str, graph: str | None = None, top: int = 20,
                         llm_max_items: str | None = None) -> dict:
     """Run an impact analysis for a requirement text. Returns intents, the most likely
     impacted elements with reasons, the completeness checks and an effort estimate.
@@ -110,8 +196,10 @@ def analyze_requirement(requirement: str, graph: str | None = None, top: int = 4
     st = e.state(rid)
     cands = sorted(st["candidates"].values(), key=lambda c: -(c.get("confidence") or c["score"]))
     return {"run_id": rid, "intents": st["intents"],
-            "candidates": [{k: c.get(k) for k in ("node_id", "kind", "name", "file", "line", "verdict", "confidence",
-                                                  "reason", "origin", "tx_risks") if c.get(k) is not None}
+            "candidates": [{**{k: c.get(k) for k in ("node_id", "kind", "name", "file", "line", "verdict", "confidence",
+                                                     "origin") if c.get(k) is not None},
+                            "reason": (c.get("reason") or "")[:200],
+                            **({"tx_risks": [r.get("code") for r in c["tx_risks"][:4]]} if c.get("tx_risks") else {})}
                            for c in cands[:top]],
             "total_candidates": len(cands),
             "checks": [{k: c[k] for k in ("key", "title", "ok", "detail")} for c in st["checks"]],
@@ -202,6 +290,7 @@ def index_gaps(graph: str | None = None) -> dict:
 
 
 def main():
+    threading.Thread(target=_preload, daemon=True).start()
     mcp.run("stdio")
 
 

@@ -31,6 +31,7 @@ def usage(res: dict) -> dict:
     return {"input": u.get("input_tokens", 0), "cache_write": u.get("cache_creation_input_tokens", 0),
             "cache_read": u.get("cache_read_input_tokens", 0), "output": u.get("output_tokens", 0),
             "cost": res.get("total_cost_usd") or 0.0, "turns": res.get("num_turns") or 0,
+            "tools": res.get("tool_calls") or {},
             "seconds": round((res.get("duration_ms") or 0) / 1000)}
 
 
@@ -56,11 +57,21 @@ def main():
                          "precision": len(hit) / len(got) if got else 0.0,
                          "missed": sorted(truth - set(got)), "error": res.get("is_error") or res.get("subtype") not in (None, "success"),
                          **usage(res)})
-    print("| task | 条件 | 正解 | 挙げた | 当たり | 再現率 | 適合率 | 入力 | キャッシュ読 | 出力 | 費用$ | ターン | 秒 |")
-    print("|---|---|---|---|---|---|---|---|---|---|---|---|---|")
+    def tools_short(t):
+        if not t:
+            return "—"
+        mcp = sum(v for k, v in t.items() if k.startswith("mcp__"))
+        sub = sum(v for k, v in t.items() if k in ("Task", "Agent"))
+        search = sum(v for k, v in t.items() if k in ("Grep", "Glob") or k == "Bash")
+        read = t.get("Read", 0)
+        return f"himotoki {mcp}・検索 {search}・読込 {read}" + (f"・サブエージェント {sub}" if sub else "")
+
+    print("| task | 条件 | 正解 | 挙げた | 当たり | 再現率 | 適合率 | 入力 | キャッシュ読 | 出力 | 費用$ | ターン | 秒 | 道具 |")
+    print("|---|---|---|---|---|---|---|---|---|---|---|---|---|---|")
     for r in rows:
         print(f"| {r['task']} | {r['cond']} | {r['truth']} | {r['listed']} | {r['hit']} | {r['recall']:.0%} | {r['precision']:.0%} "
-              f"| {r['input'] + r['cache_write']:,} | {r['cache_read']:,} | {r['output']:,} | {r['cost']:.2f} | {r['turns']} | {r['seconds']} |"
+              f"| {r['input'] + r['cache_write']:,} | {r['cache_read']:,} | {r['output']:,} | {r['cost']:.2f} | {r['turns']} | {r['seconds']} "
+              f"| {tools_short(r['tools'])} |"
               + (" ⚠" if r["error"] else ""))
     print()
     for c, label in (("A", "Claude Code 単体"), ("B", "himotoki あり")):

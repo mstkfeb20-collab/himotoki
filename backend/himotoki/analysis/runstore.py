@@ -15,6 +15,8 @@ class RunStore:
         os.makedirs(data_dir, exist_ok=True)
         self.db = sqlite3.connect(os.path.join(data_dir, "runs.db"), check_same_thread=False)
         self.lock = threading.Lock()
+        self._last_commit = 0.0
+        self._pending: list[tuple] = []      # events not yet written (no transaction is left open)
         with self.lock:
             self.db.executescript("""
             CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY, created REAL, state TEXT);
@@ -25,6 +27,7 @@ class RunStore:
 
     def save(self, state: dict) -> None:
         with self.lock:
+            self._flush()
             self.db.execute("INSERT OR REPLACE INTO runs VALUES (?,?,?)",
                             (state["id"], state["created_at"], json.dumps(state, ensure_ascii=False)))
             self.db.commit()
@@ -47,13 +50,24 @@ class RunStore:
     def append_event(self, run_id: str, seq: int, etype: str, data: dict) -> dict:
         ev = {"seq": seq, "ts": time.time(), "type": etype, "data": data}
         with self.lock:
-            self.db.execute("INSERT OR REPLACE INTO events VALUES (?,?,?,?,?)",
-                            (run_id, seq, ev["ts"], etype, json.dumps(data, ensure_ascii=False)))
-            self.db.commit()
+            # a run emits thousands of events; one transaction per event cost ~1 ms each.
+            # They are written in batches (each batch its own short transaction, so other
+            # processes sharing runs.db are never locked out) and at the end of a run.
+            self._pending.append((run_id, seq, ev["ts"], etype, json.dumps(data, ensure_ascii=False)))
+            if ev["ts"] - self._last_commit > 0.5 or etype in ("run.done", "error"):
+                self._flush()
         return ev
+
+    def _flush(self) -> None:
+        if self._pending:
+            self.db.executemany("INSERT OR REPLACE INTO events VALUES (?,?,?,?,?)", self._pending)
+            self.db.commit()
+            self._pending = []
+        self._last_commit = time.time()
 
     def events(self, run_id: str, after: int = -1) -> list[dict]:
         with self.lock:
+            self._flush()
             rows = self.db.execute("SELECT seq, ts, type, data FROM events WHERE run_id=? AND seq>? "
                                    "ORDER BY seq", (run_id, after)).fetchall()
         return [{"seq": r[0], "ts": r[1], "type": r[2], "data": json.loads(r[3])} for r in rows]

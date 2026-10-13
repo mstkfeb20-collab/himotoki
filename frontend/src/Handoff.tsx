@@ -76,7 +76,7 @@ export default function HandoffDialog({ run, graphName, status, onClose, onChang
               </li>
               <li>エージェントは <code>get_handoff</code> → 実装 → <code>verify_change</code> の順に進めます。照合の結果は「実績と照合」タブにも出ます。</li>
             </ol>
-            <p className="muted small">使えるツール: list_runs（解析の一覧）、get_handoff（作業指示）、get_element / neighbors（要素の詳細とつながり）、verify_change（予測と実績の照合）ほか。</p>
+            <p className="muted small">使えるツール: list_runs（解析の一覧）、get_handoff（作業指示）、impact_files（要求から変更が要りそうなファイル）、get_element / neighbors（要素の詳細とつながり）、verify_change（予測と実績の照合）ほか。</p>
           </div>
         )}
 

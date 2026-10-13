@@ -211,14 +211,15 @@ himotoki diff --graph sor --repo order-web --base main --head feature/x   # 変�
   - MR/PR: ターゲットブランチのグラフで差分モードを実行し、`GITLAB_TOKEN` / `GITHUB_TOKEN` があれば回帰確認の範囲を MR/PR にコメントします。
 - **コード検索**: `HIMOTOKI_CODESEARCH=zoekt:http://zoekt:6070` または `gitlab:https://gitlab.example.com/api/v4:<project id>`
 - **MCP サーバ**（`himotoki mcp`、stdio）: Claude Code などのエージェントが次のツールでグラフを使えます。
-  - `list_graphs`・`search_elements`・`get_element`・`neighbors`
-  - `analyze_requirement`・`analyze_change`・`index_gaps`
+  - 最初に使う: `impact_files`（要求から、変更が要りそうなファイルを順位付きで返す。各ファイルの主な要素と、要求からそこに至る経路付き。2〜3 千トークン程度）
+  - `list_graphs`・`search_elements`・`get_element`（要素の場所・ソース・使う／使われる・設計書・テストを簡潔に）・`neighbors`
+  - `analyze_requirement`（要素単位の上位 20 件）・`analyze_change`・`index_gaps`
   - 開発への引き渡し: `list_runs`（解析の一覧）・`get_handoff`（確定した影響範囲の作業指示）・`verify_change`（実装後の差分と予測の照合）
   - 学習: `learned_knowledge`（過去の判断・実績から学んだこと）
 
   Claude Code への登録: `claude mcp add --transport stdio --env HIMOTOKI_DATA_DIR=<ワークスペース> himotoki -- himotoki mcp`
 
-  リポジトリの近くで動かせば、コードをネットワーク外に出さずに構造だけを渡せます。
+  リポジトリの近くで動かせば、コードをネットワーク外に出さずに構造だけを渡せます。MCP サーバは起動と同時に既定のグラフを裏で開き、類似検索の索引はグラフの横に保存して再利用します（Fineract 規模で、初回の呼び出しまでの待ちが約 35 秒 → 約 7 秒、2 回目以降の `impact_files` は約 1 秒）。
 
 SVN は対象外です（git 前提。必要なら git-svn で移行・ミラーしてください）。
 

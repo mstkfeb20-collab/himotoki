@@ -13,7 +13,7 @@ EXTRA=()
 if [ -n "${ANTHROPIC_API_KEY:-}" ] && [ "${BARE:-1}" != 0 ]; then EXTRA=(--bare); fi
 HERE=$(cd "$(dirname "$0")" && pwd)
 SCHEMA=$(cat "$HERE/schema.json")
-HINT='影響調査には himotoki の MCP ツール（analyze_requirement・search_elements・get_element・neighbors）を使えます。'
+HINT='影響調査には himotoki の MCP ツールを使えます。最初に impact_files で候補のファイルと、そこに至る理由を受け取り、それを手がかりに中身を確かめてください（get_element・neighbors で要素の中身とつながりを見られます）。候補は確定ではないので、必要なら grep などで補ってください。'
 # read-only investigation: file reading and searching only, no edits, no web
 ALLOW=(Read Grep Glob "Bash(grep *)" "Bash(rg *)" "Bash(find *)" "Bash(ls *)" "Bash(cat *)" "Bash(head *)"
        "Bash(tail *)" "Bash(wc *)" "Bash(sed -n *)" "Bash(git grep *)" "Bash(git ls-files *)" "mcp__himotoki")
@@ -47,10 +47,31 @@ PY
     p=$(cat "$dir/prompt.txt")
     [ "$c" = B ] && p="$p"$'\n\n'"$HINT"
     start=$(date +%s)
-    ( cd "$dir/$c" && claude ${EXTRA[@]+"${EXTRA[@]}"} -p "$p" --model "$MODEL" --output-format json --json-schema "$SCHEMA" \
+    # stream-json keeps every tool call, so the score can say how often each tool (himotoki,
+    # grep, file reads, subagents) was used; the last line is the same result object as json
+    ( cd "$dir/$c" && claude ${EXTRA[@]+"${EXTRA[@]}"} -p "$p" --model "$MODEL" --output-format stream-json --verbose \
+        --json-schema "$SCHEMA" \
         --strict-mcp-config --mcp-config "$dir/mcp-$c.json" \
         --permission-mode dontAsk --allowedTools "${ALLOW[@]}" --disallowedTools "${DENY[@]}" \
-        --no-session-persistence --max-budget-usd "$BUDGET" ) > "$res" 2> "$dir/stderr-$c.log"
+        --no-session-persistence --max-budget-usd "$BUDGET" ) > "$dir/stream-$c.jsonl" 2> "$dir/stderr-$c.log"
+    python3 - "$dir/stream-$c.jsonl" "$res" <<'PY'
+import collections, json, sys
+tools, result = collections.Counter(), None
+for line in open(sys.argv[1], encoding="utf-8", errors="replace"):
+    try:
+        m = json.loads(line)
+    except ValueError:
+        continue
+    if m.get("type") == "assistant":
+        for b in (m.get("message") or {}).get("content") or []:
+            if isinstance(b, dict) and b.get("type") == "tool_use":
+                tools[b.get("name", "?")] += 1
+    elif m.get("type") == "result":
+        result = m
+result = result or {"is_error": True, "subtype": "no_result", "result": "no result line in the stream"}
+result["tool_calls"] = dict(tools)
+json.dump(result, open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False)
+PY
     echo "$id $c: $(( $(date +%s) - start ))s"
   done
 done

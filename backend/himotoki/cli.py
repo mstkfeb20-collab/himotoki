@@ -143,6 +143,7 @@ def main(argv=None):
                          "引数なしで repos/ と docs/ を取り込みます）")
             from .setup_cmds import index_workspace
             st = index_workspace(ws, ws_dir, progress=progress)
+            ws.engine()                       # build and cache the search index now
             print(json.dumps({k: st[k] for k in ("nodes", "edges", "files", "seconds", "unresolved", "transactions",
                                                 "repos", "errors") if k in st}, ensure_ascii=False, indent=1,
                              default=str))
@@ -161,6 +162,9 @@ def main(argv=None):
                                  progress=progress)
         else:
             st = ws.index(a.repo[0], a.docs and os.path.abspath(a.docs), a.ref, a.graph, progress=progress)
+        # open the graph once so its search index is built and cached now, not on the
+        # first question from the viewer or an agent
+        ws.engine(a.system or a.graph or (ws.graph_name(a.repo[0], a.ref) if not (a.system or len(a.repo) > 1) else "system"))
         print(json.dumps({k: st[k] for k in ("nodes", "edges", "files", "parsed", "cached", "seconds", "unresolved",
                                             "runtime", "drift", "transactions", "repos") if k in st}, ensure_ascii=False, indent=1, default=str))
         return
