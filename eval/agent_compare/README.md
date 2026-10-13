@@ -31,6 +31,7 @@
 - `tasks_fineract.json`: Fineract の 6 件（変更ファイル 2〜14）
 - `tasks_marumie.json`: marumie の 6 件（変更ファイル 2〜15）
 - `tasks_sor.json`: 自作の SoR 題材（販売管理システム、改修 8 件）。作り方と、評価との切り離しは [SOR_BENCH.md](SOR_BENCH.md)
+- `tasks_sor_l.json`: 自作の SoR 題材・大規模版（卸売業の基幹システム 1,107 ファイル、改修 12 件）。[SOR_BENCH_L.md](SOR_BENCH_L.md)
 - `tasks_mirai-gikai.json`: mirai-gikai の 6 件（変更ファイル 2〜15。`git clone https://github.com/team-mirai/mirai-gikai.git ~/work/mirai-gikai`）
 
 ## 手順
