@@ -13,7 +13,11 @@ EXTRA=()
 if [ -n "${ANTHROPIC_API_KEY:-}" ] && [ "${BARE:-1}" != 0 ]; then EXTRA=(--bare); fi
 HERE=$(cd "$(dirname "$0")" && pwd)
 SCHEMA=$(cat "$HERE/schema.json")
-HINT='影響調査には himotoki の MCP ツールを使えます。最初に impact_files で候補のファイルと、そこに至る理由を受け取り、それを手がかりに中身を確かめてください（get_element・neighbors で要素の中身とつながりを見られます）。候補は確定ではないので、必要なら grep などで補ってください。'
+# conditions to run: A = Claude Code alone, B = himotoki (impact_files first), C = himotoki
+# (start_points, follow relations yourself, audit_scope before answering). hint-<X>.txt is
+# appended to the prompt of condition X; every condition but A gets the himotoki MCP server.
+CONDS=${CONDS:-"A B"}
+CLAUDE=${CLAUDE_BIN:-claude}
 # read-only investigation: file reading and searching only, no edits, no web
 ALLOW=(Read Grep Glob "Bash(grep *)" "Bash(rg *)" "Bash(find *)" "Bash(ls *)" "Bash(cat *)" "Bash(head *)"
        "Bash(tail *)" "Bash(wc *)" "Bash(sed -n *)" "Bash(git grep *)" "Bash(git ls-files *)" "mcp__himotoki")
@@ -25,7 +29,8 @@ for dir in "$OUT"/*/; do
   dir=${dir%/}
   id=$(basename "$dir")
   [ -f "$dir/prompt.txt" ] || continue
-  order="A B"; [ $((n % 2)) -eq 1 ] && order="B A"      # alternate who goes first
+  order=$CONDS
+  [ $((n % 2)) -eq 1 ] && order=$(echo $CONDS | awk '{for(i=NF;i>0;i--) printf "%s ", $i}')   # alternate who goes first
   n=$((n + 1))
   for c in $order; do
     res="$dir/result-$c.json"
@@ -47,15 +52,17 @@ PY
     fi
     [ -s "$res" ] && mv "$res" "${res%.json}.prev.json"
     p=$(cat "$dir/prompt.txt")
-    [ "$c" = B ] && p="$p"$'\n\n'"$HINT"
+    [ -f "$HERE/hint-$c.txt" ] && p="$p"$'\n\n'"$(cat "$HERE/hint-$c.txt")"
+    src=$([ "$c" = A ] && echo A || echo B)       # the snapshot folder (read-only work: B's is shared)
+    mcp=$([ "$c" = A ] && echo mcp-A.json || echo mcp-B.json)
     start=$(date +%s)
     # stream-json keeps every tool call, so the score can say how often each tool (himotoki,
     # grep, file reads, subagents) was used; the last line is the same result object as json
-    ( cd "$dir/$c" && claude ${EXTRA[@]+"${EXTRA[@]}"} -p "$p" --model "$MODEL" --output-format stream-json --verbose \
+    ( cd "$dir/$src" && $CLAUDE ${EXTRA[@]+"${EXTRA[@]}"} -p "$p" --model "$MODEL" --output-format stream-json --verbose \
         --json-schema "$SCHEMA" \
-        --strict-mcp-config --mcp-config "$dir/mcp-$c.json" \
+        --strict-mcp-config --mcp-config "$dir/$mcp" \
         --permission-mode dontAsk --allowedTools "${ALLOW[@]}" --disallowedTools "${DENY[@]}" \
-        --no-session-persistence --max-budget-usd "$BUDGET" ) > "$dir/stream-$c.jsonl" 2> "$dir/stderr-$c.log"
+        --no-session-persistence --max-budget-usd "$BUDGET" < /dev/null ) > "$dir/stream-$c.jsonl" 2> "$dir/stderr-$c.log"
     python3 - "$dir/stream-$c.jsonl" "$res" <<'PY'
 import collections, json, sys
 tools, result = collections.Counter(), None

@@ -69,3 +69,21 @@ def test_preload_and_cached_search_index(demo, monkeypatch):
     w3 = Workspace(demo)
     w3.engine(None)
     assert calls
+
+
+def test_start_points_and_audit_scope(demo, monkeypatch):
+    m = _mcp(demo, monkeypatch)
+    sp = m.start_points(NOTE)
+    assert sp["start_points"] and all("why" in s and "id" in s for s in sp["start_points"])
+    assert any(s["name"].endswith("note") or "NOTE" in s["name"].upper() for s in sp["start_points"])
+    # choose only the DAO: the audit names files tied to it through the column it writes (other
+    # SQL, the export job, the interface file, the design documents) — with the chain that ties
+    # them. Calls are not followed: an agent reads those itself.
+    dao = "order-web/src/main/java/com/example/order/dao/OrderDao.java"
+    a = m.audit_scope(NOTE, [dao, "no/such/File.java"])
+    form = dao
+    assert a["unknown_files"] == ["no/such/File.java"] and a["checked_files"] == 1
+    tied = a["not_chosen_but_tied"]
+    assert tied and all(t["via"].split(" → ")[0].endswith("（選択済み）") for t in tied)
+    assert all(t["file"] != form for t in tied)
+    assert len(json.dumps(a, ensure_ascii=False)) < 12000
