@@ -39,6 +39,8 @@ def main():
     ap.add_argument("--tasks", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--repo", help="the original repository (overrides the path in the tasks file)")
+    ap.add_argument("--himotoki-ai", action="store_true",
+                    help="let himotoki use the AI judge (its API cost is then NOT in Claude Code's figures)")
     ap.add_argument("--himotoki", default="himotoki", help='himotoki command, e.g. "python -m himotoki.cli"')
     a = ap.parse_args()
     t = json.load(open(a.tasks, encoding="utf-8"))
@@ -58,10 +60,14 @@ def main():
         ws = os.path.join(base, "ws")
         print(f"{task['id']}: indexing for B …", flush=True)
         sh(*cmd, "index", "--repo", os.path.join(base, "B"), "--graph", "repo",
-           env=dict(os.environ, HIMOTOKI_DATA_DIR=ws))
+           env=dict(os.environ, HIMOTOKI_DATA_DIR=ws, HIMOTOKI_STORE="local"))
         json.dump({"mcpServers": {}}, open(os.path.join(base, "mcp-A.json"), "w"))
         json.dump({"mcpServers": {"himotoki": {"type": "stdio", "command": cmd[0],
-                                               "args": cmd[1:] + ["mcp"], "env": {"HIMOTOKI_DATA_DIR": ws}}}},
+                                               "args": cmd[1:] + ["mcp"],
+                                               # an exported ANTHROPIC_API_KEY would switch himotoki to the AI
+                                               # judge, whose cost Claude Code does not count: rule-based by default
+                                               "env": dict({"HIMOTOKI_DATA_DIR": ws, "HIMOTOKI_STORE": "local"},
+                                                           **({} if a.himotoki_ai else {"ANTHROPIC_API_KEY": ""}))}}},
                   open(os.path.join(base, "mcp-B.json"), "w"), indent=1)
         open(os.path.join(base, "prompt.txt"), "w", encoding="utf-8").write(prompt.replace("{requirement}", task["requirement"]))
     print(f"ready: {out}")

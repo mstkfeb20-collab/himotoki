@@ -7,6 +7,10 @@ set -u
 OUT=${1:?usage: run.sh <folder made by prepare.py>}
 MODEL=${MODEL:-opus}
 BUDGET=${BUDGET:-10}
+# with an API key, bare mode skips CLAUDE.md, hooks, skills, plugins and auto memory, so
+# nothing from this machine's setup leaks into either condition (BARE=0 to turn off)
+EXTRA=()
+if [ -n "${ANTHROPIC_API_KEY:-}" ] && [ "${BARE:-1}" != 0 ]; then EXTRA=(--bare); fi
 HERE=$(cd "$(dirname "$0")" && pwd)
 SCHEMA=$(cat "$HERE/schema.json")
 HINT='影響調査には himotoki の MCP ツール（analyze_requirement・search_elements・get_element・neighbors）を使えます。'
@@ -27,7 +31,7 @@ for dir in "$OUT"/*/; do
     p=$(cat "$dir/prompt.txt")
     [ "$c" = B ] && p="$p"$'\n\n'"$HINT"
     start=$(date +%s)
-    ( cd "$dir/$c" && claude -p "$p" --model "$MODEL" --output-format json --json-schema "$SCHEMA" \
+    ( cd "$dir/$c" && claude ${EXTRA[@]+"${EXTRA[@]}"} -p "$p" --model "$MODEL" --output-format json --json-schema "$SCHEMA" \
         --strict-mcp-config --mcp-config "$dir/mcp-$c.json" \
         --permission-mode dontAsk --allowedTools "${ALLOW[@]}" --disallowedTools "${DENY[@]}" \
         --no-session-persistence --max-budget-usd "$BUDGET" ) > "$res" 2> "$dir/stderr-$c.log"

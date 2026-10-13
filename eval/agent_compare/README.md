@@ -13,7 +13,7 @@
 
 - **答えが見えない。** 課題ごとに、親コミット時点のソースを **git の履歴なし** で取り出した新しいリポジトリを使います（`git log` で正解のコミットを見られない）。Web 検索・Web 取得は禁止します（GitHub や JIRA で答えを見られない）。
 - **条件の差は 2 つだけ。** MCP の設定（なし／himotoki）と、B の指示文の末尾に足す「himotoki の MCP ツールを使えます」の 1 行です。モデル・指示文・許可する道具・予算は同じです。
-- **他の設定が混ざらない。** `--strict-mcp-config` で、ふだん登録している MCP サーバを読み込みません。会話は保存しません（`--no-session-persistence`）。課題ごと・条件ごとに別のフォルダを使うので、Claude Code の自動メモリも混ざりません。
+- **他の設定が混ざらない。** `ANTHROPIC_API_KEY` が設定されていれば `--bare` で実行し、CLAUDE.md・フック・スキル・プラグイン・自動メモリを読み込みません（`BARE=0` で無効）。`--strict-mcp-config` で、ふだん登録している MCP サーバも読み込みません。会話は保存しません（`--no-session-persistence`）。課題ごと・条件ごとに別のフォルダを使うので、Claude Code の自動メモリも混ざりません。
 - **課題を選り好みしない。** 履歴評価の 30 件を変更ファイル数の順に並べて 6 つに区切り、各区間から固定の乱数で 1 件ずつ選びます（`make_tasks.py`）。要求として成り立たない件名（「address review comments」など）は、選ぶ前に除きます。
 - **順番の偏りを消す。** 課題ごとに A と B の実行順を入れ替えます。
 
@@ -89,7 +89,8 @@ python score.py --tasks tasks_fineract.json --out ~/compare-fineract
 
 ## 注意
 
-- **himotoki の判定はルールベースのまま。** B の himotoki は API キーなしで動きます（AI判定なし）。AI判定を入れると、その費用は Claude Code の費用に含まれないので、別に足す必要があります。まずはルールベースで比べてください。
+- **himotoki の判定はルールベースのまま。** `ANTHROPIC_API_KEY` を export していても、B の himotoki には空のキーを渡して AI判定を止めています（AI判定の費用は Claude Code の集計に含まれないため）。AI判定ありで比べるときは `prepare.py --himotoki-ai` で作り、`ws/usage.db` の費用を別に足してください。
+- **Docker の himotoki は使わない。** 比較では、課題ごとのワークスペースを端末の himotoki（`pip install ./backend` で入れたもの）が作り、MCP サーバも端末で起動します。グラフはローカルの JSON に置きます（Neo4j の設定が環境変数にあっても使いません）。
 - **要求はコミットの件名。** 実際の要求文より情報が少ないので、どちらの条件にも厳しめに出ます。差を見る目的には十分です。
 - **1 回ずつだとばらつきが大きい。** 余裕があれば、結果のフォルダを別名で残して 2 回目を回し、平均を取ってください。
 - **実装まで比べたい場合。** `prompt.txt` を「実装してコミットする」に変え、`run.sh` の `DENY` から `Edit Write` を外し、`ALLOW` に `Edit Write "Bash(git add *)" "Bash(git commit *)"` を足します。採点は、各フォルダで `git diff --name-only HEAD~1` を見て、変わったファイルを正解と突き合わせます。
