@@ -398,6 +398,8 @@ def extract(path: str, data: bytes, rules) -> FileFacts:
 
 def _create_table(f, fid, m, body, stmt, line, lead):
     table = _norm_table(m.group(1))
+    qual = [x.strip('"`[] ') for x in m.group(1).split(".")]
+    schema = qual[-2].lower() if len(qual) >= 2 and qual[-2] else None    # CREATE TABLE sales.orders
     start = m.end()
     depth, i = 1, start
     while i < len(body) and depth:
@@ -405,7 +407,8 @@ def _create_table(f, fid, m, body, stmt, line, lead):
         i += 1
     inner = body[start:i - 1]
     tid = f"table:{table}"
-    f.canonical(tid, Kind.TABLE, table, f"{words(table)} {lead}", keys=[tid], comment=lead or None)
+    f.canonical(tid, Kind.TABLE, table, f"{words(table)} {lead}", keys=[tid], comment=lead or None,
+                **({"schemas": {f.path: schema}} if schema else {}))
     f.edge(fid, tid, Rel.DEFINES, 1.0, "parser", line=line)
     raw_lines = stmt.split("\n")
     parts, depth, cur = [], 0, []

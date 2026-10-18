@@ -9,6 +9,9 @@ text:
     node: {kind: Script, keys: ["file:{path}", "script:{basename}"]}
     patterns:
       - {regex: '\bjava\b[^\n]*?\s((?:[a-z_][\w]*\.)+[A-Z]\w+)(?:\s|$)', key: "class:{1}", rel: RUNS, conf: 0.9}
+      # a wrapper function that starts Java (run_java, exec_batch …): a fully qualified class
+      # name on a command line (comments excluded); only names of indexed classes resolve
+      - {regex: '(?m)^[ \t]*[^#\n]*?[\s"''=]((?:[a-z_][\w]*\.){2,}[A-Z]\w+)(?=[\s"'';]|$)', key: "class:{1}", rel: RUNS, conf: 0.75}
       - {regex: 'CommandLineJobRunner\s+(\S+)\s+([\w\-]+)', key: "batchjob:{2}", rel: RUNS, conf: 0.95}
       - {regex: '(?:sqlplus|sqlcl)\b[^\n]*@\s*"?([\w./${}\-]+\.sql)', key: "file:{1}", rel: RUNS, conf: 0.85}
       - {regex: '\bpsql\b[^\n]*\s-f\s+"?([\w./${}\-]+\.sql)', key: "file:{1}", rel: RUNS, conf: 0.85}

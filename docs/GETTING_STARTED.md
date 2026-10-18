@@ -276,6 +276,12 @@ himotoki serve --open
 
 影響範囲を確定したら、ビュワー右上の「**開発へ渡す**」を押します。
 
+### issue 案
+
+「issue 案」タブに、issue の文面ができます。要求ごとに1件か、サブシステム（最上位のフォルダ）ごとに分けるかを選べます。本文には、背景と変更内容、変更対象のチェックリスト（ファイルごとの理由）、DB の列とテーブル（型・定義している DDL）、ジョブの前後関係、確認する設計書とテスト、受け入れ条件が入ります。
+
+ビュワーは git に触れません。タイトルと本文をコピーして登録するか、開発する PC の Claude Code で登録します（下の「issue から始める」）。
+
 ### 作業指示
 
 確定した要素をファイルごとにまとめた作業指示（Markdown）ができます。各要素には次の情報が付きます。
@@ -304,6 +310,15 @@ claude mcp add --transport stdio --env HIMOTOKI_DATA_DIR=C:\work\juchu himotoki 
 1. `get_handoff` で作業指示を取得する
 2. 範囲内で実装する（範囲外を直す必要が出たら止まって確認する）
 3. `verify_change` で予測と突き合わせる
+
+### issue から始める
+
+このリポジトリの `claude-code/skills/` を、開発する PC の `~/.claude/skills/`（チームで使うならリポジトリの `.claude/skills/`）にコピーすると、Claude Code で次の2つが使えます（`gh auth login` を済ませておく）。
+
+- `/himotoki-issue <run ID>`: issue 案を取得し、内容を確認してから `gh issue create` で登録する
+- `/himotoki-dev <issue 番号>`: issue 本文の `himotoki-run` から作業指示を取得し、ブランチを切って範囲内で実装・テスト・コミットし、`verify_change` で予測と突き合わせて issue に報告する
+
+詳しくは [claude-code/README.md](../claude-code/README.md) を見てください。
 
 ### 実績と照合する
 

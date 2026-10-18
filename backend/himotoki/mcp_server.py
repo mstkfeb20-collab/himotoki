@@ -257,6 +257,17 @@ def get_handoff(run_id: str, include_pending: bool = True) -> dict:
 
 
 @mcp.tool()
+def get_issue_drafts(run_id: str, split: str = "one") -> dict:
+    """Issue drafts (title, labels, Markdown body) for the reviewed scope of an analysis.
+    split="one": one issue for the requirement; split="subsystem": a parent issue plus one per
+    top-level folder of the files to change and one for design documents. Each body starts with
+    a `himotoki-run: <id>` marker; use get_handoff with that id for the full work order. Create
+    the issues with your own git tooling (e.g. `gh issue create`); himotoki does not touch git."""
+    from .analysis.issues import issue_drafts
+    return issue_drafts(_run_engine(run_id), run_id, "subsystem" if split == "subsystem" else "one")
+
+
+@mcp.tool()
 def verify_change(run_id: str, base: str, head: str, repo: str | None = None,
                   actual_days: float | None = None) -> dict:
     """After implementing: compare the actual change between two git refs with the

@@ -187,3 +187,44 @@ export interface DocCheck {
   tables?: { name: string; rows: number; read_rows: number; linked: number; header: DocColumn[]; recognised: boolean; sample: DocRow[] }[];
   textboxes?: string[]; pictures?: number; charts?: number;
 }
+
+/** one element as shown in lists of related elements */
+export interface Brief {
+  id: string; name: string; kind: string; layer: string; file?: string | null; line?: number | null;
+  at?: number | null; ops?: string | null; src?: string | null; conf?: number | null;
+  owner?: { id: string; name: string; kind: string } | null;
+}
+export interface LinkGroup { label: string; rel: string; dir: "in" | "out"; total: number; items: Brief[] }
+export interface TableView {
+  id: string; name: string; logical?: string | null; schema?: string | null;
+  definitions: { id: string; file: string; line?: number | null; type?: string | null }[];
+  columns: { id: string; name: string; type?: string | null; comment?: string | null; focus?: boolean }[];
+}
+export interface DataUser extends Brief { ops: string; via: string[] }
+export type DataContext =
+  | { type: "column"; schema?: string | null; table: TableView | null;
+      column: { id: string; name: string; logical?: string | null; types: Record<string, string>; definitions: TableView["definitions"] };
+      users: DataUser[]; table_users: DataUser[]; docs: Brief[] }
+  | { type: "table"; schema?: string | null; table: TableView; users: DataUser[]; docs: Brief[] }
+  | { type: "touches"; tables: { id: string; name: string; kind: string; logical?: string | null; schema?: string | null; ops: string; columns: string[]; at: number[] }[] };
+export interface ChainStep extends Brief { depth: number; common?: boolean }
+export interface JobFlow {
+  job: Brief & { comment?: string | null };
+  jobnet: (Brief & { schedule?: string | null }) | null;
+  net_jobs: { id: string; name: string; full: string; kind: string; comment?: string | null; next: string[] }[];
+  before: Brief[]; after: Brief[]; chain: ChainStep[];
+  data: { id: string; name: string; kind: string; logical?: string | null; ops: string; columns: string[]; by: string[] }[];
+  downstream: { file: Brief; readers: (Brief & { jobs: string[] })[] }[];
+}
+export type FlowContext =
+  | { type: "job"; focus: string; flows: JobFlow[]; more_jobs: number }
+  | { type: "jobnet"; jobnet: Brief & { schedule?: string | null }; parent: Brief | null; jobs: JobFlow["net_jobs"] };
+export interface NodeContext { links: LinkGroup[]; data: DataContext | null; flow: FlowContext | null }
+export interface FileView {
+  path: string; office: boolean; lines: { n: number; text: string }[]; truncated: boolean; total?: number;
+  outline: { id: string; name: string; kind: string; line: number; end_line?: number | null }[];
+}
+export interface IssueDrafts {
+  run_id: string; split: "one" | "subsystem"; warnings: string[];
+  issues: { key: string; title: string; labels: string[]; body: string }[];
+}

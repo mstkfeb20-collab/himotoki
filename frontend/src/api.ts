@@ -1,4 +1,4 @@
-import type { GraphInfo, Handoff, KnowledgeSummary, IndexReport, NodeDetail, RunEvent, RunState, RunSummary, Verification, WorkspaceUsage, DocCheck, DocSummary } from "./types";
+import type { GraphInfo, Handoff, IssueDrafts, NodeContext, FileView, KnowledgeSummary, IndexReport, NodeDetail, RunEvent, RunState, RunSummary, Verification, WorkspaceUsage, DocCheck, DocSummary } from "./types";
 
 async function req<T>(method: string, url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
@@ -68,11 +68,16 @@ export const api = {
   knowledgeIgnore: (graph: string | null | undefined, kind: string, key: string, ignore: boolean) =>
     req<KnowledgeSummary>("POST", "/api/knowledge/ignore", { graph: graph || null, kind, key, ignore }),
   report: (id: string) => req<string>("GET", `/api/runs/${id}/report`),
+  issues: (id: string, split: "one" | "subsystem" = "one") => req<IssueDrafts>("GET", `/api/runs/${id}/issues?split=${split}`),
   handoff: (id: string, pending = true) => req<Handoff>("GET", `/api/runs/${id}/handoff?pending=${pending}`),
   verify: (id: string, body: { base: string; head: string; repo?: string | null; actual_days?: number | null }) =>
     req<Verification>("POST", `/api/runs/${id}/verify`, body),
   node: (nodeId: string, runId?: string) =>
     req<NodeDetail>("GET", `/api/nodes/${encodeURIComponent(nodeId)}${runId ? `?run_id=${runId}` : ""}`),
+  context: (nodeId: string, runId?: string) =>
+    req<NodeContext>("GET", `/api/context/${encodeURIComponent(nodeId)}${runId ? `?run_id=${runId}` : ""}`),
+  file: (path: string, runId?: string) =>
+    req<FileView>("GET", `/api/file?path=${encodeURIComponent(path)}${runId ? `&run_id=${runId}` : ""}`),
   search: (q: string) => req<{ id: string; name: string; kind: string; file?: string; score: number }[]>(
     "GET", `/api/search?q=${encodeURIComponent(q)}`),
   events: (id: string) => req<RunEvent[]>("GET", `/api/runs/${id}/events`),

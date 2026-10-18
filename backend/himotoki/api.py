@@ -422,6 +422,27 @@ def node(node_id: str, run_id: str | None = None, graph: str | None = None):
     return d
 
 
+@app.get("/api/context/{node_id:path}")
+def node_context(node_id: str, run_id: str | None = None, graph: str | None = None):
+    """Everything around one element a reviewer needs: grouped relations, the table and
+    its readers / writers for data, the job net and run chain for jobs."""
+    from .analysis.context import node_context as ctx
+    e = run_engine(run_id) if run_id else eng(graph)
+    if e.store.get(node_id) is None:
+        raise HTTPException(404, node_id)
+    return ctx(e.store, node_id)
+
+
+@app.get("/api/file")
+def file_view(path: str, run_id: str | None = None, graph: str | None = None):
+    """A whole source file, for files that are part of the graph only (no arbitrary reads)."""
+    e = run_engine(run_id) if run_id else eng(graph)
+    d = e.file_view(path)
+    if d is None:
+        raise HTTPException(404, "not an indexed file")
+    return d
+
+
 # ------------------------------------------------------------------ runs
 @app.get("/api/runs")
 def runs(graph: str | None = None):
@@ -600,6 +621,13 @@ def knowledge_ignore(req: KnowledgeIgnoreReq):
     e = eng(req.graph)
     e.knowledge.ignore(req.kind, req.key, "user", req.ignore)
     return e.knowledge.summary(e.store)
+
+
+@app.get("/api/runs/{run_id}/issues")
+def issues(run_id: str, split: str = "one"):
+    """Issue drafts for the reviewed scope (copied by hand or created by the local Claude Code)."""
+    from .analysis.issues import issue_drafts
+    return issue_drafts(run_engine(run_id), run_id, "subsystem" if split == "subsystem" else "one")
 
 
 @app.get("/api/runs/{run_id}/handoff")

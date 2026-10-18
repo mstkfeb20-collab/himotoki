@@ -1523,6 +1523,27 @@ class Engine:
             return safe_join(self.repos[name], rest) if name in self.repos and rest else None
         return safe_join(self.repo, rel) if self.repo else None
 
+    FILE_VIEW_MAX_LINES = 8000
+
+    def file_view(self, rel: str) -> dict | None:
+        """The whole file, with the indexed elements in it (for jumping inside the file).
+        Only files the graph knows are served."""
+        rel = (rel or "").strip().lstrip("/")
+        if not rel or ".." in rel.split("/"):
+            return None
+        elems = self._file_nodes().get(rel, [])
+        if not elems and self.store.get(f"file:{rel}") is None:
+            return None
+        outline = sorted(({"id": n.id, "name": n.name, "kind": n.kind, "line": n.line, "end_line": n.end_line}
+                          for n in elems if n.line), key=lambda x: x["line"])
+        if _is_office(rel):
+            return {"path": rel, "office": True, "lines": [], "outline": outline[:400], "truncated": False}
+        lines = self._read_lines(rel, 1, self.FILE_VIEW_MAX_LINES)
+        path = self._source_path(rel)
+        total = len(read_source(path).splitlines()) if path and os.path.isfile(path) and lines else len(lines)
+        return {"path": rel, "office": False, "lines": lines, "outline": outline[:400],
+                "truncated": total > len(lines), "total": total}
+
     def _read_lines(self, rel: str, a: int, b: int) -> list[dict]:
         if _is_office(rel):
             return []           # binary formats are shown through _office_excerpt

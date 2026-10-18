@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, openRunSocket } from "./api";
 import Graph, { AGGREGATE_ABOVE, Filters } from "./Graph";
 import Inspector from "./Inspector";
+import NeighborGraph from "./NeighborGraph";
 import ListView from "./ListView";
 import ReqAid from "./ReqAid";
 import Tour from "./Tour";
@@ -12,7 +13,7 @@ import { ChecksPanel, DiffPanel, EstimatePanel, IndexPanel, LogPanel, KnowledgeP
 import type { Candidate, RunEvent, RunState, RunSummary, WorkspaceUsage } from "./types";
 
 const LAYERS: [string, string][] = [["feature", "機能"], ["code", "コード"], ["data", "データ"], ["test", "テスト"], ["doc", "設計書"]];
-type Side = "checks" | "estimate" | "log" | "diff" | "index" | "learn";
+type Side = "detail" | "checks" | "estimate" | "log" | "diff" | "index" | "learn";
 
 export default function App() {
   const [status, setStatus] = useState<any>(null);
@@ -22,7 +23,10 @@ export default function App() {
   const [events, setEvents] = useState<RunEvent[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [focusId, setFocusId] = useState<string | null>(null);
-  const [side, setSide] = useState<Side>("checks");
+  const [side, setSide] = useState<Side>("detail");
+  // the detail panel can take more of the width, to read code and tables
+  const [wide, setWide] = useState<boolean>(() => { try { return localStorage.getItem("himotoki.wide") === "1"; } catch { return false; } });
+  const toggleWide = () => setWide((w) => { try { localStorage.setItem("himotoki.wide", w ? "0" : "1"); } catch { /* ignore */ } return !w; });
   const [showNew, setShowNew] = useState(false);
   const [showIndex, setShowIndex] = useState(false);
   const [headErr, setHeadErr] = useState<string | null>(null);
@@ -30,7 +34,9 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [grouping, setGrouping] = useState(true);
   // null = automatic: the graph while a run is in progress (to watch it grow), the list once it is done
-  const [view, setView] = useState<"list" | "graph" | null>(null);
+  const [view, setView] = useState<"list" | "graph" | "links" | null>(null);
+  // centre of the connection view (つながり): changes only on request, not on every click inside it
+  const [ngCenter, setNgCenter] = useState<string | null>(null);
   const TOUR_KEY = "himotoki.tour.v1";
   const [tour, setTour] = useState(false);
   const [practice, setPractice] = useState<string | null>(null);
@@ -118,6 +124,7 @@ export default function App() {
 
   const select = useCallback((ids: string[], focus = false) => {
     setSelected(ids);
+    if (ids.length) setSide("detail");
     if (focus && ids[0]) setFocusId(ids[0] + "|" + Date.now());
   }, []);
 
@@ -130,7 +137,7 @@ export default function App() {
     };
   }, [run]);
 
-  const shownView: "list" | "graph" = view ?? (run && run.status === "running" ? "graph" : "list");
+  const shownView: "list" | "graph" | "links" = view ?? (run && run.status === "running" ? "graph" : "list");
   const showInGraph = useCallback((id: string) => { setView("graph"); setSelected([id]); setFocusId(id + "|" + Date.now()); }, []);
   const runGraph = useMemo(() => runs.find((r) => r.id === runId)?.graph ?? status?.graph ?? null, [runs, runId, status]);
   const nCands = run ? Object.keys(run.candidates).length : 0;
@@ -207,14 +214,15 @@ export default function App() {
 
       <main className="main">
         <section className="pane graph-pane" aria-label="影響グラフ">
-          <div className={`graph-head${shownView === "list" ? " static" : ""}`}>
+          <div className={`graph-head${shownView !== "graph" ? " static" : ""}`}>
             <div className="viewtabs" role="tablist" aria-label="表示">
-              {([["list", "リスト"], ["graph", "グラフ"]] as const).map(([k, l]) => (
+              {([["list", "リスト"], ["graph", "グラフ"], ["links", "つながり"]] as const).map(([k, l]) => (
                 <button key={k} role="tab" aria-selected={shownView === k} className={shownView === k ? "vtab on" : "vtab"}
-                  onClick={() => setView(k)}>{l}</button>
+                  title={k === "links" ? "選んだ要素から呼び出し元・呼び出し先などを1段ずつたどります（解析結果は変わりません）" : undefined}
+                  onClick={() => { if (k === "links" && selected[0]) setNgCenter(selected[0]); setView(k); }}>{l}</button>
               ))}
             </div>
-            <div className="chips">
+            {shownView !== "links" && <div className="chips">
               {LAYERS.map(([k, label]) => (
                 <button key={k} className={filters.layers[k] ? "chip on" : "chip"} aria-pressed={filters.layers[k]}
                   onClick={() => setFilters((f) => ({ ...f, layers: { ...f.layers, [k]: !f.layers[k] } }))}>{label}</button>
@@ -232,7 +240,7 @@ export default function App() {
                 <input type="range" min={0} max={0.9} step={0.05} value={filters.minConf}
                   onChange={(e) => setFilters((f) => ({ ...f, minConf: Number(e.target.value) }))} />
                 <span className="mono small">{filters.minConf.toFixed(2)}+</span></label>
-            </div>
+            </div>}
             {shownView === "graph" && run && isFiltered(filters) && <FilteredSize run={run} filters={filters}
               onReset={() => setFilters({ layers: { feature: true, code: true, data: true, test: true, doc: true }, onlyOpen: false, minConf: 0, query: "" })} />}
             <input className="input search" placeholder="ノードを検索" aria-label="ノードを検索" value={filters.query}
@@ -248,6 +256,8 @@ export default function App() {
           {shownView === "list" && run ? (
             <ListView run={run} filters={filters} selected={selected} onSelect={select} onChanged={changed}
               onShowInGraph={showInGraph} />
+          ) : shownView === "links" && run ? (
+            <NeighborGraph run={run} centerId={ngCenter} onSelect={(id) => select([id])} onCenter={setNgCenter} />
           ) : (
           <Graph run={run} filters={filters} selected={selected} onSelect={select} focusId={focusId?.split("|")[0]}
             expanded={expanded} grouping={grouping} onExpand={(k) => setExpanded((e) => new Set(e).add(k))} />
@@ -259,17 +269,18 @@ export default function App() {
           </div>}
         </section>
 
-        <aside className="side">
-          {run && <Inspector run={run} ids={selected} onSelect={select} onChanged={changed} busy={busy} />}
+        <aside className={wide ? "side wide" : "side"}>
           {run && (
             <div className="pane sidepanel">
-              <div className="tabs">
-                {([["checks", "全数判定"], ["estimate", "規模"], ["log", "ログ"], ["diff", "差分"], ["index", "取込状況"], ["learn", "学習"]] as [Side, string][]).map(([k, l]) => (
+              <div className="tabs" role="tablist">
+                {([["detail", selected.length > 1 ? `選択 ${selected.length}` : "詳細"], ["checks", "全数判定"], ["estimate", "規模"], ["log", "ログ"], ["diff", "差分"], ["index", "取込状況"], ["learn", "学習"]] as [Side, string][]).map(([k, l]) => (
                   <button key={k} className={side === k ? "tab on" : "tab"} aria-selected={side === k} role="tab" onClick={() => setSide(k)}>
                     {["checks", "estimate", "index", "learn"].includes(k) ? <Term k={l} /> : l}</button>
                 ))}
               </div>
-              <div className="tabbody">
+              <div className={side === "detail" ? "tabbody detailbody" : "tabbody"}>
+                {side === "detail" && <Inspector run={run} ids={selected} onSelect={select} onChanged={changed} busy={busy} wide={wide} onWide={toggleWide}
+                  onShowLinks={(id) => { setNgCenter(id); setView("links"); }} />}
                 {side === "checks" && <ChecksPanel run={run} onSelect={select} onChanged={changed} />}
                 {side === "estimate" && <EstimatePanel run={run} onSelect={select}
                   onOnlyLayer={(layer) => setFilters((f) => ({ ...f, layers: Object.fromEntries(Object.keys(f.layers).map((k) => [k, k === layer])) }))} />}
@@ -291,7 +302,7 @@ export default function App() {
         { sel: ".viewtabs", title: "3. リストとグラフ", before: () => setView("list"), body: "リストは確認作業用、グラフは全体像や説明用です。解析中はグラフ、終わるとリストに自動で切り替わります。" },
         { sel: ".lv-rows", before: () => setView("list"), title: "4. 上から順に確認する", body: "「影響ありの可能性が高い」から順に並んでいます。行を選ぶと右に根拠・コード・設計書が出ます。確定（c キー）・除外（x キー、理由を記録）で判断すると、次の行に進みます。" },
         { sel: ".chips", title: "5. 絞り込み", body: "機能・コード・データ・テスト・設計書の層や、未判定だけ・確度で絞り込めます。絞り込むと、その範囲の件数と規模（人日）も出ます。" },
-        { sel: ".side .tabs", title: "6. 全数判定・規模・取込状況", body: "全数判定タブの条件がすべて満たされると、影響範囲として承認できます。規模タブには層ごとの内訳、取込状況タブには解析の死角（読めなかった参照など）が出ます。" },
+        { sel: ".side .tabs", title: "6. 詳細・全数判定・規模", body: "詳細タブには選んだ要素の中身（ファイル全体・テーブルと列・ジョブの前後関係・つながり）が出ます。つながりをたどっても解析結果は変わらず、「＋候補」を押したときだけ候補に加わります。全数判定タブの条件がすべて満たされると、影響範囲として承認できます。規模タブには層ごとの内訳、取込状況タブには解析の死角（読めなかった参照など）が出ます。" },
         { sel: ".cmd", title: "7. 再調査・質問・漏れの追加", body: "「設計書と照合して」「DBまで追って」などの指示で再調査したり、漏れている要素を追加したりできます。" },
         { sel: ".stages", title: "8. 段階と次にやること", body: "候補の判断 → 全数判定 → 承認 → 開発へ渡す、のどこにいるかを表示し、右のボタンがいま次にやることになります。未判定の件数・規模（人日）・AIの費用も出ます。" },
         { title: "練習してみましょう", body: "このリポジトリから作った例文で解析を始めます。結果をリストで上から確認し、確定・除外を何件か試してみてください（練習の解析はあとから無視して構いません）。" },

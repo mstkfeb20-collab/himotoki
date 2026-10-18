@@ -520,6 +520,8 @@ flowchart LR
 | `handoff_markdown` | 上の結果 | 作業指示書（Markdown）。開発会社への依頼・チケットにもそのまま使う |
 | `verify_change` | 作業前後の ref の差分（システム単位では変更したリポジトリ） | 差分の行を含む最小の要素（差分モードと同じ対応付け）を、確定した要素と比べる。包含関係（クラスとそのメソッド等）は一致とみなす。予測漏れは「候補にあったが除外・未確定・影響低」と「候補に無かった」に分ける。前者は判断の見直し、後者はグラフの欠け（ルール・データの追加）を示す。実績の人日があれば補正係数を更新する。結果は run に保存し、ビュワーに通知する |
 
+`analysis/issues.py` は、同じ内容を issue の文面にします（要求ごとに1件、またはサブシステム＝最上位フォルダごとの子 issue と親 issue）。本文の先頭に `himotoki-run: <run ID>` の印を入れ、issue だけを渡されたエージェントでも作業指示を引けるようにしています。列・テーブルは定義している DDL のフォルダの issue に入れます。ビュワーは文面を見せてコピーさせるだけで、git には触れません。登録と着手は開発する PC の Claude Code のスキル（`claude-code/skills/` の `himotoki-issue`・`himotoki-dev`）が、MCP の `get_issue_drafts`・`get_handoff`・`verify_change` と `gh` で行います（git の権限をサーバに持たせないため）。
+
 MCP では `list_runs` → `get_handoff` → 実装 → `verify_change` の順で使います。`get_handoff` の説明文と作業指示の「進め方」に「範囲外の変更が必要なら止まって人に確認する」「除外は変更しない」を明記し、エージェントが範囲を勝手に広げないようにしています。
 
 ### 6.7 学習（人の判断と実績から）
@@ -635,8 +637,19 @@ sequenceDiagram
 | ビュワー | 業務分析・開発管理の担当者 | リスト表示（既定。判定の状態ごとの一覧、要素ごとと絞り込み範囲の規模、トランザクション・連携の注意バッジ、キー操作での確定・除外）とグラフ表示（同心円。150 件超ではモジュール単位に集約）の切り替え、根拠と確度・トランザクション境界と注意点の表示、確定・除外・再調査・質問、全数判定、規模、取込状況、差分からの解析、要求の書き方補助（AI不使用）、初回の 1 行ヒントと「?」からの案内、作業の段階と段階ごとの主ボタン、用語の説明、取り込み画面（解析とは別）、AI 使用量と費用（円換算）の即時表示、システム単位のインデックス |
 | REST + WebSocket | ビュワー・他システム | 一覧は README の API 節 |
 | CLI | 利用者・開発者・CI | demo / init / doctor（利用開始の支援）、index（`--system` で複数リポジトリ。ワークスペースの中では引数なしで一括）/ catalog / runtime / report / analyze / diff（システム単位では `--repo`）/ runs / handoff / verify（開発への引き渡しと照合）/ knowledge（学習）/ serve（`--open`）/ mcp |
-| MCP サーバ | Claude Code 等のエージェント | impact_files（最初に使う。ファイル単位の順位と経路を短く返す）, list_graphs, search_elements, get_element（簡潔な形）, neighbors, analyze_requirement, analyze_change（システム単位では repo）, index_gaps（トランザクション解析の要約を含む）、list_runs, get_handoff, verify_change（開発への引き渡しと照合、§6.6）、learned_knowledge（学習、§6.7） |
+| MCP サーバ | Claude Code 等のエージェント | impact_files（最初に使う。ファイル単位の順位と経路を短く返す）, list_graphs, search_elements, get_element（簡潔な形）, neighbors, analyze_requirement, analyze_change（システム単位では repo）, index_gaps（トランザクション解析の要約を含む）、list_runs, get_handoff, get_issue_drafts, verify_change（開発への引き渡し・issue の文面・照合、§6.6）、learned_knowledge（学習、§6.7） |
 | Webhook | ソース管理サーバ | §9.2 |
+
+ビュワーの詳細は `analysis/context.py`（API `/api/context/{id}`）と `Engine.file_view`（`/api/file`。グラフに取り込んだファイルだけを返す）から作ります。要素の種類ごとに判断に要る周辺を集めます。
+
+| 種類 | 見せるもの |
+|---|---|
+| すべて | 関係ごとにまとめたつながり（呼び出し元・呼び出し先・読んでいる処理・先行／後続・設計書…）。SQL 文はそれを実行するメソッドの名前で示す |
+| 列・テーブル | スキーマ（DDL に `schema.table` と書かれていれば）・テーブルと論理名・型・定義している DDL の行・読み書きしている処理と C/R/U/D・列を指定せずにテーブルを読み書きする処理・設計書の行・全列（DDL の順） |
+| プログラム・SQL | 中の SQL を通して読み書きするテーブルと列 |
+| ジョブ・ジョブネット・シェル・バッチ | ジョブネットの中の順序（PRECEDES の順）・先行と後続・実行の連鎖（RUNS をたどる。共通の環境設定シェルは展開しない）・連鎖が読み書きするテーブルとファイル（main から呼ぶ DAO まで1段たどる）・書いたファイルを次に読むもの |
+
+つながりをたどる操作（詳細の中の移動、表示「つながり」の図）は解析結果を変えません。候補に加えるのは「＋候補」を押したときだけです。図は選んだ要素を中心に、左へ呼び出し元・使っている側、右へ呼び出し先・使っているものを並べ、展開は外向きにだけ進めます（左の要素はさらに左へ、右の要素はさらに右へ）。
 
 MCP サーバは、エージェントがファイルを丸ごと読まずに「何がこの列を読むか」「この変更はどのジョブに届くか」を構造で問い合わせるための口です。リポジトリの近くで動かせば、コードそのものをネットワークの外に出さずに済みます。
 
@@ -723,6 +736,7 @@ MCP サーバは、エージェントがファイルを丸ごと読まずに「�
 | 抽出キャッシュの増分 | `test_fact_cache_reextracts_only_changed_files`、OFBiz の 1 ファイル変更 |
 | 差分モード・Webhook | `test_diff_mode_regression_scope`、`test_webhook_payloads`、GitLab MR イベントによる通しの確認 |
 | 開発への引き渡しと照合 | `tests/test_handoff.py` |
+| 詳細パネル（列・ジョブの流れ・つながり・ファイル全体）と issue の文面 | `tests/test_viewer_context.py` |
 | 学習 | `tests/test_learning.py` |
 | MCP | stdio の実クライアントから 7 ツールを呼び出し |
 | 要求からの解析 | ツアー予約「備考 80→200 文字」（正解 18/18 が候補）、コミット履歴 25 件、PetClinic 3 要求 |

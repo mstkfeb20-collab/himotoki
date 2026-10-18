@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { api } from "./api";
-import type { Handoff, RunState, Verification } from "./types";
+import type { Handoff, IssueDrafts, RunState, Verification } from "./types";
 
-type Tab = "order" | "agent" | "verify";
+type Tab = "issue" | "order" | "agent" | "verify";
 
 /** Hand-off to development: the reviewed scope as a work order, how to implement it with
  *  Claude Code over MCP, and the check of the actual change against the prediction. */
 export default function HandoffDialog({ run, graphName, status, onClose, onChanged }: {
   run: RunState; graphName?: string; status: any; onClose: () => void; onChanged: () => void;
 }) {
-  const [tab, setTab] = useState<Tab>("order");
+  const [tab, setTab] = useState<Tab>("issue");
   const [h, setH] = useState<Handoff | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
@@ -40,11 +40,13 @@ export default function HandoffDialog({ run, graphName, status, onClose, onChang
       <div className="modal pane handoff">
         <div className="row between"><h2>開発へ渡す</h2><button className="icon" aria-label="閉じる" onClick={onClose}>×</button></div>
         <div className="tabs" role="tablist">
-          {([["order", "作業指示"], ["agent", "Claude Code で実装"], ["verify", "実績と照合"]] as [Tab, string][]).map(([k, l]) => (
+          {([["issue", "issue 案"], ["order", "作業指示"], ["agent", "Claude Code で実装"], ["verify", "実績と照合"]] as [Tab, string][]).map(([k, l]) => (
             <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? "tab on" : "tab"} onClick={() => setTab(k)}>{l}</button>
           ))}
         </div>
         {err && <p className="warn small">{err}</p>}
+
+        {tab === "issue" && <IssueTab run={run} copy={copy} copied={copied} />}
 
         {tab === "order" && (h ? (
           <div className="stack">
@@ -76,6 +78,13 @@ export default function HandoffDialog({ run, graphName, status, onClose, onChang
               </li>
               <li>エージェントは <code>get_handoff</code> → 実装 → <code>verify_change</code> の順に進めます。照合の結果は「実績と照合」タブにも出ます。</li>
             </ol>
+            <h3 className="dh">issue から始める（スキル）</h3>
+            <p className="small">himotoki のリポジトリの <code>claude-code/skills/</code> を、開発する PC の <code>~/.claude/skills/</code>（またはリポジトリの <code>.claude/skills/</code>）にコピーすると、次の2つが使えます。git の操作はすべて手元の Claude Code が行い、ビュワーは git に触れません。</p>
+            <ul className="steps small">
+              <li><code>/himotoki-issue {run.id}</code> — issue 案を取得し、内容を見せて確認を取ってから <code>gh issue create</code> で登録します（分割も選べます）。</li>
+              <li><code>/himotoki-dev &lt;issue 番号 または run ID&gt;</code> — issue 本文の <code>himotoki-run</code> から作業指示を取得し、ブランチを切って実装、テスト、<code>verify_change</code> での照合、issue へのコメントまで進めます。</li>
+            </ul>
+            <div className="hcmd"><code>/himotoki-issue {run.id}</code><button className="btn small ghost" onClick={() => copy("skill", `/himotoki-issue ${run.id}`)}>{copied === "skill" ? "コピーしました" : "コピー"}</button></div>
             <p className="muted small">使えるツール: list_runs（解析の一覧）、get_handoff（作業指示）、impact_files（要求から変更が要りそうなファイル）、get_element / neighbors（要素の詳細とつながり）、verify_change（予測と実績の照合）ほか。</p>
           </div>
         )}
@@ -150,3 +159,51 @@ function VerifyTab({ run, repos, onChanged }: { run: RunState; repos?: Record<st
     </div>
   );
 }
+
+/** Issue drafts: read here, copied into the tracker by hand, or created by the local
+ *  Claude Code (/himotoki-issue). The viewer itself never talks to git. */
+function IssueTab({ run, copy, copied }: { run: RunState; copy: (k: string, t: string) => void; copied: string | null }) {
+  const [split, setSplit] = useState<"one" | "subsystem">("one");
+  const [d, setD] = useState<IssueDrafts | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [open, setOpen] = useState(0);
+  useEffect(() => { setD(null); setOpen(0); api.issues(run.id, split).then(setD).catch((e) => setErr(e.message)); }, [run.id, split]);
+  return (
+    <div className="stack">
+      <div className="row between">
+        <div className="modes" role="radiogroup" aria-label="issue の分け方">
+          {([["one", "要求ごとに1件"], ["subsystem", "サブシステムごとに分割"]] as const).map(([k, l]) => (
+            <button key={k} type="button" role="radio" aria-checked={split === k} className={split === k ? "mode on" : "mode"} onClick={() => setSplit(k)}>{l}</button>
+          ))}
+        </div>
+        <span className="muted small">登録はコピー＆ペースト、または手元の Claude Code の <code>/himotoki-issue {run.id}</code></span>
+      </div>
+      {err && <p className="warn small">{err}</p>}
+      {d?.warnings.map((w) => <p key={w} className="warn small">{w}</p>)}
+      {!d && !err && <p className="muted small">作成中…</p>}
+      {d?.issues.map((i, k) => (
+        <section key={i.key} className="issue">
+          <div className="row between">
+            <button className="link issue-title" aria-expanded={open === k} onClick={() => setOpen(open === k ? -1 : k)}>{open === k ? "▾" : "▸"} {i.title}</button>
+            <span className="row gap6">
+              {i.labels.map((l) => <span key={l} className="tag">{l}</span>)}
+            </span>
+          </div>
+          {open === k && <>
+            <pre className="md-preview">{i.body}</pre>
+            <div className="row">
+              <button className="btn small" onClick={() => copy(`t${k}`, i.title)}>{copied === `t${k}` ? "コピーしました" : "タイトルをコピー"}</button>
+              <button className="btn small" onClick={() => copy(`b${k}`, i.body)}>{copied === `b${k}` ? "コピーしました" : "本文をコピー"}</button>
+              <button className="btn small ghost" onClick={() => copy(`g${k}`, ghCommand(i))} title="gh コマンドとして（手元の端末で実行）">{copied === `g${k}` ? "コピーしました" : "gh コマンドをコピー"}</button>
+            </div>
+          </>}
+        </section>
+      ))}
+    </div>
+  );
+}
+
+const shq = (t: string) => "'" + t.replace(/'/g, "'\\''") + "'";
+const ghCommand = (i: { title: string; body: string }) =>
+  // labels are left out: gh fails on a label the repository does not have yet
+  `gh issue create --title ${shq(i.title)} --body-file - <<'HIMOTOKI_EOF'\n${i.body}\nHIMOTOKI_EOF`;

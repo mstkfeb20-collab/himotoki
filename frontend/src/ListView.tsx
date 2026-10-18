@@ -1,3 +1,4 @@
+import { KindChip, subsystem } from "./kinds";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "./api";
 import type { Filters } from "./Graph";
@@ -167,8 +168,9 @@ export default function ListView({ run, filters, selected, onSelect, onChanged, 
           <span className={`pill p-${st}`}>{c.decision ? (c.decision.status === "confirmed" ? "確定" : "除外")
             : c.verdict === "impacted" ? "影響あり" : c.verdict === "not_impacted" ? "影響低" : "要確認"}</span>
           <div className="lrow-name">
-            <div className="nm">{c.name}</div>
+            <div className="nm"><KindChip kind={c.kind} file={c.file} /> <span className="nmt">{c.name}</span></div>
             <div className="meta">
+              {subsystem(c.file) && <span className="sub">{subsystem(c.file)}</span>}
               <span>{KIND_JA[c.kind] || c.kind}</span>
               {where(c) && <span className="mono loc">{where(c)}</span>}
               {rowBadges(c)}
