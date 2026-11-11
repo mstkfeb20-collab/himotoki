@@ -60,3 +60,18 @@ python score.py bench-src bench/_truth/relations.jsonl --out result.json [--back
 
 * 要素名で引けずファイル単位に広げた端点がある（要素名つきの端点の 1 割弱）。その分、直接・近くは甘めに出る。
 * 「近く」はつながっていることを示すだけで、意味のある経路かは問わない。
+
+
+## 値の流れ（画面項目 → 列、form_field_maps_column）
+
+正解の `followable` は「ソースの字面だけで追えるか」（リフレクション・実行時に組み立てるキー・実行時評価の式は false）。
+
+| 題材 | 版 | 見つけた（追える分） | 引いた線の適合率 | 保存されない項目への誤検出 |
+|---|---|---:|---:|---:|
+| sor-bench-f（物流倉庫、171件） | 611e8cd（題材を見る前に固定） | 106/154（69%） | 52% | 0/13 |
+| sor-bench-f | 9925053（題材を見たあとの汎用修正、参考値） | 147/154（95%） | 95% | 0/13 |
+| **sor-bench-g（保険契約、218件、未見）** | **9925053（固定）** | **115/202（57%）** | **89%** | 3/32 |
+
+sor-bench-g の内訳：Struts 1（kyk-online）102/131、Spring MVC（kyk-web2）13/22、**Seasar2（SAStruts・S2JDBC・S2Dao、kyk-ido）0/49**。
+Seasar2 は読み取り器が無い（エンティティの注釈による列対応、`jdbcManager.insert(entity)`、S2Dao の 2WAY SQL `/*param*/`、`Beans.copy`）。
+どの題材でも、追えない 16〜17 件は 1 件も拾っていない。
