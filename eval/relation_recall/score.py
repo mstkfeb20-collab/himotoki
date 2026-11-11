@@ -7,7 +7,8 @@ names two assets (`from`, `to`: file + element) and a relation type. An asset ma
 the graph nodes that stand for it (an element-less file: every node of that file; a
 class: the class and its members). A relation counts as
 
-* direct: an edge (any type, either direction) joins the two assets;
+* direct: an edge (any type, either direction) joins the two assets (a method includes
+          the SQL statements it runs);
 * near:   the two are connected within 3 steps (either direction), not counting the
           files' own CONTAINS fan-out as a step, through nodes with fewer than 60 edges.
 
@@ -57,7 +58,8 @@ class Graph:
                     continue
                 self.adj[e.src].add(e.dst)
                 self.adj[e.dst].add(e.src)
-                if e.rel == "CONTAINS":
+                if e.rel in ("CONTAINS", "EXECUTES"):
+                    # the SQL a method runs is part of that method, as a reader would see it
                     self.contains[e.src].add(e.dst)
 
     def members(self, ids):
@@ -121,6 +123,26 @@ class Graph:
             hits = set(self.by_file.get(f, ())) | ({f"file:{f}"} & N.keys())
         return self.members(hits)
 
+    def length_known(self, A, B, n: str) -> bool:
+        """The graph records the stated length n at the stating element, on its link to
+        the column, or on a screen / check bound to it."""
+        want = re.match(r"\d+", n or "")
+        if not want:
+            return False
+        want = want.group(0)
+
+        def ok(v):
+            m = re.match(r"\s*(\d+)", str(v or ""))
+            return bool(m) and m.group(1) == want
+        for a in A:
+            nd = self.nodes[a]
+            if any(ok(nd.props.get(k)) for k in ("length", "maxlength")):
+                return True
+            for e in self.st.out_edges(a) + self.st.in_edges(a):
+                if any(ok(e.props.get(k)) for k in ("length", "maxlength")):
+                    return True
+        return False
+
     def direct(self, A, B):
         return any(b in self.adj.get(a, ()) for a in A for b in B) or bool(A & B)
 
@@ -164,6 +186,10 @@ def main():
         A, B = g.resolve(r["from"]), g.resolve(r["to"])
         c = per[r["type"]]
         c["total"] += 1
+        if r["type"] == "length_fact":
+            m = re.search(r"len=(\d+)", r.get("note") or "")
+            if A and g.length_known(A, B, m.group(1) if m else ""):
+                c["length"] += 1
         if not A or not B:
             c["unmapped"] += 1
             misses[r["type"]].append({"why": "unmapped " + ("from" if not A else "to"), **r})
@@ -180,6 +206,8 @@ def main():
     table = []
     for t, c in sorted(per.items()):
         tot.update(c)
+        if t == "length_fact":
+            c["length_recall_pct"] = round(100 * c["length"] / c["total"])
         table.append({"type": t, **c, "direct_recall": round(c["direct"] / c["total"], 3),
                       "near_recall": round(c["near"] / c["total"], 3)})
     summary = {"total": tot["total"], "direct": tot["direct"], "near": tot["near"], "unmapped": tot["unmapped"],
@@ -191,7 +219,8 @@ def main():
         json.dump(out, open(a.out, "w"), ensure_ascii=False, indent=1)
     print(json.dumps(summary, ensure_ascii=False))
     for t in table:
-        print(f"{t['type']:28} {t['total']:4}  direct {t['direct_recall']:.2f}  near {t['near_recall']:.2f}  unmapped {t.get('unmapped', 0)}")
+        print(f"{t['type']:28} {t['total']:4}  direct {t['direct_recall']:.2f}  near {t['near_recall']:.2f}  unmapped {t.get('unmapped', 0)}"
+              + (f"  length-known {t.get('length', 0) / t['total']:.2f}" if t['type'] == 'length_fact' else ""))
 
 
 if __name__ == "__main__":
