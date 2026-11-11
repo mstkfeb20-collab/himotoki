@@ -512,6 +512,10 @@ function LinksPane({ groups, run, go, onChanged, from }: { groups: LinkGroup[]; 
             <Row key={b.id} b={b} run={run} go={go} label={b.owner ? `${b.owner.name} の ${sqlVerb(b.name)}` : undefined}
               sub={b.owner ? b.name.replace(/^SQL\s+/, "") : undefined}>
               <OpsBadge ops={b.ops} />
+              {b.flow && <span className="tag" title={"値の流れ:\n" + b.flow.path.join("\n→ ")}>
+                {(b.flow.usage || "").split(",").map((u) => (u === "write" ? "登録・更新" : u === "cond" ? "検索条件" : u)).join("・")}
+              </span>}
+              {b.flow && b.flow.path.length > 0 && <div className="mono dim tiny flowpath">{b.flow.path.join(" → ")}</div>}
               {b.src && b.src !== "parser" && <span className="dim tiny" title="つながりの根拠">{b.src.replace(/^rule:/, "規則 ")}{b.conf ? ` ${b.conf}` : ""}</span>}
               {!run.candidates[b.id] && <button className="btn tiny ghost addb" onClick={() => add(b)} title="影響候補に加える">＋候補</button>}
             </Row>))}

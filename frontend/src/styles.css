@@ -447,3 +447,4 @@ details > summary { cursor: pointer; color: var(--text2); margin: 4px 0; }
 .lrow-st { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
 .tag.warn { border-color: var(--warn, #b45309); color: var(--warn, #b45309); }
 .dtable tr.differs td { background: color-mix(in srgb, var(--warn, #b45309) 10%, transparent); }
+.flowpath { flex-basis: 100%; white-space: normal; word-break: break-all; }

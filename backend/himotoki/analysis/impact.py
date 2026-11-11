@@ -50,6 +50,8 @@ STEP_KIND = {
     (Rel.PRECEDES, "in"): "verify", (Rel.PRECEDES, "out"): "verify",
     (Rel.EXTENDS, "in"): "verify", (Rel.IMPLEMENTED_BY, "out"): "verify", (Rel.IMPLEMENTED_BY, "in"): "verify",
     (Rel.CONTAINS, "out"): "verify",
+    (Rel.FLOWS_TO, "in"): "change",        # the input that feeds a changed column (length, check)
+    (Rel.FLOWS_TO, "out"): "verify",       # the column fed by a changed input
 }
 
 

@@ -49,9 +49,10 @@ LINK_LABEL = {
     (Rel.DESCRIBES, "out"): "説明している対象", (Rel.DESCRIBES, "in"): "設計書",
     (Rel.DOC_CRUD, "out"): "CRUD の対象", (Rel.DOC_CRUD, "in"): "CRUD表",
     (Rel.CONFIGURES, "out"): "設定する対象", (Rel.CONFIGURES, "in"): "設定しているもの",
+    (Rel.FLOWS_TO, "out"): "値が入る列・検索する列", (Rel.FLOWS_TO, "in"): "値の入力元（画面項目など）",
 }
 # the order groups are shown in: what usually matters first for a change
-LINK_ORDER = ["呼び出し元", "呼び出し先", "読んでいる処理", "書き込んでいる処理", "値を入れているもの", "読んでいるもの",
+LINK_ORDER = ["値の入力元（画面項目など）", "値が入る列・検索する列", "呼び出し元", "呼び出し先", "読んでいる処理", "書き込んでいる処理", "値を入れているもの", "読んでいるもの",
               "書き込む先", "値を入れる先", "先行", "後続", "実行元", "実行するもの", "実行するSQL",
               "このSQLを実行する処理", "対応するテーブル・列", "対応している項目", "結びついている画面", "結びつく項目",
               "この部品を表示する画面", "表示する部品", "使うメッセージ", "このメッセージを使う処理", "親（含まれている先）",
@@ -85,6 +86,8 @@ def links(store, node_id: str) -> list[dict]:
                 b = _brief(store, other, at=e.props.get("line"), ops=e.props.get("ops"), src=e.props.get("src"),
                            conf=round(e.conf, 2) if e.conf < 0.95 else None)
                 if b:
+                    if e.rel == Rel.FLOWS_TO:                 # how the value gets there
+                        b["flow"] = {"usage": e.props.get("usage"), "path": e.props.get("path") or []}
                     if b["kind"] == Kind.SQL_STATEMENT:
                         b["owner"] = _owner(store, other)     # a statement is known by the method it is in
                     g["items"].append(b)
@@ -285,11 +288,14 @@ def length_facts(store, column_id: str) -> dict:
                           "line": e.props.get("line") or src.line, "length": str(ln or src.props.get("length")),
                           "id": src.id})
     cname = col.name.split(".")[-1].lower()
-    seen_fields = 0
-    for fd in store.nodes([Kind.FIELD]):
-        if snake(fd.name.split(".")[-1]).lower() != cname or seen_fields > 20:
-            continue
-        seen_fields += 1
+    # the fields whose values reach the column (value flow), else those of the same name
+    flowed = [store.get(e.src) for e in store.in_edges(column_id, [Rel.FLOWS_TO])]
+    fields = [x for x in flowed if x is not None] or \
+        [fd for fd in store.nodes([Kind.FIELD]) if snake(fd.name.split(".")[-1]).lower() == cname][:20]
+    for fd in fields:
+        if fd.props.get("length"):
+            facts.append({"where": "項目の注釈", "name": fd.name, "file": fd.file, "line": fd.line,
+                          "length": str(fd.props["length"]), "id": fd.id})
         for e in store.in_edges(fd.id, [Rel.BINDS]):
             ln = e.props.get("maxlength")
             src = store.get(e.src)

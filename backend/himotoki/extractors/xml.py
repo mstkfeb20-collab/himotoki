@@ -20,7 +20,7 @@ from ..text import system_ids, words
 from .sql import crud_refs
 
 NAME = "xml"
-VERSION = "3"
+VERSION = "4"
 
 
 class El:
@@ -293,6 +293,10 @@ def extract(path: str, data: bytes, rules) -> FileFacts:
                             props[k] = rv
                     if nd.get("sql") == "body":
                         props["sql"] = body[:4000]
+                        fe = [[d.attrs.get("collection") or d.attrs.get("property") or "", d.attrs.get("item") or ""]
+                              for d in el.iter() if d.tag in ("foreach", "iterate")]
+                        if fe:
+                            props["foreach"] = fe
                     f.node(nid, nd.get("kind", Kind.XML_ELEMENT), name, el.line, el.end_line, text, keys=keys, **props)
                     el.node_id = nid
                     parent = render(nd.get("parent"), el, root, path, pvars) if nd.get("parent") else fid

@@ -96,6 +96,7 @@ class Rel:
     DESCRIBES = "DESCRIBES"
     DOC_CRUD = "DOC_CRUD"               # design-doc function -> table (C/R/U/D)
     CONFIGURES = "CONFIGURES"           # XML/config element -> code element
+    FLOWS_TO = "FLOWS_TO"               # a screen / DTO field's value is written to or searched by a column
 
 
 @dataclass

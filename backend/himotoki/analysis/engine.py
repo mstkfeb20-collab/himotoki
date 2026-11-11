@@ -118,6 +118,7 @@ REL_JA = {
     LEARNED_REL: "と一緒に変更された実績がある",
     Rel.BINDS: "を画面で表示・入力している",
     Rel.MAPS_TO: "が対応付けられた列・テーブル",
+    Rel.FLOWS_TO: "の値が流れ込む（画面項目→列）",
     Rel.DEFINES: "を定義しているSQL",
     Rel.POPULATES: "に初期データを投入している",
     Rel.TESTS: "を検証しているテスト",

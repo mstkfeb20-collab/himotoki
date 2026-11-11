@@ -79,6 +79,8 @@ pip install ./backend && himotoki demo                  # サンプルを取り�
 | `jobs` | JP1/AJS の定義（ajsprint 形式）・crontab | ジョブネット・ジョブ・先行関係・起動するスクリプト |
 | `docs` | Excel・Word・Markdown（表も）・設計フォルダの CSV（.xls/.doc は LibreOffice で変換） | 表の見出し行を自動で探し、行ごとに「設計書の項目」を作る。CRUD表（機能×テーブル）も検出。読めたもの・読めなかったもの（表の外の文字、図形・テキストボックス・画像、意味の分からない見出し）は `himotoki docs-check` とビュワーの「設計書の取込確認」で原本と見比べられる。「桁数」「対応カラム」の列は桁と列の対応として読む |
 
+**値の流れ（画面項目 → 列）**：Java のメソッドごとに「値がどこから来てどこへ行くか」を構文木から要約し（代入・getter/setter・`BeanUtils.copyProperties`・Map の定数キー・セッション属性・`request.getParameter`）、取り込みの最後に呼び出しをまたいでつなぎます。行き先は SQL のパラメータで、JDBC の `ps.setXxx(n, v)`（番号・`i++`・値を集めたリスト）、JdbcTemplate の引数、`:name`、MyBatis の `#{prop}`、iBATIS の `#prop#` が、SQL を解析して「何番目の ? がどの列か（登録・更新／検索条件）」に対応付けられます。結果は項目 → 列の `FLOWS_TO` として、通った箇所の一覧つきでグラフに入ります。名前の似かたからの推定はしません（追えない受け渡し＝実行時に作る Map のキーやリフレクションは、辺を作りません）。
+
 リンクでは、**画面ID・ジョブID・帳票ID**（`HZK-G010`・`KOBB090`・`R_HAN030` など、区切りの書き方が違っても同じものとして扱う）を、その ID を名前に持つファイル・ジョブ・クラスに結びます。連携ファイルは、置き場所の変数と日付部分を除いた名前（`${OUT}/URIAGE_${YMD}.dat` と `URIAGE_yyyymmdd.dat` は同じ `uriage.dat`）で、書く側と読む側をつなぎます。列の詳細には **桁の流れ**（DDL・設計書・画面の maxlength・入力チェック・連携レイアウト・帳票の桁）を並べ、DDL と違う桁に印を付けます。
 
 抽出結果は `FileFacts`（ノード、ファイル内の関係、`table:reserve` や `view:reservetour/reserveForm` のような**キーへの参照**）という共通形式で、ファイルごとに独立しています。そのため並列に処理でき、キャッシュも効きます。

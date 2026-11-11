@@ -113,6 +113,7 @@ class Linker:
                     self._miss(lk["from"] if not a else lk["to"], lk.get("via", ""), f.path)
         for r in later:
             self._resolve_ref(r)
+        self._value_flow()
         runtime = self._match_runtime()
         drift = self._drift()
         valid = [e for e in self.edges.values() if e.src in self.nodes and e.dst in self.nodes and e.src != e.dst]
@@ -501,6 +502,47 @@ class Linker:
             if k in self.keys and len(self.keys[k]) <= 3:
                 return [(h, 0.7) for h in self.keys[k]]
         return self._ns_sysid(v, props)
+
+    def out_edges_of(self, nid: str):
+        if not hasattr(self, "_out_idx"):
+            self._out_idx = defaultdict(list)
+            for e in self.edges.values():
+                self._out_idx[e.src].append((e.dst, e.rel))
+        return self._out_idx.get(nid, [])
+
+    def _value_flow(self):
+        """Screen input -> column through the code (pipeline/flow.py)."""
+        from .flow import Flow
+        try:
+            fl = Flow(self.java, self)
+            found = fl.run()
+        except RecursionError:
+            return
+        self.flow_stats = {"locations": len(fl.edges), "pairs": len(found)}
+        cache = {}
+        for src, colkey, usage, hops in found:
+            if colkey not in cache:
+                kind, _, ref = colkey.partition(":")
+                cache[colkey] = self.resolve_key(f"column:{ref.lower()}" if kind == "COL" else f"colany:{ref.lower()}")
+            targets = cache[colkey]
+            if not targets or len(targets) > 3:
+                continue
+            if src.startswith("reqparam:") and src not in self.nodes:
+                k = src.split(":", 1)[1]
+                self.add_node({"id": src, "kind": Kind.FIELD, "name": f"request.{k}", "file": None, "line": None,
+                               "end_line": None, "text": f"request parameter {k}", "props": {"request_param": True},
+                               "keys": [src]})
+            if src not in self.nodes:
+                continue
+            for dst, conf in targets:
+                k = (src, dst, Rel.FLOWS_TO)
+                if k in self.edges:                 # written and also searched: keep both
+                    e = self.edges[k]
+                    us = set(str(e.props.get("usage", "")).split(",")) | {usage}
+                    e.props["usage"] = ",".join(sorted(u for u in us if u))
+                    continue
+                self.add_edge(src, dst, Rel.FLOWS_TO, {"conf": round(0.85 * conf, 3), "src": "dataflow",
+                                                       "usage": usage, "path": hops[:10], "via": "dataflow"})
 
     def _ns_sysid(self, v, props):
         """A screen / job / program / interface ID (HZK-G010, KOBB090, IF_ZAI_005) names the

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mapper namespace="jp.co.acme.mapper.ShohinMapper">
+  <select id="findByName" resultType="map">
+    SELECT SHOHIN_CD, SHOHIN_NM FROM M_SHOHIN WHERE SHOHIN_NM LIKE #{name} || '%'
+  </select>
+</mapper>

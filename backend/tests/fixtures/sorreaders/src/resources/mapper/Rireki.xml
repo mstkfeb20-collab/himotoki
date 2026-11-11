@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqlMap namespace="Rireki">
+  <insert id="insert" parameterClass="jp.co.acme.dao.ShohinDto">
+    INSERT INTO T_SHOHIN_RIREKI (SHOHIN_CD, SHOHIN_NM) VALUES (#shohinCd#, #shohinName#)
+  </insert>
+  <update id="updateTanka" parameterClass="map">
+    UPDATE M_SHOHIN SET TANKA = #tanka# WHERE SHOHIN_CD = #cd#
+  </update>
+</sqlMap>

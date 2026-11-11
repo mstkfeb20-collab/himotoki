@@ -199,6 +199,8 @@ export interface Brief {
   id: string; name: string; kind: string; layer: string; file?: string | null; line?: number | null;
   at?: number | null; ops?: string | null; src?: string | null; conf?: number | null;
   owner?: { id: string; name: string; kind: string } | null;
+  /** value flow (FLOWS_TO): written / searched, and the hops through the code */
+  flow?: { usage?: string; path: string[] };
 }
 export interface LinkGroup { label: string; rel: string; dir: "in" | "out"; total: number; items: Brief[] }
 export interface TableView {

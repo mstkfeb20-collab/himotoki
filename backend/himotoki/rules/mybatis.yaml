@@ -44,3 +44,21 @@ xml:
     links:
       # property path on the result type <-> column (resolved against all tables that have it)
       - {from: "propath:{../@type}.{@property}", to: "colany:{@column}", rel: MAPS_TO, conf: 0.85}
+  # iBATIS 2 sqlMap: statements called by id (sqlMapClient.insert("Order.insert", dto)),
+  # parameters written #prop#
+  - name: ibatis-statement
+    when: {root: sqlMap}
+    select: "/sqlMap/select|/sqlMap/insert|/sqlMap/update|/sqlMap/delete|/sqlMap/statement|/sqlMap/procedure"
+    node:
+      kind: SqlStatement
+      id: "sql:{/@namespace}.{@id}"
+      name: "{@id}"
+      keys: ["sql:{/@namespace}.{@id}", "ibatis:{/@namespace}.{@id}", "ibatis:{@id}"]
+      sql: body
+      sql_skip: [selectKey]
+      props: {parameter_class: "{@parameterClass}"}
+  - name: ibatis-sql-fragment
+    when: {root: sqlMap}
+    select: /sqlMap/sql
+    node: {kind: SqlStatement, id: "sqlfrag:{/@namespace}.{@id}", name: "<sql> {@id}",
+           keys: ["sqlfrag:{/@namespace}.{@id}"], sql: body}

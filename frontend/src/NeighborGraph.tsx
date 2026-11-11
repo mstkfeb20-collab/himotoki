@@ -12,7 +12,7 @@ import type { Brief, LinkGroup, RunState } from "./types";
 
 const FAMILY: Record<string, string> = {
   CALLS: "call", REFERENCES: "call",
-  READS: "data", WRITES: "data", POPULATES: "data", MAPS_TO: "data", DEFINES: "data", EXECUTES: "data", OBSERVED_AS: "data",
+  READS: "data", WRITES: "data", POPULATES: "data", MAPS_TO: "data", FLOWS_TO: "data", DEFINES: "data", EXECUTES: "data", OBSERVED_AS: "data",
   RUNS: "job", PRECEDES: "job",
   RENDERS: "screen", BINDS: "screen", HANDLES: "screen", USES_MESSAGE: "screen", INCLUDES: "screen",
   DESCRIBES: "doc", DOC_CRUD: "doc",
@@ -24,7 +24,7 @@ const FAMILY_LABEL: [string, string][] = [
 ];
 // how the edge reads, source -> target
 const EDGE_WORD: Record<string, string> = {
-  CALLS: "呼ぶ", REFERENCES: "参照", READS: "読む", WRITES: "書く", POPULATES: "値を入れる", MAPS_TO: "対応", DEFINES: "定義",
+  CALLS: "呼ぶ", REFERENCES: "参照", READS: "読む", WRITES: "書く", POPULATES: "値を入れる", MAPS_TO: "対応", FLOWS_TO: "値が流れる", DEFINES: "定義",
   EXECUTES: "実行", RUNS: "実行", PRECEDES: "後続", RENDERS: "表示", BINDS: "結びつく", HANDLES: "処理", USES_MESSAGE: "メッセージ",
   INCLUDES: "取込", DESCRIBES: "説明", DOC_CRUD: "CRUD", CONTAINS: "含む", EXTENDS: "継承", IMPLEMENTED_BY: "実装", INJECTS: "注入",
   CONFIGURES: "設定", TESTS: "テスト", OBSERVED_AS: "観測",

@@ -286,7 +286,7 @@ export function AiUsage({ run }: { run: RunState }) {
 
 
 const REL_SHORT: Record<string, string> = { READS: "読む", WRITES: "書く", CALLS: "呼ぶ", REFERENCES: "参照", EXECUTES: "実行",
-  DEFINES: "定義", CONTAINS: "含む", BINDS: "画面項目", MAPS_TO: "対応", RUNS: "起動", DESCRIBES: "記載", LEARNED: "実績" };
+  DEFINES: "定義", CONTAINS: "含む", BINDS: "画面項目", MAPS_TO: "対応", FLOWS_TO: "値の流れ", RUNS: "起動", DESCRIBES: "記載", LEARNED: "実績" };
 
 /** What this system's analyses learned from people's decisions and verified changes; each item can be switched off. */
 export function KnowledgePanel({ graph, onSelect }: { graph?: string | null; onSelect: (ids: string[], f?: boolean) => void }) {

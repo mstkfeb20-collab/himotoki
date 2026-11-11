@@ -16,12 +16,13 @@ from tree_sitter import Language, Parser
 from ..model import Kind, Rel
 from ..pipeline.facts import FileFacts
 from ..text import decode_source, system_ids, words
+from .javaflow import method_flow
 
 JAVA = Language(tree_sitter_java.language())
 BRANCH_TYPES = {"if_statement", "for_statement", "enhanced_for_statement", "while_statement", "do_statement",
                 "catch_clause", "switch_label", "ternary_expression"}
 NAME = "java"
-VERSION = "4"
+VERSION = "5"
 _parser = None
 
 
@@ -447,6 +448,20 @@ def _messages(f, nid, anns, line):
                 f.ref(nid, f"msg:{key}", Rel.USES_MESSAGE, 0.95, line, via="annotation", optional=True)
 
 
+def _ann_length(anns) -> str | None:
+    """@Size(max=10) / @Length(max=10) / @Digits(integer=7, fraction=2) / @Column(length=10)."""
+    for a in anns:
+        g = a.get("args") or {}
+        if a["name"] in ("Size", "Length", "Max") and re.fullmatch(r"\d+", str(g.get("max", g.get("value", ""))).strip()):
+            return str(g.get("max", g.get("value"))).strip()
+        if a["name"] == "Digits" and re.fullmatch(r"\d+", str(g.get("integer", "")).strip()):
+            fr = str(g.get("fraction", "")).strip()
+            return str(g["integer"]).strip() + ("," + fr if re.fullmatch(r"[1-9]\d*", fr) else "")
+        if a["name"] == "Column" and re.fullmatch(r"\d+", str(g.get("length", "")).strip()):
+            return str(g["length"]).strip()
+    return None
+
+
 def _field(ctx, cls, node):
     f = ctx.f
     mods = next((c for c in node.named_children if c.type == "modifiers"), None)
@@ -468,6 +483,9 @@ def _field(ctx, cls, node):
                  "validations": [f"@{a['name']}({a['args']})" for a in anns if a["args"]]}
         if const is not None:
             props["constant"] = const
+        ln = _ann_length(anns)
+        if ln:
+            props["length"] = ln
         rk, rprops, rrefs = _ann_rules(ctx, "field", anns, cls, {"class": cls["name"], "fqn": cls["fqn"],
                                                                  "field": fname, "type": simple(ftype),
                                                                  "package": ctx.package})
@@ -477,6 +495,26 @@ def _field(ctx, cls, node):
         _emit_refs(f, fid, rrefs, fd["line"])
         f.edge(f"java:{cls['fqn']}", fid, Rel.CONTAINS)
         _messages(f, fid, anns, fd["line"])
+
+
+def _class_scope(node):
+    """Constants and field names of the class around a method (declared anywhere in it)."""
+    body = node.parent
+    consts, names = {}, set()
+    for c in (body.named_children if body is not None else []):
+        if c.type not in ("field_declaration", "constant_declaration"):
+            continue
+        mods = next((x for x in c.named_children if x.type == "modifiers"), None)
+        mt = _t(mods) if mods is not None else ""
+        for d in c.named_children:
+            if d.type == "variable_declarator":
+                n = _t(d.child_by_field_name("name"))
+                names.add(n)
+                if ("static" in mt and "final" in mt) or c.type == "constant_declaration":
+                    v = _const_str(d.child_by_field_name("value"))
+                    if v is not None:
+                        consts[n] = v
+    return consts, names
 
 
 def _method(ctx, cls, node, prefix):
@@ -502,6 +540,10 @@ def _method(ctx, cls, node, prefix):
           "anns": anns, "line": node.start_point[0] + 1, "end_line": node.end_point[0] + 1, "is_ctor": is_ctor,
           "abstract": body is None}
     md.update(_method_body(body))
+    consts_, fnames_ = _class_scope(node)
+    fl = method_flow(body, params, consts_, ctx.imports, fnames_)
+    if fl:
+        md["flow"] = fl
     cls["methods"].append(md)
     mid = f"java:{cls['fqn']}#{sig}"
     is_test_m = ctx.is_test
