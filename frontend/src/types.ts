@@ -209,7 +209,7 @@ export interface TableView {
 export interface DataUser extends Brief { ops: string; via: string[] }
 export type DataContext =
   | { type: "column"; schema?: string | null; table: TableView | null;
-      column: { id: string; name: string; logical?: string | null; types: Record<string, string>; definitions: TableView["definitions"] };
+      column: { id: string; name: string; logical?: string | null; types: Record<string, string>; definitions: TableView["definitions"]; lengths?: LengthFacts };
       users: DataUser[]; table_users: DataUser[]; docs: Brief[] }
   | { type: "table"; schema?: string | null; table: TableView; users: DataUser[]; docs: Brief[] }
   | { type: "touches"; tables: { id: string; name: string; kind: string; logical?: string | null; schema?: string | null; ops: string; columns: string[]; at: number[] }[] };
@@ -234,3 +234,7 @@ export interface IssueDrafts {
   run_id: string; split: "one" | "subsystem"; warnings: string[];
   issues: { key: string; title: string; labels: string[]; body: string }[];
 }
+
+/** Every place that states the length of a column's value (backend: context.length_facts). */
+export interface LengthFact { where: string; name: string; file?: string | null; line?: number | null; length: string; id: string; field?: string; differs: boolean }
+export interface LengthFacts { facts: LengthFact[]; mismatch: boolean }

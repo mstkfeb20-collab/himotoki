@@ -5,10 +5,11 @@ xml:
     when: {root: struts-config}
     select: "//action-mappings/action"
     node: {kind: Endpoint, id: "ep:ANY {@path}.do", name: "ANY {@path}.do", keys: ["url:{@path}.do", "url:{@path}"],
-           layer: feature}
+           layer: feature, props: {form: "{@name}", action_type: "{@type}", input: "{@input}"}}
     refs:
       - {key: "class:{@type}", rel: HANDLES, conf: 0.95}
       - {key: "formbean:{@name}", rel: BINDS, conf: 0.9}
+      - {key: "view:{@input}", rel: RENDERS, conf: 0.85, optional: true}
   - name: forward
     when: {root: struts-config}
     select: "//action/forward"
@@ -17,6 +18,29 @@ xml:
   - name: form-bean
     when: {root: struts-config}
     select: "//form-beans/form-bean"
-    node: {kind: Bean, id: "formbean:{@name}", name: "{@name}", keys: ["formbean:{@name}"]}
+    node: {kind: Bean, id: "formbean:{@name}", name: "{@name}", keys: ["formbean:{@name}"], props: {type: "{@type}"}}
     refs:
       - {key: "class:{@type}", rel: CONFIGURES, conf: 0.95}
+  - name: form-property
+    # DynaActionForm: the fields are declared here instead of in a class
+    when: {root: struts-config}
+    select: "//form-beans/form-bean/form-property"
+    node: {kind: Field, id: "formprop:{ancestor::form-bean@name}.{@name}", name: "{ancestor::form-bean@name}.{@name}",
+           keys: ["formfield:{ancestor::form-bean@name}.{@name}"], props: {type: "{@type}"}}
+  # Commons Validator (validation.xml): input checks of a form's fields
+  - name: validation-field
+    when: {root: form-validation}
+    select: "//formset/form/field"
+    node: {kind: XmlElement, id: "valid:{ancestor::form@name}.{@property}",
+           name: "{ancestor::form@name}.{@property} ({@depends})", keys: ["validation:{ancestor::form@name}.{@property}"],
+           props: {form: "{ancestor::form@name}", property: "{@property}", depends: "{@depends}",
+                   maxlength: "{>var[var-name=maxlength]/var-value}", minlength: "{>var[var-name=minlength]/var-value}",
+                   mask: "{>var[var-name=mask]/var-value}"}}
+    refs:
+      - {key: "formfield:{ancestor::form@name}.{@property}", rel: BINDS, conf: 0.9,
+         props: {maxlength: "{>var[var-name=maxlength]/var-value}"}}
+  - name: validation-arg
+    when: {root: form-validation}
+    select: "//formset/form/field/arg|//formset/form/field/arg0|//formset/form/field/arg1|//formset/form/field/msg"
+    refs:
+      - {from: "{ancestor-node}", key: "msg:{@key}", rel: USES_MESSAGE, conf: 0.85, optional: true}

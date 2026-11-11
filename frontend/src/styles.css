@@ -445,3 +445,5 @@ details > summary { cursor: pointer; color: var(--text2); margin: 4px 0; }
 .impactbox { display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; border: 1px solid var(--line2); border-radius: 8px; }
 .impactbox .meta { margin: 0; }
 .lrow-st { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.tag.warn { border-color: var(--warn, #b45309); color: var(--warn, #b45309); }
+.dtable tr.differs td { background: color-mix(in srgb, var(--warn, #b45309) 10%, transparent); }

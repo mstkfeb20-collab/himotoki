@@ -8,7 +8,7 @@ from ..pipeline.facts import FileFacts
 from ..text import words
 
 NAME = "props"
-VERSION = "2"
+VERSION = "3"
 
 
 def is_bundle(path: str) -> bool:
@@ -64,9 +64,28 @@ def extract(path: str, data: bytes, rules) -> FileFacts:
             f.edge(fid, mid, Rel.CONTAINS, line=i)
         else:
             f.payload.setdefault("config_keys", []).append([k, i])
+            f.payload.setdefault("config_values", {})[k] = v
     if not bundle:
+        values = dict(f.payload.get("config_values", {}))
         for k, i in f.payload.get("config_keys", []):
             cid = f"config:{k}"
-            f.canonical(cid, Kind.CONFIG, k, words(k), keys=[cid], files={path: i})
+            f.canonical(cid, Kind.CONFIG, k, words(k) + " " + values.get(k, "")[:200], keys=[cid], files={path: i})
             f.edge(fid, cid, Rel.CONTAINS, line=i)
+            _value_refs(f, cid, k, values.get(k, ""), i)
     return f
+
+
+_DATA = re.compile(r"([\w.${}%\-/]*?[\w${}%\-]+\.(?:dat|csv|tsv|txt|fix|gz|zip|lst|prn|seq))\b", re.I)
+_FQCN = re.compile(r"\b((?:[a-z_]\w*\.){2,}[A-Z]\w+)\b")
+
+
+def _value_refs(f: FileFacts, cid: str, key: str, value: str, line: int):
+    """A setting whose value is a data file (out.file=/data/URIAGE_%s.dat) or a class
+    connects the code that reads the setting to that file or class."""
+    for m in _DATA.finditer(value or ""):
+        low = key.lower()
+        rel = Rel.WRITES if re.search(r"out|send|exp|dst|write", low) else \
+            Rel.READS if re.search(r"(^|[._])in|recv|imp|src|read", low) else Rel.REFERENCES
+        f.ref(cid, f"datafile:{m.group(1)}", rel, 0.75, line, via="config-value", optional=True)
+    for m in _FQCN.finditer(value or ""):
+        f.ref(cid, f"class:{m.group(1)}", Rel.REFERENCES, 0.8, line, via="config-value", optional=True)

@@ -10,7 +10,7 @@ const CLASS_OF: Record<string, KindClass> = {
   SqlStatement: "sql", RuntimeSql: "sql",
   Table: "db", Column: "db", SqlFile: "db", DbObject: "db",
   Job: "job", JobNet: "job", CronEntry: "job", BatchJob: "job", Script: "job",
-  DataFile: "file",
+  DataFile: "file", LayoutField: "file",
   DocSection: "doc", DocEntity: "doc",
   TestClass: "test", TestMethod: "test",
   MessageKey: "msg",
@@ -24,7 +24,7 @@ export const KIND_SHORT: Record<string, string> = {
   Class: "クラス", Method: "メソッド", Field: "項目", Bean: "Bean", SqlMapper: "マッパー", Template: "画面",
   Endpoint: "URL", SqlStatement: "SQL文", RuntimeSql: "実行時SQL", Table: "テーブル", Column: "列", SqlFile: "SQLファイル",
   DbObject: "DBオブジェクト", Job: "ジョブ", JobNet: "ジョブネット", CronEntry: "cron", BatchJob: "バッチ", Script: "シェル",
-  DataFile: "連携ファイル", DocSection: "設計書の節", DocEntity: "設計書の行", TestClass: "テスト", TestMethod: "テスト",
+  DataFile: "連携ファイル", LayoutField: "レイアウト項目", DocSection: "設計書の節", DocEntity: "設計書の行", TestClass: "テスト", TestMethod: "テスト",
   MessageKey: "メッセージ", ConfigFile: "設定ファイル", XmlElement: "XML定義", Feature: "機能",
 };
 

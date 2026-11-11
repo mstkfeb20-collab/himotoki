@@ -14,7 +14,7 @@ from ..pipeline.facts import FileFacts
 from ..text import decode_source, words
 
 NAME = "jobs"
-VERSION = "2"
+VERSION = "3"
 
 JOBNET_TYPES = {"n", "rn", "rm", "rr", "mn", "nc"}
 JOB_TYPES = {"j", "rj", "pj", "rp", "qj", "rq", "evwj", "flwj", "mlwj", "mswj", "lfwj", "ntwj", "tmwj", "cmsj",
@@ -92,6 +92,10 @@ def extract_jp1(path: str, src: str, f: FileFacts):
             f.ref(nid, f"file:{script}", Rel.RUNS, 0.95, u["line"], via="jp1-sc")
             for tok in re.findall(r"((?:[a-z_]\w*\.)+[A-Z]\w+)", sc + " " + prm):
                 f.ref(nid, f"class:{tok}", Rel.RUNS, 0.85, u["line"], via="jp1-sc", optional=True)
+        # data files handed to the job as arguments / transfer definitions (prm=, fxj / ftp jobs)
+        args = " ".join([sc, prm] + u["attrs"].get("env", []) + u["attrs"].get("ts1", []) + u["attrs"].get("td1", []))
+        for tok in dict.fromkeys(re.findall(r"([\w./${}%\-]+\.(?:dat|csv|tsv|txt|fix|gz|zip|lst|prn|seq))\b", args)):
+            f.ref(nid, f"datafile:{tok}", Rel.REFERENCES, 0.7, u["line"], via="jp1-args", optional=True)
         for ar in u["attrs"].get("ar", []):
             m = re.search(r"f\s*=\s*([^,\s)]+)\s*,\s*t\s*=\s*([^,\s)]+)", ar)
             if m:

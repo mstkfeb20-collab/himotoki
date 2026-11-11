@@ -11,7 +11,15 @@ text:
     patterns:
       - {regex: 'modelAttribute\s*=\s*"(\w+)"', set: form}
       - {regex: 'commandName\s*=\s*"(\w+)"', set: form}
-      - {regex: '<form:\w+[^>]*\bpath\s*=\s*"([\w.]+)"', key: "prop:{ctx.form}.{1}", rel: BINDS, conf: 0.9}
+      - {regex: '<form:\w+(?=[^>]*\bpath\s*=\s*"([\w.]+)")(?:(?=[^>]*\bmaxlength\s*=\s*"(\d+)"))?', key: "prop:{ctx.form}.{1}", rel: BINDS, conf: 0.9, props: {maxlength: "{2}"}}
+      # Struts 1 tag library: <html:form action="/x"> names the action, whose form bean holds the fields
+      - {regex: '<html:form\b[^>]*\baction\s*=\s*"([^"?]+)', set: action}
+      - {regex: '<html:(?:text|password|textarea|hidden|select|checkbox|multibox|radio|file)\b(?=[^>]*\bproperty\s*=\s*"([\w.\[\]]+)")(?:(?=[^>]*\bmaxlength\s*=\s*"(\d+)"))?', key: "strutsprop:{ctx.action}|{1}", rel: BINDS, conf: 0.9, props: {maxlength: "{2}"}}
+      - {regex: '<(?:bean:write|logic:\w+|html:\w+)\b(?=[^>]*\bname\s*=\s*"(\w+)")(?=[^>]*\bproperty\s*=\s*"([\w.]+)")', key: "formfield:{1}.{2}", rel: BINDS, conf: 0.75}
+      - {regex: '<html:(?:link|rewrite)\b[^>]*\b(?:action|page)\s*=\s*"(/[\w/\-.]+)', key: "url:{1}", rel: REFERENCES, conf: 0.8}
+      - {regex: '<html:(?:errors|messages)\b[^>]*\bproperty\s*=\s*"([\w.]+)"', key: "strutsprop:{ctx.action}|{1}", rel: REFERENCES, conf: 0.6}
+      # plain HTML inputs: a name with a length
+      - {regex: '<input\b(?=[^>]*\bname\s*=\s*"([\w.]+)")(?=[^>]*\bmaxlength\s*=\s*"(\d+)")', key: "strutsprop:{ctx.action}|{1}", rel: BINDS, conf: 0.7, props: {maxlength: "{2}"}}
       - {regex: '<spring:message[^>]*\bcode\s*=\s*"([^"]+)"', key: "msg:{1}", rel: USES_MESSAGE}
       - {regex: '<fmt:message[^>]*\bkey\s*=\s*"([^"]+)"', key: "msg:{1}", rel: USES_MESSAGE}
       - {regex: '<bean:message[^>]*\bkey\s*=\s*"([^"]+)"', key: "msg:{1}", rel: USES_MESSAGE}

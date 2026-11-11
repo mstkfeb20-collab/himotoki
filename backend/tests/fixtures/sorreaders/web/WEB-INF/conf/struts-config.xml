@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<struts-config>
+  <form-beans>
+    <form-bean name="ShohinForm" type="jp.co.acme.web.ShohinForm"/>
+  </form-beans>
+  <action-mappings>
+    <action path="/shohin/regist" type="jp.co.acme.web.ShohinRegistAction" name="ShohinForm"
+            input="/WEB-INF/jsp/ABCG010.jsp" scope="request" validate="true">
+      <forward name="success" path="/WEB-INF/jsp/ABCG011.jsp"/>
+    </action>
+  </action-mappings>
+</struts-config>

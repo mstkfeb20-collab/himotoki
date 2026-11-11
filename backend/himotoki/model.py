@@ -40,6 +40,7 @@ class Kind:
     SQL_FILE = "SqlFile"
     DB_OBJECT = "DbObject"          # view, function, procedure, trigger, sequence, synonym
     DATA_FILE = "DataFile"          # files exchanged between jobs
+    LAYOUT_FIELD = "LayoutField"    # a field of a record layout (fixed-length / CSV / copybook)
     RUNTIME_SQL = "RuntimeSql"      # SQL observed at runtime that no code element explains
     # tests
     TEST_CLASS = "TestClass"
@@ -57,7 +58,7 @@ LAYER = {
     Kind.SCRIPT: "code", Kind.BEAN: "code", Kind.SQL_MAPPER: "code", Kind.SQL_STATEMENT: "code",
     Kind.MESSAGE: "code", Kind.CONFIG: "code", Kind.XML_ELEMENT: "code",
     Kind.TABLE: "data", Kind.COLUMN: "data", Kind.SQL_FILE: "data", Kind.DB_OBJECT: "data",
-    Kind.DATA_FILE: "data", Kind.RUNTIME_SQL: "data",
+    Kind.DATA_FILE: "data", Kind.RUNTIME_SQL: "data", Kind.LAYOUT_FIELD: "data",
     Kind.TEST_CLASS: "test", Kind.TEST_METHOD: "test",
     Kind.DOC: "doc", Kind.DOC_ENTITY: "doc",
 }
@@ -66,7 +67,7 @@ EDITABLE = {
     Kind.METHOD, Kind.FIELD, Kind.CLASS, Kind.TEMPLATE, Kind.COLUMN, Kind.TABLE, Kind.SQL_FILE,
     Kind.MESSAGE, Kind.CONFIG, Kind.TEST_CLASS, Kind.TEST_METHOD, Kind.SCRIPT, Kind.SQL_STATEMENT,
     Kind.BEAN, Kind.XML_ELEMENT, Kind.DB_OBJECT, Kind.JOB, Kind.JOBNET, Kind.CRON, Kind.DOC,
-    Kind.DOC_ENTITY,
+    Kind.DOC_ENTITY, Kind.LAYOUT_FIELD,
 }
 
 

@@ -17,6 +17,8 @@ views from the graph (no AI, no ranking):
 """
 from __future__ import annotations
 
+import re
+
 from collections import defaultdict, deque
 
 from ..model import Kind, Rel
@@ -207,6 +209,7 @@ def data_context(store, node_id: str, follow_calls: int = 0) -> dict | None:
         table = _table_view(store, tid, [node_id]) if tid else None
         col = {"id": n.id, "name": n.name.split(".")[-1], "logical": n.props.get("comment"),
                "types": n.props.get("types") or {}, "definitions": _definitions(store, node_id)}
+        col["lengths"] = length_facts(store, node_id)
         users = _users(store, [node_id])
         # whoever touches the whole table (SELECT *, INSERT without a column list) may be affected too
         table_only = [u for u in _users(store, [tid]) if u["id"] not in {x["id"] for x in users}] if tid else []
@@ -253,6 +256,55 @@ def data_context(store, node_id: str, follow_calls: int = 0) -> dict | None:
         r["at"] = sorted(set(r["at"]))[:8]
         rows.append(r)
     return {"type": "touches", "tables": sorted(rows, key=lambda r: (r["kind"] != Kind.TABLE, r["name"]))}
+
+
+# ------------------------------------------------------------------ lengths (桁の流れ)
+def _first_len(v) -> int | None:
+    m = re.match(r"\s*(\d+)", str(v or ""))
+    return int(m.group(1)) if m else None
+
+
+def length_facts(store, column_id: str) -> dict:
+    """Every place that states the length of a column's value: the DDL, design-document
+    rows, interface layouts and report fields linked to the column, and the screen inputs
+    and validation rules of the form fields of the same name. Lengths that differ from
+    the DDL are flagged, a common source of truncation and overflow bugs."""
+    from ..text import snake
+    col = store.get(column_id)
+    if col is None:
+        return {"facts": [], "mismatch": False}
+    facts = []
+    if col.props.get("length"):
+        facts.append({"where": "DDL", "name": col.name, "file": next(iter(col.props.get("types") or {}), None),
+                      "length": str(col.props["length"]), "id": col.id})
+    for e in store.in_edges(column_id):
+        ln = e.props.get("length") or e.props.get("maxlength")
+        src = store.get(e.src)
+        if src is not None and (ln or src.props.get("length")):
+            facts.append({"where": _LEN_WHERE.get(src.kind, src.kind), "name": src.name, "file": src.file,
+                          "line": e.props.get("line") or src.line, "length": str(ln or src.props.get("length")),
+                          "id": src.id})
+    cname = col.name.split(".")[-1].lower()
+    seen_fields = 0
+    for fd in store.nodes([Kind.FIELD]):
+        if snake(fd.name.split(".")[-1]).lower() != cname or seen_fields > 20:
+            continue
+        seen_fields += 1
+        for e in store.in_edges(fd.id, [Rel.BINDS]):
+            ln = e.props.get("maxlength")
+            src = store.get(e.src)
+            if ln and src is not None:
+                facts.append({"where": "画面" if src.kind == Kind.TEMPLATE else "入力チェック", "name": src.name,
+                              "file": src.file, "line": e.props.get("line"), "length": str(ln), "id": src.id,
+                              "field": fd.id})
+    base = _first_len(col.props.get("length"))
+    for f in facts:
+        f["differs"] = bool(base and _first_len(f["length"]) not in (None, base))
+    return {"facts": facts, "mismatch": any(f["differs"] for f in facts)}
+
+
+_LEN_WHERE = {Kind.DOC_ENTITY: "設計書", Kind.LAYOUT_FIELD: "連携レイアウト", Kind.XML_ELEMENT: "帳票・XML定義",
+              Kind.TEMPLATE: "画面"}
 
 
 # ------------------------------------------------------------------ job flow

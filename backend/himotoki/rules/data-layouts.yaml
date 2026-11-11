@@ -1,0 +1,9 @@
+name: data-layouts
+description: >
+  Record layouts of files exchanged with other systems: fixed-length layout lists,
+  CSV item definitions and COBOL copybooks. Fields map to the columns of the same
+  physical name; the layout defines the data files it names.
+layout:
+  files: ["**/*layout*", "**/*Layout*", "**/*LAYOUT*", "**/layout/**", "**/layouts/**", "**/*レイアウト*",
+          "**/*.lay", "**/*.fmt", "**/*.cpy", "**/*.cob.cpy", "**/copybook/**", "**/*.rec"]
+  exts: [".txt", ".csv", ".tsv", ".lay", ".fmt", ".cpy", ".def", ".layout", ".rec", ".lst"]

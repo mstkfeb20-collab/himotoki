@@ -17,17 +17,18 @@ from typing import Callable
 
 from ..security import max_file_bytes, safe_join
 
-from ..extractors import docs, java, jobs, prisma, props, sql, text, ts, xml
+from ..extractors import docs, java, jobs, layout, prisma, props, sql, text, ts, xml
 from ..rules import load_rules
 from .cache import FactCache
 from .facts import FileFacts
 from .linker import Linker
 
-EXTRACTORS = {m.NAME: m for m in (java, ts, prisma, xml, sql, text, props, jobs, docs)}
+EXTRACTORS = {m.NAME: m for m in (java, ts, prisma, xml, sql, text, props, jobs, docs, layout)}
 SQL_EXT = (".sql", ".pls", ".pks", ".pkb", ".prc", ".fnc", ".trg", ".ddl", ".plsql")
 DOC_EXT = (".md", ".markdown", ".xlsx", ".xlsm", ".docx")
 LEGACY_OFFICE = (".xls", ".doc")
 JOB_HINT = re.compile(r"(jp1|ajs|cron|jobnet|job_def|jobdef)", re.I)
+DOC_DIR = re.compile(r"(^|/)(docs?|design|spec|specs?|設計[^/]*|仕様[^/]*|ドキュメント)/")
 SKIP_DIRS = {".git", "node_modules", "target", "build", ".gradle", ".idea", "dist", ".mvn", "bin", "out"}
 
 
@@ -45,6 +46,8 @@ def classify(path: str, rules, head: str | None = None) -> str | None:
         return "sql"
     if low.endswith((".properties", ".yml", ".yaml")):
         return "props"
+    if layout.is_layout(rules, path):
+        return "layout"
     if text.rules_for(rules, path):
         return "text"
     if low.endswith(DOC_EXT):
@@ -56,6 +59,8 @@ def classify(path: str, rules, head: str | None = None) -> str | None:
             return "jobs?"
     if low.endswith(".txt"):
         return "docs"
+    if low.endswith((".csv", ".tsv")) and DOC_DIR.search(low):
+        return "docs"                     # a design sheet saved as CSV, not an exchanged data file
     return None
 
 

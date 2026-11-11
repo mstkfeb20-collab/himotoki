@@ -42,6 +42,7 @@ class RuleSet:
                                                                      "propagation")})
         self.java = merged.get("java", {})
         self.office = merged.get("office", {})
+        self.layout = merged.get("layout", {})
         self.sql = merged.get("sql", {})
         self.xml = [dict(r, pack=p["name"]) for p in packs for r in p.get("xml", [])]
         self.text = [dict(r, pack=p["name"]) for p in packs for r in p.get("text", [])]

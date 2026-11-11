@@ -1,0 +1,4 @@
+CREATE TABLE M_SHOHIN (
+  SHOHIN_CD VARCHAR2(10) NOT NULL, -- 商品コード
+  SHOHIN_NM VARCHAR2(40)           -- 商品名
+);

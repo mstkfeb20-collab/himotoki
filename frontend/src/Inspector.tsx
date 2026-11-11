@@ -358,6 +358,22 @@ function DataPane({ data, run, go, openAt }: { data: DataContext; run: RunState;
             {x.type && <span className="tag mono">{x.type}</span>}</li>))}</ul>
           : <p className="muted small">DDL が見つかっていません（DB 辞書の取り込みで補えます）。</p>}
       </section>
+      {data.type === "column" && (data.column.lengths?.facts.length || 0) > 1 && (
+        <section>
+          <h3 className="dh">桁の流れ {data.column.lengths!.mismatch && <span className="tag warn" title="DDL と異なる桁があります">桁の食い違いあり</span>}</h3>
+          <p className="muted tiny">この値の桁を決めている場所です。DDL と違う桁は ⚠ で示します（切り捨て・桁あふれの原因になりやすい）。</p>
+          <table className="dtable">
+            <thead><tr><th>場所</th><th>桁</th><th>要素</th></tr></thead>
+            <tbody>{data.column.lengths!.facts.map((f) => (
+              <tr key={f.id + f.where} className={f.differs ? "differs" : ""}>
+                <td className="small">{f.where}</td>
+                <td className="mono">{f.differs ? "⚠ " : ""}{f.length}</td>
+                <td><button className="link small" onClick={() => go(f.id)}>{f.name}</button>
+                  {f.file && <div className="mono dim tiny"><button className="link" onClick={() => openAt(f.file!, f.line)}>{shortPath(f.file)}{f.line ? `:${f.line}` : ""}</button></div>}</td>
+              </tr>))}</tbody>
+          </table>
+        </section>
+      )}
       <section>
         <h3 className="dh">{data.type === "column" ? "この列を読み書きしている処理" : "このテーブルを読み書きしている処理"} <span className="dim">{data.users.length}</span></h3>
         <Users users={data.users} run={run} go={go} />

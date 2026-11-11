@@ -19,7 +19,7 @@ from ..pipeline.facts import FileFacts
 from ..text import decode_source, words
 
 NAME = "sql"
-VERSION = "2"
+VERSION = "3"
 
 KEYWORDS = set("""select from where and or not in is null as on join left right inner outer full cross group by
 order having union all distinct insert into values update set delete merge using when then else end case
@@ -437,7 +437,10 @@ def _create_table(f, fid, m, body, stmt, line, lead):
         if cm:
             comment = cm.group(1).strip()
         cid = f"col:{table}.{cname}"
+        lm = re.search(r"\(\s*(\d+)(?:\s*(?:byte|char))?\s*(?:,\s*(\d+))?\s*\)", " ".join(tok[1:4]), re.I)
+        length = (lm.group(1) + ("," + lm.group(2) if lm.group(2) else "")) if lm else None
         f.canonical(cid, Kind.COLUMN, f"{table}.{cname}", f"{words(table)} {words(cname)} {comment}",
-                    keys=[f"column:{table}.{cname}"], types={f.path: ctype}, comment=comment or None)
+                    keys=[f"column:{table}.{cname}"], types={f.path: ctype}, comment=comment or None,
+                    **({"length": length} if length else {}))
         f.edge(tid, cid, Rel.CONTAINS)
         f.edge(fid, cid, Rel.DEFINES, 1.0, "parser", line=cline)

@@ -7,6 +7,7 @@ text:
   - name: shell
     files: ["**/*.sh", "**/*.ksh", "**/*.bash", "**/*.csh", "**/*.bat", "**/*.cmd"]
     node: {kind: Script, keys: ["file:{path}", "script:{basename}"]}
+    expand_vars: true          # OUT_FILE=${OUT_DIR}/X.dat ... send_file $OUT_FILE
     patterns:
       - {regex: '\bjava\b[^\n]*?\s((?:[a-z_][\w]*\.)+[A-Z]\w+)(?:\s|$)', key: "class:{1}", rel: RUNS, conf: 0.9}
       # a wrapper function that starts Java (run_java, exec_batch …): a fully qualified class
@@ -30,6 +31,16 @@ text:
       - {regex: '(?m)^\s*m?get\s+\S+\s+"?([\w./${}\-]+\.(?:dat|csv|tsv|txt|fix|gz|zip))', key: "datafile:{1}", rel: WRITES, conf: 0.85}
       - {regex: '\bscp\b[^\n]*?\s([\w./${}\-]+\.(?:dat|csv|tsv|txt|fix|gz|zip))\s+\S+:([\w./${}\-]+)', key: "datafile:{1}", rel: READS, conf: 0.85}
       - {regex: '\bscp\b[^\n]*?\s\S+\s+\S+:([\w./${}\-]+\.(?:dat|csv|tsv|txt|fix|gz|zip))', key: "datafile:{1}", rel: WRITES, conf: 0.85}
+      # site wrapper functions / commands that send or receive a file (send_file, hulft_send,
+      # ftp_put, upload, 配信; recv_file, ftp_get, download): the sender reads the local
+      # file, the receiver writes it
+      - {regex: '(?mi)^[ \t]*[^#\n]*?\b\w*(?:send|put|upload|haisin|haishin|soushin|transfer|hulft)\w*\b[^\n]*?[\s"''=/]([\w.${}\-]+\.(?:dat|csv|tsv|txt|fix|gz|zip|lst|prn|seq))\b', key: "datafile:{1}", rel: READS, conf: 0.8, props: {transfer: send}}
+      - {regex: '(?mi)^[ \t]*[^#\n]*?\b\w*(?:recv|receive|get|download|jushin|syusyu|shushu)\w*\b[^\n]*?[\s"''=/]([\w.${}\-]+\.(?:dat|csv|tsv|txt|fix|gz|zip|lst|prn|seq))\b', key: "datafile:{1}", rel: WRITES, conf: 0.8, props: {transfer: receive}}
+      # variables named for output / input
+      - {regex: '(?m)^[ \t]*(?:export\s+)?\w*(?:OUT|SEND|EXP|DST|SND)\w*=\s*"?[^\n]*?([\w.${}\-]+\.(?:dat|csv|tsv|txt|fix|gz|zip|lst|prn|seq))\b', key: "datafile:{1}", rel: WRITES, conf: 0.7}
+      - {regex: '(?m)^[ \t]*(?:export\s+)?\w*(?:IN|RCV|RECV|IMP|SRC)\w*=\s*"?[^\n]*?([\w.${}\-]+\.(?:dat|csv|tsv|txt|fix|gz|zip|lst|prn|seq))\b', key: "datafile:{1}", rel: READS, conf: 0.7}
+      # any other data file named on a command line: connected, direction unknown
+      - {regex: '(?m)^[ \t]*[^#\n]*?[\s"''=/]([\w.${}\-]+\.(?:dat|csv|tsv|fix|gz|zip|lst|prn|seq))\b', key: "datafile:{1}", rel: REFERENCES, conf: 0.6, fallback: true}
       # SQL*Loader: control file and data file
       - {regex: '\bsqlldr\b[^\n]*\bcontrol=([\w./${}\-]+)', key: "file:{1}", rel: RUNS, conf: 0.9}
       - {regex: '\bsqlldr\b[^\n]*\bdata=([\w./${}\-]+)', key: "datafile:{1}", rel: READS, conf: 0.9}

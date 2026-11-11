@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<report id="R_ABC030">
+  <query>SELECT SHOHIN_CD, SHOHIN_NM FROM M_SHOHIN</query>
+  <field id="f1" column="SHOHIN_CD" length="10"/>
+</report>

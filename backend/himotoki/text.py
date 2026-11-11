@@ -49,3 +49,32 @@ def singular(word: str) -> str:
     if w.endswith("s") and not w.endswith("ss"):
         return w[:-1]
     return w
+
+
+_ID_RX = re.compile(r"(?<![A-Za-z0-9])([A-Za-z]{1,8}(?:[-_][A-Za-z]{1,8}){0,2}[-_]?\d{2,6}(?:[A-Z](?![a-z]))?)(?![0-9])")
+
+
+def system_ids(text: str) -> list[str]:
+    """ID-like tokens (letters then digits: KOB041, HZK-G010, IF_ZAI_005), normalised to
+    upper case without separators so that every spelling meets."""
+    out = []
+    for m in _ID_RX.finditer(text or ""):
+        tok = re.sub(r"[-_]", "", m.group(1)).upper()
+        letters = sum(c.isalpha() for c in tok)
+        if letters >= 2 and len(tok) >= 5 and tok not in _ID_STOP and tok not in out:
+            out.append(tok)
+    return out
+
+
+_ID_STOP = {"UTF8", "UTF16", "SHA256", "SHA512", "MD5", "BASE64", "ISO8859", "HTTP11", "SJIS", "WIN31", "X509",
+            "LOG4J", "JUNIT4", "JUNIT5", "JAVA11", "JAVA17", "JAVA8"}
+
+
+def datafile_base(v: str) -> str:
+    """The name that identifies an exchanged file whatever its directory, variables and
+    date stamp: ${OUT}/URIAGE_${YMD}.dat, /data/URIAGE_20260401.dat -> uriage.dat."""
+    base = re.sub(r"\$\{?\w+\}?|%\w+%|%[\d$\-]*[sd]|\{\d+\}", "", v.strip().strip("\"'")).rsplit("/", 1)[-1].lower()
+    base = re.sub(r"(yyyy|yy)(mm)?(dd)?|\d{6,14}|\*", "", base)
+    base = re.sub(r"[_\-.]{2,}", lambda m: m.group(0)[-1], base)
+    base = re.sub(r"[_\-]+\.", ".", base).strip("_-")
+    return base

@@ -15,13 +15,13 @@ from tree_sitter import Language, Parser
 
 from ..model import Kind, Rel
 from ..pipeline.facts import FileFacts
-from ..text import decode_source, words
+from ..text import decode_source, system_ids, words
 
 JAVA = Language(tree_sitter_java.language())
 BRANCH_TYPES = {"if_statement", "for_statement", "enhanced_for_statement", "while_statement", "do_statement",
                 "catch_clause", "switch_label", "ternary_expression"}
 NAME = "java"
-VERSION = "3"
+VERSION = "4"
 _parser = None
 
 
@@ -612,6 +612,10 @@ def _method(ctx, cls, node, prefix):
                 re.fullmatch(r"[\w\-.]+\.(dat|csv|tsv|fix)", lit):
             f.ref(mid, f"datafile:{lit}", Rel.WRITES if writes_files else Rel.READS, 0.6, line,
                   via="literal", optional=True)
+        if len(lit) <= 40 and re.fullmatch(r"[\w\-./]+", lit):
+            # a screen / report / job ID in a literal ("R_HZK030", "HZKG010.jsp")
+            for sid in system_ids(lit.rsplit("/", 1)[-1].rsplit(".", 1)[0])[:2]:
+                f.ref(mid, f"sysid:{sid}", Rel.REFERENCES, 0.6, line, via="literal", optional=True)
         for ns in nss - {"view", "url", "msg", "batchjob", "config"}:
             if re.fullmatch(r"[A-Za-z][\w\-.]{2,}", lit):
                 f.ref(mid, f"{ns}:{lit}", Rel.REFERENCES, 0.75, line, via="literal", optional=True)

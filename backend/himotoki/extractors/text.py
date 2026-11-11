@@ -12,10 +12,10 @@ from functools import lru_cache
 
 from ..model import Kind
 from ..pipeline.facts import FileFacts
-from ..text import decode_source, words
+from ..text import datafile_base, decode_source, words
 
 NAME = "text"
-VERSION = "2"
+VERSION = "3"
 
 
 @lru_cache(maxsize=512)
@@ -87,14 +87,22 @@ def extract(path: str, data: bytes, rules) -> FileFacts:
         return lo + 1
 
     events = []
+    expanded = None
     for r in applicable:
+        text_ = src
+        if r.get("expand_vars"):
+            expanded = expanded if expanded is not None else expand_vars(src)
+            text_ = expanded
         for pi, pat in enumerate(r.get("patterns", [])):
-            for m in _rx(pat["regex"]).finditer(src):
-                events.append((m.start(), pi, r, pat, m))
-    events.sort(key=lambda e: (e[0], e[1]))
+            for m in _rx(pat["regex"]).finditer(text_):
+                # order and line by the line the match starts on (expansion shifts offsets)
+                at = m.start(1) if m.re.groups and m.start(1) >= 0 else m.start()
+                ln = text_.count("\n", 0, at) + 1 if text_ is not src else line_of(at)
+                events.append((ln, m.start() if text_ is src else 0, pi, r, pat, m))
+    events.sort(key=lambda e: (e[0], e[1], e[2]))
     ctx: dict[str, str] = {}
     seen = set()
-    for pos, _, r, pat, m in events:
+    for line, _, _, r, pat, m in events:
         if pat.get("set"):
             ctx[pat["set"]] = m.group(1)
             continue
@@ -109,18 +117,50 @@ def extract(path: str, data: bytes, rules) -> FileFacts:
             out = re.sub(r"\{(\d+)\}", lambda mm: groups.get(mm.group(1), ""), out)
         except IndexError:
             continue
-        line = line_of(pos)
         if pat.get("sql"):
             from .sql import crud_refs
             crud_refs(f, fid, out, line, via=r["name"], conf=float(pat.get("conf", 0.85)))
             continue
         k = (out, pat.get("rel"), line)
-        if k in seen:
+        if k in seen or any(k2[1] == k[1] and k2[2] == line and _same(k2[0], out) for k2 in seen):
             continue
+        if pat.get("fallback") and any(k2[2] == line and _same(k2[0], out) for k2 in seen):
+            continue                    # a catch-all pattern only adds what nothing else found
         seen.add(k)
+        extra = {}
+        for pk, pv in (pat.get("props") or {}).items():   # e.g. {maxlength: "{2}"}
+            v = re.sub(r"\{(\d+)\}", lambda mm: groups.get(mm.group(1), ""), str(pv))
+            if v:
+                extra[pk] = v
         f.ref(fid, out, pat.get("rel", "REFERENCES"), float(pat.get("conf", 0.9)), line, via=r["name"],
-              optional=bool(pat.get("optional", True)))
+              optional=bool(pat.get("optional", True)), **extra)
     return f
+
+
+def _same(a: str, b: str) -> bool:
+    na, _, va = a.partition(":")
+    nb, _, vb = b.partition(":")
+    if na != nb:
+        return False
+    return datafile_base(va) == datafile_base(vb) if na == "datafile" else va == vb
+
+
+def expand_vars(src: str) -> str:
+    """Shell variables assigned in the same file (OUT_FILE=${OUT_DIR}/URIAGE_${YMD}.dat)
+    are written out where they are used, line by line so that line numbers stay."""
+    vals: dict[str, str] = {}
+    for m in re.finditer(r"(?m)^[ \t]*(?:export[ \t]+|readonly[ \t]+|typeset[ \t]+|local[ \t]+|set[ \t]+)?"
+                         r"([A-Za-z_]\w*)=([\"']?)([^\"'\s;#`]*)\2", src):
+        if m.group(3):
+            vals.setdefault(m.group(1), m.group(3))
+    if not vals:
+        return src
+
+    def sub(text, depth=0):
+        out = re.sub(r"\$\{(\w+)\}|\$(\w+)|%(\w+)%",
+                     lambda mm: vals.get(mm.group(1) or mm.group(2) or mm.group(3), mm.group(0)), text)
+        return sub(out, depth + 1) if out != text and depth < 4 else out
+    return "\n".join(sub(ln) if "$" in ln or "%" in ln else ln for ln in src.split("\n"))
 
 
 def _template_name(path, applicable):

@@ -18,10 +18,12 @@ import re
 from collections import Counter, defaultdict
 
 from ..model import Edge, Kind, Node, Rel
-from ..text import words
+from ..text import datafile_base, system_ids, words
 from .resolve_java import JavaResolver
 
-CASE_INSENSITIVE = {"table", "column", "colany", "datafile", "proc", "dbobj", "screen", "function", "dblink", "prisma"}
+CASE_INSENSITIVE = {"table", "column", "colany", "datafile", "proc", "dbobj", "screen", "function", "dblink", "prisma",
+                    "datastem", "sysid"}
+DEFERRED = ("datastem:",)        # resolved after every other reference (they match nodes made on the way)
 
 
 def norm_key(key: str) -> str:
@@ -92,8 +94,12 @@ class Linker:
         for e in jr.run():
             self.add_edge(e["src"], e["dst"], e["rel"], e["props"])
         self.java = jr
+        later = []
         for f in facts_list:
             for r in f.refs:
+                if r["key"].lower().startswith(DEFERRED):
+                    later.append(r)
+                    continue
                 self._resolve_ref(r)
             for lk in f.payload.get("links", []):
                 a = self.resolve_key(lk["from"])
@@ -105,6 +111,8 @@ class Linker:
                                                           "line": lk.get("line")})
                 if not a or not b:
                     self._miss(lk["from"] if not a else lk["to"], lk.get("via", ""), f.path)
+        for r in later:
+            self._resolve_ref(r)
         runtime = self._match_runtime()
         drift = self._drift()
         valid = [e for e in self.edges.values() if e.src in self.nodes and e.dst in self.nodes and e.src != e.dst]
@@ -173,7 +181,10 @@ class Linker:
         self.endpoints = []
         self.cols_by_name = defaultdict(list)
         self.name_index = defaultdict(set)
+        self.ids = defaultdict(set)
         for n in self.nodes.values():
+            for sid in node_system_ids(n):
+                self.ids[sid].add(n.id)
             if n.kind in (Kind.CLASS, Kind.TEST_CLASS):
                 self.class_by_simple[n.name].append(n.id)
                 self.name_index[n.name.lower()].add(n.id)
@@ -467,7 +478,7 @@ class Linker:
         return [(o, 1.0 / len(out)) for o in out[:6]] if out else []
 
     def _ns_datafile(self, v, props):
-        base = re.sub(r"\$\{?\w+\}?", "", v).rsplit("/", 1)[-1].lower()
+        base = datafile_base(v)
         if not base or "." not in base:
             return []
         nid = f"datafile:{base}"
@@ -489,6 +500,64 @@ class Linker:
         for k in (f"table:{v.lower()}", f"view:{v}", f"url:{v}", f"msg:{v}", f"job:{v}"):
             if k in self.keys and len(self.keys[k]) <= 3:
                 return [(h, 0.7) for h in self.keys[k]]
+        return self._ns_sysid(v, props)
+
+    def _ns_sysid(self, v, props):
+        """A screen / job / program / interface ID (HZK-G010, KOBB090, IF_ZAI_005) names the
+        files and jobs that carry it in their name, whatever the spelling of separators."""
+        ids = system_ids(v)
+        if len(ids) != 1:
+            return []
+        hit = self.ids.get(ids[0], ())
+        src = self.nodes.get((props or {}).get("_src"))
+        if src is not None and src.file:                 # a document naming its own ID
+            hit = {h for h in hit if (self.nodes[h].file if h in self.nodes else None) != src.file}
+        if not hit or len(hit) > 8:
+            return []
+        return [(h, round(0.85 / max(1, len(hit)) ** 0.5, 3)) for h in sorted(hit)]
+
+    def _ns_datastem(self, v, props):
+        """A layout definition or a document names a data file without its date part or
+        extension (URIAGE layout -> URIAGE_yyyymmdd.dat)."""
+        stem = datafile_base(v + ".x").rsplit(".", 1)[0]
+        stem = re.sub(r"(?i)[_\-]?(layout|lay|fmt|format|def|record|rec|if|定義|レイアウト)$", "", stem)
+        stem = re.sub(r"(?i)^(layout|lay|fmt|if|rec|レイアウト)[_\-]", "", stem)
+        if len(stem) < 3:
+            return []
+        out = [n.id for n in self.nodes.values() if n.kind == Kind.DATA_FILE and n.name.rsplit(".", 1)[0] == stem]
+        return [(o, 0.8 / len(out)) for o in out[:3]]
+
+    def _form_class(self, form: str):
+        for nid in self.keys.get(norm_key(f"formbean:{form}"), []):
+            t = self.nodes[nid].props.get("type") if nid in self.nodes else None
+            fq = self.java.resolve(t, None) if t else None
+            if fq:
+                return fq
+        return None
+
+    def _ns_formfield(self, v, props):
+        """`form.property` of a Struts form bean: the field of its ActionForm class."""
+        form, _, prop = v.partition(".")
+        prop = re.sub(r"\[\d*\]", "", prop)
+        if not prop:
+            return []
+        fq = self._form_class(form)
+        if fq:
+            return self._ns_propath(f"{fq}.{prop}", props)
+        return []
+
+    def _ns_strutsprop(self, v, props):
+        """`/action/path|property` from <html:form action=..>: the form bean of that action."""
+        action, _, prop = v.partition("|")
+        action = re.sub(r"\.do$", "", action.split("?")[0])
+        for key in (f"url:{action}", f"url:{action}.do", f"url:/{action.lstrip('/')}"):
+            for nid in self.keys.get(norm_key(key), []):
+                form = self.nodes[nid].props.get("form") if nid in self.nodes else None
+                if form:
+                    hit = self.keys.get(norm_key(f"formfield:{form}.{prop}")) or []
+                    if hit:
+                        return [(h, 0.9) for h in hit]
+                    return self._ns_formfield(f"{form}.{prop}", props)
         return []
 
     def _ns_screen(self, v, props):
@@ -653,3 +722,14 @@ def _src_kind(via: str) -> str:
     if via in ("jp1-sc", "crontab", "trigger", "db-object", "dml", "query", "annotation", "interface-binding"):
         return "parser"
     return f"rule:{via}" if via else "parser"
+
+
+# ------------------------------------------------------------------ shared helpers
+def node_system_ids(n: Node) -> list[str]:
+    """IDs a node carries in its own name: the file name of files, the name of jobs and
+    classes (a class whose name starts with an ID, e.g. Kob041Action)."""
+    if n.file and n.id == f"file:{n.file}":
+        return system_ids(n.file.rsplit("/", 1)[-1].rsplit(".", 1)[0])
+    if n.kind in (Kind.JOB, Kind.JOBNET, Kind.CLASS, Kind.TEMPLATE, Kind.ENDPOINT, Kind.DATA_FILE, Kind.BATCH_JOB):
+        return system_ids(n.name.rsplit("/", 1)[-1])
+    return []

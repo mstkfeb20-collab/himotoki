@@ -18,10 +18,10 @@ import unicodedata
 from ..model import Kind, Rel
 from ..pipeline.facts import FileFacts
 from ..security import office_zip_ok
-from ..text import decode_source, words
+from ..text import decode_source, system_ids, words
 
 NAME = "docs"
-VERSION = "2"
+VERSION = "3"
 
 _IDENT = re.compile(r"(?<![\w/.])([A-Za-z_][A-Za-z0-9_]{3,}(?:\.[A-Za-z_][A-Za-z0-9_]*)?|/[\w\-]+(?:/[\w\-{}.]+)+)(?![\w])")
 _TABLE_LIKE = re.compile(r"^[A-Za-z][A-Za-z0-9_$#]{1,40}$")
@@ -50,6 +50,11 @@ def mentions(f: FileFacts, nid: str, text: str, line=None, limit=60):
         f.ref(nid, f"mention:{tok}", Rel.DESCRIBES, 0.9, line, via="mention", optional=True)
         if len(seen) >= limit:
             break
+    # IDs written with separators (HZK-G010, IF-ZAI-005) are not identifiers above
+    for sid in system_ids(text)[:limit]:
+        if sid.lower() not in seen:
+            seen.add(sid.lower())
+            f.ref(nid, f"sysid:{sid}", Rel.DESCRIBES, 0.85, line, via="mention", optional=True)
 
 
 class _Office:
@@ -123,6 +128,16 @@ def _table_rows(f, grid, hr, hm, sheet, ctx_table, parent):
         cell = f"{sheet}!{col_letter(min(hm))}{r + 1}"
         nid = f"doc:{f.path}#{cell}"
         table = vals.get("table") or ctx_table
+        if vals.get("dbcolumn"):
+            # a screen / interface item and the DB column it maps to ("対応カラム: M_CUSTOMER.CUST_CD");
+            # the item's own physical name stays a mention
+            if vals.get("column"):
+                f_item = vals["column"]
+                vals["item"] = f_item
+            vals["column"] = vals.pop("dbcolumn")
+        cm = re.fullmatch(r"([A-Za-z][\w$#]*)\.([A-Za-z][\w$#]*)", vals.get("column") or "")
+        if cm:
+            table, vals["column"] = cm.group(1), cm.group(2)
         label = vals.get("column") or vals.get("screen") or vals.get("function") or vals.get("job") or \
             vals.get("program") or vals.get("table") or vals.get("logical") or cell
         name = f"{table}.{label}" if table and vals.get("column") else label
@@ -131,12 +146,15 @@ def _table_rows(f, grid, hr, hm, sheet, ctx_table, parent):
                fields=vals, doc=f.path, header_row=hr + 1)
         f.edge(parent, nid, Rel.CONTAINS, 1.0, "doc")
         ref = lambda key, conf=0.9: f.ref(nid, key, Rel.DESCRIBES, conf, r + 1, via="office-table", optional=True)
+        ln = _length(vals.get("length"))
         if vals.get("column"):
             col = vals["column"].lower()
+            extra = {"length": ln} if ln else {}
             if table:
-                ref(f"column:{table.lower()}.{col}", 0.95)
+                f.ref(nid, f"column:{table.lower()}.{col}", Rel.DESCRIBES, 0.95, r + 1, via="office-table",
+                      optional=True, **extra)
             else:
-                f.ref(nid, f"colany:{col}", Rel.DESCRIBES, 0.7, r + 1, via="office-table", optional=True)
+                f.ref(nid, f"colany:{col}", Rel.DESCRIBES, 0.7, r + 1, via="office-table", optional=True, **extra)
         if table and not vals.get("column"):
             ref(f"table:{table.lower()}", 0.95)
         for sem, ns in (("screen", "screen"), ("function", "function"), ("job", "job"), ("message", "msg"),
@@ -145,9 +163,17 @@ def _table_rows(f, grid, hr, hm, sheet, ctx_table, parent):
                 ref(f"{ns}:{vals[sem]}")
         if vals.get("program"):
             ref(f"mention:{vals['program']}", 0.85)
+        if vals.get("item"):
+            ref(f"mention:{vals['item']}", 0.7)
         mentions(f, nid, text, r + 1, limit=10)
         r += 1
     return r
+
+
+def _length(v) -> str | None:
+    """'10', '10桁', '7,2', '10byte' -> the digits as written."""
+    m = re.match(r"^\s*(\d{1,5}(?:\s*[,.]\s*\d{1,3})?)", str(v or ""))
+    return re.sub(r"\s", "", m.group(1)) if m else None
 
 
 _SQL_TYPES = {"char", "varchar", "varchar2", "nvarchar", "nchar", "number", "numeric", "decimal", "int", "integer",
@@ -253,7 +279,8 @@ def extract_docx(path, data, rules, f: FileFacts):
 _HEADING = re.compile(r"^(#{1,6})\s+(.+)$", re.M)
 
 
-def extract_text(path, src, f: FileFacts):
+def extract_text(path, src, f: FileFacts, rules=None):
+    office = _Office(rules) if rules is not None else None
     heads = [(m.start(), len(m.group(1)), m.group(2).strip()) for m in _HEADING.finditer(src)] or [(0, 1, path.rsplit("/", 1)[-1])]
     stack = []
     for i, (pos, level, title) in enumerate(heads):
@@ -266,6 +293,44 @@ def extract_text(path, src, f: FileFacts):
                keys=[sid], title=title, path=stack, doc=path)
         f.edge(f"file:{path}", sid, Rel.CONTAINS, 1.0, "doc")
         mentions(f, sid, body, line)
+        for ti, (tline, grid) in enumerate(_md_tables(body) if office else [], 1):
+            # rows count from the start of the file so that the row number is its line
+            pad = [[]] * (line + tline - 2)
+            process_grid(f, pad + grid, f"{title[:40]}#表{ti}", office, sid)
+
+
+def _md_tables(body: str):
+    """Pipe tables in Markdown / plain text -> (first line in body, grid)."""
+    out, cur, start = [], [], 0
+    for i, ln in enumerate(body.split("\n"), 1):
+        s = ln.strip()
+        if s.startswith("|") and s.count("|") >= 2:
+            if not cur:
+                start = i
+            if re.fullmatch(r"\|?[\s:\-|]+\|?", s):
+                cur.append(None)          # the separator line keeps the row numbering
+                continue
+            cur.append([c.strip() for c in s.strip("|").split("|")])
+        elif cur:
+            out.append((start, [r if r is not None else [] for r in cur]))
+            cur = []
+    if cur:
+        out.append((start, [r if r is not None else [] for r in cur]))
+    return out
+
+
+def extract_csv(path, src, f: FileFacts, rules):
+    """A spreadsheet saved as CSV / TSV (table definitions, screen item lists, IF layouts)."""
+    import csv
+    delim = "\t" if path.lower().endswith(".tsv") or src.count("\t") > src.count(",") else ","
+    grid = [row for row in csv.reader(io.StringIO(src), delimiter=delim)]
+    sid = f"doc:{path}#sheet"
+    title = path.rsplit("/", 1)[-1].rsplit(".", 1)[0]
+    text = " ".join(v for row in grid[:30] for v in row if v)[:2000]
+    f.node(sid, Kind.DOC, title, 1, len(grid), f"{title} {text}", keys=[sid], sheet=title, doc=path, title=title)
+    f.edge(f"file:{path}", sid, Rel.CONTAINS, 1.0, "doc")
+    mentions(f, sid, title + " " + text, 1)
+    process_grid(f, grid, title, _Office(rules), sid)
 
 
 def extract(path: str, data: bytes, rules) -> FileFacts:
@@ -278,8 +343,10 @@ def extract(path: str, data: bytes, rules) -> FileFacts:
             extract_xlsx(path, data, rules, f)
         elif low.endswith(".docx"):
             extract_docx(path, data, rules, f)
+        elif low.endswith((".csv", ".tsv")):
+            extract_csv(path, decode_source(data), f, rules)
         else:
-            extract_text(path, decode_source(data), f)
+            extract_text(path, decode_source(data), f, rules)
     except Exception as e:  # a broken document must not stop indexing
         f.errors.append(f"{type(e).__name__}: {e}")
     return f

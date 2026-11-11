@@ -7,10 +7,13 @@ description: >
 office:
   headers:
     table: [テーブル名(物理), 物理テーブル名, テーブルID, テーブル物理名, テーブル名, table, table_name, エンティティ名]
-    column: [項目名(物理), 物理名, カラム名, カラムID, 列名, 項目ID, column, column_name, 物理項目名]
+    column: [項目名(物理), 物理名, カラム名, カラムID, 列名, 項目ID, column, column_name, 物理項目名, 項目物理名]
+    dbcolumn: [対応カラム, 対応DB項目, DB項目, DB項目名, DBカラム, 対応項目, テーブル.カラム, 格納先, 編集元, 取得元, 出力元]
     logical: [論理名, 項目名, 項目名(論理), 論理項目名, 名称]
     type: [データ型, 型, type]
-    misc: ["No", 項番, 必須, 備考, "NULL", PK, 主キー, 説明, 入力チェック, 桁数, 長さ, 初期値, デフォルト, 摘要]
+    length: [桁数, 長さ, 桁, バイト数, 最大桁数, 最大長, サイズ, length, len]
+    position: [開始位置, 位置, 開始桁, 開始, start, pos]
+    misc: ["No", 項番, 必須, 備考, "NULL", PK, 主キー, 説明, 入力チェック, 初期値, デフォルト, 摘要, 精度]
     screen: [画面ID, 画面名, 画面]
     function: [機能ID, 機能名, 処理ID, 処理名, 機能]
     job: [ジョブ名, ジョブID, ジョブネット, ジョブネット名]

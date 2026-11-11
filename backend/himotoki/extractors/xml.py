@@ -16,11 +16,11 @@ import xml.parsers.expat
 
 from ..model import Kind, Rel
 from ..pipeline.facts import FileFacts
-from ..text import words
+from ..text import system_ids, words
 from .sql import crud_refs
 
 NAME = "xml"
-VERSION = "2"
+VERSION = "3"
 
 
 class El:
@@ -180,7 +180,12 @@ def _value(el: El, root: El, path: str, expr: str):
             base = el.parent if alt.startswith("..>") else el
             cur = base
             for seg in alt.split(">", 1)[1].split("/"):
-                cur = next((c for c in (cur.children if cur is not None else []) if c.tag == seg), None)
+                # a predicate picks among siblings: {>var[var-name=maxlength]/var-value}
+                pm = re.fullmatch(r"([\w\-:]+)\[([\w\-:]+)=([^\]]*)\]", seg)
+                tag, ptag, pval = (pm.group(1), pm.group(2), pm.group(3)) if pm else (seg, None, None)
+                cur = next((c for c in (cur.children if cur is not None else []) if c.tag == tag and (
+                    ptag is None or any(g.tag == ptag and "".join(g.itertext()).strip() == pval
+                                        for g in c.children))), None)
             if cur is not None:
                 v = re.sub(r"\s+", " ", "".join(cur.itertext())).strip()
         if v:
@@ -248,7 +253,7 @@ def extract(path: str, data: bytes, rules) -> FileFacts:
             continue
         applicable.append(r)
     if not applicable:
-        return f
+        return generic(path, root, f)
     fid = f"file:{path}"
     f.node(fid, Kind.CONFIG, path.rsplit("/", 1)[-1], 1, root.end_line, words(path) + " " + root.tag,
            keys=[f"file:{path}"], xml_root=root.tag, packs=sorted({r["pack"] for r in applicable}))
@@ -309,4 +314,66 @@ def extract(path: str, data: bytes, rules) -> FileFacts:
                                   "src_kind": src_kind})
     if links:
         f.payload["links"] = links
+    return f
+
+
+# ------------------------------------------------------------------ files no rule knows
+_COLISH = re.compile(r"^(?=[A-Za-z0-9_]*_|[A-Z0-9_]+$)[A-Za-z][A-Za-z0-9_]{1,40}$")   # CUST_CD, TOKUI_CD, KINGAKU
+_FQCN = re.compile(r"^(?:[a-z_][\w]*\.){2,}[A-Z]\w+$")
+_LEN_ATTR = ("length", "maxlength", "maxLength", "len", "size", "width", "digits", "byte", "bytes", "keta")
+_SQL_HEAD = re.compile(r"(?is)^\s*(select|insert|update|delete|merge|with)\b")
+_SKIP_ROOTS = {"project", "configuration", "log4j:configuration", "Configuration", "assembly", "settings"}
+
+
+def generic(path: str, root: El, f: FileFacts) -> FileFacts:
+    """An XML file no rule pack knows (a report / form definition, an interface
+    definition, a vendor tool's export): its elements that name columns, classes, SQL or
+    system IDs become references, so that the file is not invisible. Elements carrying
+    such names become nodes with their length attributes."""
+    fid = f"file:{path}"
+    f.node(fid, Kind.CONFIG, path.rsplit("/", 1)[-1], 1, root.end_line, words(path) + " " + root.tag,
+           keys=[fid], xml_root=root.tag, generic=True)
+    if root.tag in _SKIP_ROOTS:
+        return f
+    made = 0
+    for el in root.iter():
+        vals = [v for v in el.attrs.values() if v and len(v) <= 4000]
+        txt = re.sub(r"\s+", " ", "".join(el.itertext())).strip()
+        if txt and len(txt) <= 4000 and not el.children:
+            vals.append(txt)
+        cols, classes, sqls = [], [], []
+        for v in vals:
+            if _SQL_HEAD.match(v):
+                sqls.append(v)
+                continue
+            for tok in re.split(r"[\s,;()=+|]+", v):
+                tok = tok.strip("'\"{}$#:")
+                if _FQCN.match(tok):
+                    classes.append(tok)
+                elif "." in tok and all(_COLISH.match(p) for p in tok.split(".")[-2:]) and tok.count(".") == 1:
+                    cols.append(tok.lower())                       # TABLE.COLUMN
+                elif _COLISH.match(tok) and not tok.isdigit():
+                    cols.append(tok.lower())
+        if not (cols or classes or sqls):
+            continue
+        ln = next((el.attrs[a] for a in _LEN_ATTR if re.fullmatch(r"\d{1,5}(,\d{1,3})?", el.attrs.get(a, ""))), None)
+        src = fid
+        label = el.attrs.get("id") or el.attrs.get("name") or el.attrs.get("key")
+        if label and made < 800:
+            src = f"xml:{path}#{el.line}:{el.tag}"
+            f.node(src, Kind.XML_ELEMENT, f"{el.tag} {label}", el.line, el.end_line,
+                   " ".join([el.tag, words(label), " ".join(vals)[:300]]), keys=[src], tag=el.tag,
+                   attrs=dict(list(el.attrs.items())[:12]), **({"length": ln} if ln else {}))
+            f.edge(fid, src, Rel.CONTAINS, 1.0, "parser")
+            made += 1
+        extra = {"length": ln} if ln else {}
+        for c in dict.fromkeys(cols):
+            key = f"column:{c}" if "." in c else f"colany:{c}"
+            f.ref(src, key, Rel.REFERENCES, 0.6, el.line, via="xml-generic", optional=True, **extra)
+        for c in dict.fromkeys(classes):
+            f.ref(src, f"class:{c}", Rel.REFERENCES, 0.8, el.line, via="xml-generic", optional=True)
+        for q in sqls:
+            crud_refs(f, src, q, el.line, via="xml-generic")
+    for sid in system_ids(" ".join(" ".join(e.attrs.values()) for e in root.iter())[:20000])[:30]:
+        f.ref(fid, f"sysid:{sid}", Rel.REFERENCES, 0.7, 1, via="xml-generic", optional=True)
     return f

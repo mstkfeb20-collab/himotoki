@@ -43,7 +43,7 @@ pip install ./backend && himotoki demo                  # サンプルを取り�
        │               │                    │                   │                   │
        ▼               ▼                    ▼                   ▼                   ▼
  ┌─ 抽出（ファイル単位・並列・キャッシュ） ───────────────┐   ┌─ 取込（sources/） ─────────┐
- │ java / ts / prisma / xml / text / sql / props / jobs / docs │   │ catalog.py / runtime.py      │
+ │ java / ts / prisma / xml / text / sql / props / jobs / docs / layout │   │ catalog.py / runtime.py      │
  │   ＋ ルールパック（YAML）がフレームワークの意味を与える   │   └──────────────┬──────────┘
  │ → FileFacts: ノード・ファイル内の関係・「キーへの参照」   │                  │
  └──────────────┬─────────────────────────────┘                  │
@@ -64,19 +64,22 @@ pip install ./backend && himotoki demo                  # サンプルを取り�
 
 ### 1. 抽出: 汎用の抽出器と、意味を与えるルールパック
 
-抽出器は言語・形式ごとに 9 つあり、Java 側はフレームワークを知りません（TypeScript は Next.js・Supabase・Prisma の慣習を抽出器が直接読みます）。
+抽出器は言語・形式ごとに 10 個あり、Java 側はフレームワークを知りません（TypeScript は Next.js・Supabase・Prisma の慣習を抽出器が直接読みます）。
 
 | 抽出器 | 対象 | 取り出すもの |
 |---|---|---|
 | `java` | *.java（tree-sitter） | クラス・メソッド・フィールド、呼び出し・型・フィールドアクセスの記述子、アノテーション、文字列リテラル（同じクラスの定数経由も含む） |
 | `ts` | *.ts・*.tsx（tree-sitter）、tsconfig.json・package.json | モジュール・関数（React コンポーネントを含む）・クラス・インターフェース・型・定数。呼び出し・JSX のコンポーネント（RENDERS）・型の参照・`implements`、Supabase の `.from("表")` と Prisma の `prisma.モデル.操作()` の読み書き、Next.js App Router の画面・API、`it`/`test` ごとのテスト、画面の文言・コメント（日本語で引けるように） |
 | `prisma` | schema.prisma | モデル → テーブル（`@@map`）、項目 → 列（`@map`）、`///` の説明 |
-| `xml` | *.xml | ルールパックの `xml:` ルールに従ってノード・参照を作る（パス・属性テンプレート・条件）。Shift_JIS などの宣言も読む |
-| `text` | JSP・テンプレート・シェル・Groovy など | ルールパックの `text:` ルールの正規表現で参照を作る |
+| `xml` | *.xml | ルールパックの `xml:` ルールに従ってノード・参照を作る（パス・属性テンプレート・条件）。Shift_JIS などの宣言も読む。Struts の validation.xml（入力チェック・桁）も読む。ルールの無い XML（帳票定義・ベンダーツールの定義など）は、列名・クラス名・SQL・システムIDに当たる値と桁の属性を拾う |
+| `text` | JSP・テンプレート・シェル・Groovy など | ルールパックの `text:` ルールの正規表現で参照を作る。JSP は Struts の `<html:*>` タグ（項目・maxlength）も読む。シェルは同じファイルの変数（`OUT_FILE=${OUT_DIR}/X_${YMD}.dat`）を展開してから読み、`send_file` などのラッパー関数・転送コマンドの送受信も拾う |
+| `layout` | 連携ファイルのレイアウト定義（固定長の項目一覧・CSV 項目定義・COBOL コピー句） | 項目ごとに開始位置・桁を持つ「レイアウト項目」を作り、同じ物理名の列と、レイアウトが定める連携ファイルにつなぐ（対象ファイルは `rules/data-layouts.yaml`） |
 | `sql` | *.sql、および他の抽出器が見つけた SQL 文字列 | sqlglot で CRUD・列を解析（失敗時は正規表現）。CREATE TABLE・コメント・PL/SQL・PL/pgSQL のオブジェクト |
-| `props` | *.properties・YAML | メッセージキー（全ロケール）・設定キー |
+| `props` | *.properties・YAML | メッセージキー（全ロケール）・設定キー。設定値に書かれた連携ファイル名・クラス名 |
 | `jobs` | JP1/AJS の定義（ajsprint 形式）・crontab | ジョブネット・ジョブ・先行関係・起動するスクリプト |
-| `docs` | Excel・Word・Markdown（.xls/.doc は LibreOffice で変換） | 表の見出し行を自動で探し、行ごとに「設計書の項目」を作る。CRUD表（機能×テーブル）も検出。読めたもの・読めなかったもの（表の外の文字、図形・テキストボックス・画像、意味の分からない見出し）は `himotoki docs-check` とビュワーの「設計書の取込確認」で原本と見比べられる |
+| `docs` | Excel・Word・Markdown（表も）・設計フォルダの CSV（.xls/.doc は LibreOffice で変換） | 表の見出し行を自動で探し、行ごとに「設計書の項目」を作る。CRUD表（機能×テーブル）も検出。読めたもの・読めなかったもの（表の外の文字、図形・テキストボックス・画像、意味の分からない見出し）は `himotoki docs-check` とビュワーの「設計書の取込確認」で原本と見比べられる。「桁数」「対応カラム」の列は桁と列の対応として読む |
+
+リンクでは、**画面ID・ジョブID・帳票ID**（`HZK-G010`・`KOBB090`・`R_HAN030` など、区切りの書き方が違っても同じものとして扱う）を、その ID を名前に持つファイル・ジョブ・クラスに結びます。連携ファイルは、置き場所の変数と日付部分を除いた名前（`${OUT}/URIAGE_${YMD}.dat` と `URIAGE_yyyymmdd.dat` は同じ `uriage.dat`）で、書く側と読む側をつなぎます。列の詳細には **桁の流れ**（DDL・設計書・画面の maxlength・入力チェック・連携レイアウト・帳票の桁）を並べ、DDL と違う桁に印を付けます。
 
 抽出結果は `FileFacts`（ノード、ファイル内の関係、`table:reserve` や `view:reservetour/reserveForm` のような**キーへの参照**）という共通形式で、ファイルごとに独立しています。そのため並列に処理でき、キャッシュも効きます。
 
