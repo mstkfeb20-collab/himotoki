@@ -16,6 +16,7 @@ from __future__ import annotations
 import time
 
 from ..model import EDITABLE, Kind, Rel
+from .impact import IMPACT_JA, effective
 
 TEST_KINDS = {Kind.TEST_CLASS, Kind.TEST_METHOD}
 DOC_KINDS = {Kind.DOC, Kind.DOC_ENTITY}
@@ -23,6 +24,8 @@ CHANGE_JA = {"add": "追加", "modify": "変更", "delete": "削除", "test": "�
 AGENT_RULES = [
     "この作業指示の「修正対象」の範囲で実装する。範囲外のファイルを直す必要が出たら、理由を書いて人に確認する（勝手に広げない）。",
     "「除外」に挙がった要素は変更しない。除外の理由を読んでから判断する。",
+    "「試験で確かめるもの」は変更しない。変更した要素につながるので、観点に沿って動作を確認する（直す必要が見つかったら、理由を書いて人に確認する）。",
+    "「調整すること」は、コードの外で人や他システムと決める事項。実装前に担当者へ渡す。",
     "「未判定」の要素は、実装中に影響の有無を確かめ、結果を報告する。",
     "「トランザクション・連携の注意」がある要素は、ロールバック時の扱い・相手システム・再実行を確認してから変更する。",
     "「関連する設計書」は、コードと合わせて更新が必要か確認する。",
@@ -65,7 +68,15 @@ def _item(engine, st, c, confirmed_ids, excluded_ids):
         "tx": c.get("tx"), "data_flow": bool(c.get("data_flow")),
         "tests": tests[:8], "docs": docs[:8], "callers_to_check": callers[:5], "defined_in": defined_in[:4],
         "confidence": round(c.get("confidence") or c["score"], 2),
+        "impact": effective(c) or "change", "evidence": c.get("evidence"),
+        "via": _via(st, c),
     }
+
+
+def _via(st, c) -> str | None:
+    """What the element depends on that changes (for a test point)."""
+    p = st["candidates"].get(c.get("parent"))
+    return f"{p['name']}（{c.get('via_rel')}）" if p else None
 
 
 def build_handoff(engine, run_id: str, include_pending: bool = True) -> dict:
@@ -77,7 +88,10 @@ def build_handoff(engine, run_id: str, include_pending: bool = True) -> dict:
     excluded = [c for c in cands.values() if _decision(c) == "excluded"]
     pending = [c for c in cands.values() if not c.get("decision") and c.get("verdict") in ("impacted", "uncertain")]
     cids, xids = {c["node_id"] for c in confirmed}, {c["node_id"] for c in excluded}
-    items = [_item(engine, st, c, cids, xids) for c in confirmed]
+    all_items = [_item(engine, st, c, cids, xids) for c in confirmed]
+    items = [it for it in all_items if it["impact"] == "change"]          # what is edited
+    verify = [it for it in all_items if it["impact"] == "verify"]        # checked by testing, not edited
+    coordinate = [it for it in all_items if it["impact"] == "coordinate"]
     files: dict[str, list] = {}
     other = []
     for it in sorted(items, key=lambda i: (i["file"] or "~", i["line"] or 0)):
@@ -105,8 +119,14 @@ def build_handoff(engine, run_id: str, include_pending: bool = True) -> dict:
         "estimate_days": e.get("days"), "estimate_range": [e.get("low"), e.get("high")],
         "files": [{"file": f, "items": its} for f, its in files.items()],
         "other_targets": other,
+        "verify": [{k: it[k] for k in ("node_id", "name", "kind", "file", "line", "reason", "evidence", "via", "tests")}
+                   for it in sorted(verify, key=lambda i: (i["file"] or "~", i["line"] or 0))],
+        "coordinate": [{k: it[k] for k in ("node_id", "name", "kind", "file", "line", "reason", "evidence", "assignee")}
+                       for it in coordinate],
+        "estimate_by_impact": e.get("by_impact") or {},
         "pending": [{"node_id": c["node_id"], "name": c["name"], "kind": c["kind"], "file": c.get("file"),
-                     "line": c.get("line"), "verdict": c.get("verdict"), "reason": c.get("reason") or c.get("seed_reason"),
+                     "line": c.get("line"), "verdict": c.get("verdict"), "impact": c.get("impact"),
+                     "reason": c.get("reason") or c.get("seed_reason"),
                      "tx_risks": [r.get("code") for r in c.get("tx_risks", [])]}
                     for c in sorted(pending, key=lambda c: -(c.get("confidence") or c["score"]))[:60]]
         if include_pending else [],
@@ -125,11 +145,19 @@ def _loc(x):
     return f"`{x['file']}" + (f":{x['line']}" if x.get("line") else "") + "`"
 
 
+def _by_impact_text(b: dict | None) -> str:
+    if not b:
+        return ""
+    parts = [f"{IMPACT_JA.get(k, k)} {v['expected_days']}" for k, v in b.items() if v.get("expected_days")]
+    return f"（内訳: {'・'.join(parts)} 人日）" if parts else ""
+
+
 def handoff_markdown(h: dict) -> str:
     out = [f"# 作業指示: {h['title'] or h['requirement'][:40]}", "",
            f"- 要求: {h['requirement']}", f"- run: `{h['run_id']}`（himotoki）",
            f"- 承認: {h['approved']['actor'] + ' が承認済み' if h.get('approved') else '未承認'}",
-           f"- 規模の見込み: {h.get('estimate_days')} 人日（{h['estimate_range'][0]}〜{h['estimate_range'][1]}）", ""]
+           f"- 規模の見込み: {h.get('estimate_days')} 人日（{h['estimate_range'][0]}〜{h['estimate_range'][1]}）"
+           + _by_impact_text(h.get("estimate_by_impact")), ""]
     if h["warnings"]:
         out += ["> " + w for w in h["warnings"]] + [""]
     if h["intents"]:
@@ -162,6 +190,21 @@ def handoff_markdown(h: dict) -> str:
                        f"{' 定義: ' + where if where else ''}: {it['reason']}")
             for r in it["tx_risks"]:
                 out.append(f"  - ⚠ {r['message']}")
+        out.append("")
+    if h.get("verify"):
+        out += ["## 試験で確かめるもの（変更しない）", ""]
+        for it in h["verify"]:
+            ev = it.get("evidence") or {}
+            point = ev.get("check") or it["reason"]
+            out.append(f"- **{it['name']}**（{it['kind']}）{_loc(it)}: {point}"
+                       + (f" ／ 変わる相手: {it['via']}" if it.get("via") else ""))
+        out.append("")
+    if h.get("coordinate"):
+        out += ["## 調整すること（コードの外）", ""]
+        for it in h["coordinate"]:
+            ev = it.get("evidence") or {}
+            out.append(f"- **{it['name']}**（{it['kind']}）: {ev.get('with') or it['reason']}"
+                       + (f" ／ 担当: {it['assignee']}" if it.get("assignee") else ""))
         out.append("")
     if h["pending"]:
         out += ["## 未判定（実装中に影響の有無を確認）", ""]
@@ -199,7 +242,10 @@ def verify_change(engine, run_id: str, hunks: dict, base: str = "", head: str = 
         raise KeyError(run_id)
     changed, added = engine.diff_nodes(hunks)
     cands = st["candidates"]
-    predicted = {nid for nid, c in cands.items() if _decision(c) == "confirmed" and c["kind"] in EDITABLE}
+    predicted = {nid for nid, c in cands.items() if _decision(c) == "confirmed" and c["kind"] in EDITABLE
+                 and effective(c) == "change"}
+    # confirmed as "verify": expected NOT to change; a change there means the kind was wrong
+    checked = {nid for nid, c in cands.items() if _decision(c) == "confirmed" and effective(c) == "verify"}
     hit, missed = [], []
     touched_pred = set()
     for ch in changed:
@@ -214,6 +260,14 @@ def verify_change(engine, run_id: str, hunks: dict, base: str = "", head: str = 
             hit.append(row)
             continue
         c = next((cands[x] for x in fam if x in cands), None)
+        if fam & checked:
+            v = cands[next(iter(fam & checked))]
+            row["why"] = "judged_verify"
+            row["why_ja"] = "試験（変更なし）と判断していたが、実際は変更された"
+            row["candidate_reason"] = (v.get("decision") or {}).get("reason") or v.get("reason")
+            row["candidate_id"] = v["node_id"]
+            missed.append(row)
+            continue
         if c is None:
             row["why"] = "not_found"          # the graph never reached it: a gap to fix with rules / data
             row["why_ja"] = "候補に無かった（グラフで届いていない）"

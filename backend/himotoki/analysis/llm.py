@@ -10,6 +10,7 @@ import re
 from typing import Any
 
 from ..model import Kind
+from .impact import rule_impact
 
 UNIT = r"(?:件|桁|文字|日|個|回|円|％|%|分|秒|時間|歳|行|ページ)?"
 OLD_VALUE_RX = re.compile(r"(\d+)\s*" + UNIT + r"\s*(?:固定)?\s*から")
@@ -33,6 +34,35 @@ GLOSSARY = {
     "バリデーション": "validation validator", "入力チェック": "validation validator",
     "都市": "city", "市区町村": "city", "エラー": "error", "メッセージ": "message",
 }
+
+
+# how the judge is asked to tell the kinds of impact apart (see analysis/impact.py)
+JUDGE_SYSTEM = (
+    "You judge, for a requirement intent, how each element of an existing system is affected. "
+    "Decide the kind of impact first:\n"
+    "- change: the element's own content must be edited to implement the intent (code, SQL, screen, "
+    "layout, message, document, master data). Evidence: where (line, field, condition) and what to change.\n"
+    "- verify: nothing in the element changes, but something it calls, reads or receives changes, so its "
+    "behaviour must be checked by testing (a caller, a reader of a changed column, the job after a changed "
+    "program, a receiving interface). Evidence: what it depends on that changes, and the test point.\n"
+    "- coordinate: no edit in this code, but people or procedures outside it are involved (the receiving "
+    "system or partner, production master data, the job schedule, a release step). Evidence: with whom / "
+    "which procedure, and what to agree.\n"
+    "- none: connected, but unrelated to this intent. Evidence: why.\n"
+    "- unknown: the given material is not enough to tell (say what is missing).\n"
+    "Being near a changed element is not a reason for change: a caller of a method whose signature and "
+    "meaning stay the same is verify, not change. An element named by the requirement itself "
+    "(found_by=requirement) usually is change. \"link\" says how the element hangs on the one it was "
+    "reached from. An item's optional \"history\" is what reviewers of this system decided before and "
+    "what verified changes showed; weigh it, but judge this intent on its own merits.\n"
+    "Answer JSON only: {\"results\":[{\"id\":str,\"impact\":\"change|verify|coordinate|none|unknown\","
+    "\"verdict\":\"impacted|uncertain|not_impacted\",\"confidence\":0-1,\"reason\":str (Japanese, one "
+    "sentence),\"evidence\":{\"where\"|\"check\"|\"with\"|\"why\": str (Japanese)},"
+    "\"change_type\":\"add|modify|delete|test|doc\"}]} "
+    "(verdict: impacted for change/verify/coordinate you are sure of, uncertain when unsure, not_impacted for none)."
+)
+FOUND_BY = {"seed": "requirement", "pattern": "requirement", "human": "reviewer", "focus": "reviewer",
+            "grep": "keyword search", "learned": "past changes", "crud": "table usage", "runtime": "runtime SQL"}
 
 
 def _extract_json(text: str) -> Any:
@@ -108,8 +138,10 @@ class RuleBasedLLM:
                 # on the path a changed value takes to another job or server (file export,
                 # transfer, file watch, import): layouts and lengths there need a look
                 verdict = "uncertain"
+            impact, evidence = rule_impact(it, verdict, intent.get("change_type") or "modify")
             out.append({"id": it["id"], "verdict": verdict, "confidence": round(min(0.95, s), 2),
-                        "reason": it["path_reason"], "change_type": it.get("change_type", "modify"), "_by": "rule"})
+                        "reason": it["path_reason"], "change_type": it.get("change_type", "modify"), "_by": "rule",
+                        "impact": impact, "evidence": evidence})
         return out
 
     def answer(self, question: str, context: str, meter: dict | None = None) -> str:
@@ -167,18 +199,14 @@ class ClaudeLLM(RuleBasedLLM):
 
     def judge(self, intent: dict, items: list[dict], batch_size: int = 15, meter: dict | None = None) -> list[dict]:
         base = {r["id"]: dict(r, _by="rule:fallback") for r in super().judge(intent, items)}
-        system = ("You judge whether code elements must change to implement a requirement intent. "
-                  "For each item answer JSON only: {\"results\":[{\"id\":str,\"verdict\":"
-                  "\"impacted|uncertain|not_impacted\",\"confidence\":0-1,\"reason\":str (Japanese, one "
-                  "sentence),\"change_type\":\"add|modify|delete|test|doc\"}]} "
-                  "An item's optional \"history\" is what reviewers of this system decided before and what "
-                  "verified changes showed; weigh it, but judge this intent on its own merits.")
+        system = JUDGE_SYSTEM
         results = []
         step = max(1, int(batch_size))
         for i in range(0, len(items), step):
             chunk = items[i:i + step]
             # "history": what reviewers and verified changes of this system taught about the element
-            body = json.dumps([{k: it[k] for k in ("id", "kind", "name", "path_reason", "snippet", "history") if it.get(k)}
+            body = json.dumps([dict({k: it[k] for k in ("id", "kind", "name", "path_reason", "link", "snippet", "history")
+                                     if it.get(k)}, found_by=FOUND_BY.get(it.get("origin"), "graph"))
                                for it in chunk], ensure_ascii=False)
             try:
                 data = _extract_json(self._ask(system, f"Intent: {intent['summary']} "
@@ -186,6 +214,8 @@ class ClaudeLLM(RuleBasedLLM):
                                                meter=meter, purpose="judge"))
                 for r in data.get("results", []):
                     if r.get("id") in base:
+                        if not isinstance(r.get("evidence"), dict):
+                            r.pop("evidence", None)
                         results.append({**base[r["id"]], **r, "_by": "ai"})
             except Exception:
                 log.warning("Claude judgement failed for a chunk; keeping rule-based verdicts", exc_info=True)

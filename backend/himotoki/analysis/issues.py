@@ -88,7 +88,8 @@ def _job_lines(engine, items: list[dict]) -> list[str]:
     return out
 
 
-def _body(h: dict, engine, files: list[dict], others: list[dict], scope: str, parent_note: str | None) -> str:
+def _body(h: dict, engine, files: list[dict], others: list[dict], scope: str, parent_note: str | None,
+          verify: list[dict] | None = None, coordinate: list[dict] | None = None) -> str:
     approved = h.get("approved")
     out = [f"<!-- himotoki-run: {h['run_id']} -->", ""]
     if parent_note:
@@ -130,6 +131,18 @@ def _body(h: dict, engine, files: list[dict], others: list[dict], scope: str, pa
         out += [f"- [ ] テスト {n} {_loc(fl)}" for n, fl in tests] or ["- [ ] 変更箇所を検証するテストを追加する（既存のテストが見つかっていません）"]
     if callers:
         out += [f"- [ ] 呼び出し元の動作確認: {c['name']} {_loc(c.get('file'), c.get('line'))}" for c in list(callers.values())[:10]]
+    if verify:
+        # confirmed as "verify": not edited, checked because something they depend on changes
+        out += ["", "### 試験で確かめるもの（変更しない）", ""]
+        for it in verify:
+            point = (it.get("evidence") or {}).get("check") or it.get("reason") or ""
+            out.append(f"- [ ] {it['name']} {_loc(it.get('file'), it.get('line'))}: {point}"
+                       + (f"（変わる相手: {it['via']}）" if it.get("via") else ""))
+    if coordinate:
+        out += ["", "## 調整すること（コードの外）", ""]
+        for it in coordinate:
+            what = (it.get("evidence") or {}).get("with") or it.get("reason") or ""
+            out.append(f"- [ ] {it['name']}: {what}" + (f"（担当: {it['assignee']}）" if it.get("assignee") else ""))
     if h.get("excluded") and scope in ("", None):
         out += ["", "### 変更しないもの（レビューで除外）", ""] + \
                [f"- {x['name']} {_loc(x.get('file'))}: {x['reason']}" for x in h["excluded"][:20]]
@@ -160,22 +173,29 @@ def issue_drafts(engine, run_id: str, split: str = "one") -> dict:
     if split != "subsystem":
         return {"run_id": run_id, "split": "one", "warnings": h["warnings"],
                 "issues": [{"key": "main", "title": title, "labels": labels,
-                            "body": _body(h, engine, h["files"], h["other_targets"], "", None)}]}
+                            "body": _body(h, engine, h["files"], h["other_targets"], "", None,
+                                          h.get("verify"), h.get("coordinate"))}]}
     groups: dict[str, list] = OrderedDict()
     for f in h["files"]:
         groups.setdefault(_subsystem(f["file"]), []).append(f)
     others_by: dict[str, list] = OrderedDict()
     for it in h["other_targets"]:
         others_by.setdefault(_home(engine, it), []).append(it)
-    names = list(dict.fromkeys(list(groups) + list(others_by)))
+    verify_by: dict[str, list] = OrderedDict()
+    for it in h.get("verify") or []:
+        verify_by.setdefault(_home(engine, it), []).append(it)
+    names = list(dict.fromkeys(list(groups) + list(others_by) + list(verify_by)))
     names.sort(key=lambda n: (n == "設計書", n))
-    parent_lines = [f"- [ ] {n}（{len(groups.get(n, [])) + len(others_by.get(n, []))} 件）" for n in names]
-    parent_body = _body(h, engine, [], [], "", None).replace(
+    parent_lines = [f"- [ ] {n}（修正 {len(groups.get(n, [])) + len(others_by.get(n, []))} 件・試験 {len(verify_by.get(n, []))} 件）"
+                    for n in names]
+    # coordination is agreed once for the whole requirement: it stays in the parent issue
+    parent_body = _body(h, engine, [], [], "", None, None, h.get("coordinate")).replace(
         "## 変更対象\n\n（この範囲で確定したファイルはありません）",
         "## 変更対象（サブシステムごとの issue に分割）\n\n" + "\n".join(parent_lines), 1)
     issues = [{"key": "parent", "title": title, "labels": labels + ["親issue"], "body": parent_body}]
     for n in names:
         issues.append({"key": n, "title": f"{title} — {n}", "labels": labels + [n],
                        "body": _body(h, engine, groups.get(n, []), others_by.get(n, []), n,
-                                     f"親 issue「{title}」の一部（{n}）です。全体の要求・除外・未判定は親 issue を参照してください。")})
+                                     f"親 issue「{title}」の一部（{n}）です。全体の要求・除外・未判定・調整事項は親 issue を参照してください。",
+                                     verify_by.get(n))})
     return {"run_id": run_id, "split": "subsystem", "warnings": h["warnings"], "issues": issues}

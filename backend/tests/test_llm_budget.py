@@ -28,7 +28,7 @@ class FakeClaude(L.ClaudeLLM):
     def _ask(self, system, user, max_tokens=4000, meter=None, purpose=""):
         if meter is not None:
             meter.on_call(self.model, len(user) // 4, 10, purpose)
-        if "judge whether" in system:
+        if "kind of impact" in system:
             ids = re.findall(r'"id": "([^"]+)"', user)
             self.sent_ids += ids
             return json.dumps({"results": [{"id": i, "verdict": "impacted", "confidence": 0.8, "reason": "AI",

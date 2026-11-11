@@ -1,3 +1,4 @@
+import { ImpactTag, type Impact } from "./impact";
 import { useEffect, useState } from "react";
 import { api } from "./api";
 import DocsCheckDialog from "./DocsCheck";
@@ -94,6 +95,14 @@ export function EstimatePanel({ run, onSelect, onOnlyLayer }: { run: RunState; o
         <span className="mono small muted">（{e.low} 〜 {e.high}）</span></div>
       <p className="muted small">確定分 {e.confirmed_hours}h ＋ 未判定の期待値 {e.pending_expected_hours}h、レビュー等の係数 ×{e.overhead}、
         実績補正 ×{e.calibration}{e.calibration_samples ? `（過去${e.calibration_samples}件）` : "（実績未登録）"}</p>
+      {e.by_impact && Object.keys(e.by_impact).length > 0 && (
+        <div className="row gap6 small" aria-label="影響の種類ごとの見込み">
+          {(["change", "verify", "coordinate"] as Impact[]).filter((k) => e.by_impact![k]).map((k) => (
+            <span key={k} className="row gap6"><ImpactTag kind={k} small />
+              <span className="mono">{e.by_impact![k].expected_days}</span><span className="muted">人日</span></span>
+          ))}
+        </div>
+      )}
       <LayerBreakdown run={run} onOnlyLayer={onOnlyLayer} />
       <AiUsage run={run} />
       <span className="k">要素ごとの工数（確定分と、見込みの大きい未判定分）</span>

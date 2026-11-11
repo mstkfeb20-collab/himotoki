@@ -41,6 +41,8 @@ DEFAULT_COEF = {
     "loc_step": 0.01,              # +1% per line above 20
     "fanin_step": 0.03,            # +3% per caller above 3 (regression risk)
     "missing_test_hours": 1.5,     # writing a new test when nothing covers the element
+    "verify_hours": 0.5,           # checking an element that does not change (test point, run, compare)
+    "coordinate_hours": 1.0,       # agreeing with another team / system, a production data or schedule step
     "overhead": 1.3,               # review, integration, QA
     "hours_per_day": 8.0,
     "calibration": 1.0,
@@ -69,6 +71,16 @@ class Estimator:
         self.coef["calibration_samples"] = len(ratios)
         self.save()
         return {"calibration": self.coef["calibration"], "samples": len(ratios)}
+
+    def side_hours(self, impact: str) -> tuple[float, list[str]]:
+        """Hours for an element that is checked or coordinated, not edited."""
+        if impact == "verify":
+            h = self.coef.get("verify_hours", 0.5)
+            return h, [f"試験 {h}h（変更なし・動作確認）"]
+        if impact == "coordinate":
+            h = self.coef.get("coordinate_hours", 1.0)
+            return h, [f"調整 {h}h（他チーム・運用との確認）"]
+        return 0.0, []
 
     def element_hours(self, cand: dict, node_props: dict, fan_in: int, tested: bool) -> tuple[float, list[str]]:
         kind = cand["kind"]
@@ -121,6 +133,7 @@ class Estimator:
             "calibration": self.coef["calibration"],
             "calibration_samples": self.coef.get("calibration_samples", 0),
             "hours_per_day": hpd,
+            "by_impact": _by_impact(lines, pending, k / hpd),
             "lines": sorted(lines, key=lambda l: -l["hours"]),
             "pending": sorted(pending, key=lambda p: -p["hours"] * p["probability"])[:50],
             # every element's share, so the viewer can total any subset (a filter, a layer)
@@ -129,3 +142,20 @@ class Estimator:
                          **{p["node_id"]: {"h": p["hours"], "e": p["hours"] * p["probability"],
                                            "s": "pending", "p": p["probability"], "n": p["notes"]} for p in pending}},
         }
+
+
+def _by_impact(lines: list[dict], pending: list[dict], to_days: float) -> dict:
+    """Person-days per kind of impact (implementation, testing, coordination)."""
+    out: dict[str, dict] = {}
+    for rows, conf in ((lines, True), (pending, False)):
+        for r in rows:
+            k = r.get("impact") or "change"
+            o = out.setdefault(k, {"confirmed_days": 0.0, "expected_days": 0.0, "elements": 0})
+            o["elements"] += 1
+            if conf:
+                o["confirmed_days"] += r["hours"] * to_days
+                o["expected_days"] += r["hours"] * to_days
+            else:
+                o["expected_days"] += r["hours"] * r.get("probability", 1.0) * to_days
+    return {k: {"confirmed_days": round(v["confirmed_days"], 1), "expected_days": round(v["expected_days"], 1),
+                "elements": v["elements"]} for k, v in out.items()}

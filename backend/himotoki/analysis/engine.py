@@ -35,6 +35,7 @@ from ..settings import LLMBudget, load_llm_budget, load_pricing
 from ..usage import UsageLedger, UsageMeter, new_usage
 from ..store.base import GraphStore
 from .estimate import Estimator
+from .impact import AFFECTING, IMPACTS, effective, normalise
 from .llm import RuleBasedLLM, make_llm
 from .runstore import EventBus, RunStore
 from .search import NodeSearch
@@ -494,7 +495,7 @@ class Engine:
 
     # ------------------------------------------------------------ phase 2
     def _add_candidate(self, st, node_id, score, origin, intent_id, parent=None, rel=None,
-                       reason=None, virtual=None) -> bool:
+                       reason=None, virtual=None, direction=None) -> bool:
         cands = st["candidates"]
         node = self.store.get(node_id)
         if node is None and virtual is None:
@@ -505,7 +506,7 @@ class Engine:
                 c["intent_ids"].append(intent_id)
             if score > c["score"] + 1e-6:
                 c["score"] = round(score, 3)
-                c["parent"], c["via_rel"] = parent, rel
+                c["parent"], c["via_rel"], c["via_dir"] = parent, rel, direction
                 c["path"] = (cands[parent]["path"] if parent in cands else []) + [node_id]
                 if reason:
                     c["seed_reason"] = reason
@@ -523,7 +524,7 @@ class Engine:
             "group": info.get("group"), "name": info["name"],
             "file": info.get("file"), "line": info.get("line"), "score": round(score, 3),
             "origin": origin, "intent_ids": [intent_id] if intent_id else [], "parent": parent,
-            "via_rel": rel, "path": (cands[parent]["path"] if parent in cands else []) + [node_id],
+            "via_rel": rel, "via_dir": direction, "path": (cands[parent]["path"] if parent in cands else []) + [node_id],
             "seed_reason": reason, "verdict": None, "confidence": None, "reason": None,
             "change_type": None, "difficulty": None, "decision": None, "assignee": None,
             "comments": [], "found_at": _now(),
@@ -590,7 +591,7 @@ class Engine:
                         seeds.append((ent.id, 0.9))
                     for e in self.store.out_edges(ent.id, [Rel.MAPS_TO]):
                         if self._add_candidate(st, e.dst, 0.9, "pattern", it["id"], parent=ent.id,
-                                               rel=Rel.MAPS_TO, reason="新しい列を追加するテーブル"):
+                                               rel=Rel.MAPS_TO, reason="新しい列を追加するテーブル", direction="out"):
                             seeds.append((e.dst, 0.9))
                     for b in self.store.nodes([Kind.CONFIG]):
                         if b.props.get("bundle"):
@@ -797,7 +798,8 @@ class Engine:
                             s2 = score * weight * e.conf
                             if s2 < (flow_min if rule.get("flow") else min_score):
                                 continue
-                            if self._add_candidate(st, other, s2, origin, iid, parent=nid, rel=e.rel):
+                            if self._add_candidate(st, other, s2, origin, iid, parent=nid, rel=e.rel,
+                                                   direction=direction):
                                 if abs(lm - 1.0) >= 0.15:
                                     st["candidates"][other].setdefault("learned", []).append({
                                         "type": "path", "factor": round(lm, 2),
@@ -832,7 +834,8 @@ class Engine:
                         for de in self.store.in_edges(ce.src, [Rel.DESCRIBES]):
                             s2 = score * 0.6 * de.conf * (1.2 if "doc" in boost else 1.0)
                             if s2 >= min_score:
-                                self._add_candidate(st, de.src, s2, origin, iid, parent=nid, rel=Rel.DESCRIBES)
+                                self._add_candidate(st, de.src, s2, origin, iid, parent=nid, rel=Rel.DESCRIBES,
+                                                    direction="in")
             frontier = nxt
             if not frontier:
                 break
@@ -863,6 +866,19 @@ class Engine:
                 return f"{p['name']} {phrase}"
             return f"{p['name']} {phrase}"
         return c.get("seed_reason") or ""
+
+    def _link_text(self, st, c) -> str | None:
+        """How the element hangs on the one it was reached from, said plainly for the judge:
+        "calls 〇〇 (which changes)" reads differently from "is called by 〇〇"."""
+        p = st["candidates"].get(c.get("parent"))
+        if not p or not c.get("via_rel"):
+            return None
+        rel, d = c["via_rel"], c.get("via_dir")
+        if d == "in":
+            return f"この要素が「{p['name']}」{REL_JA.get(rel, 'と関連している')}（{rel}）"
+        if d == "out":
+            return f"「{p['name']}」がこの要素{REL_JA.get(rel, 'と関連している')}（{rel}）"
+        return f"「{p['name']}」と {rel} でつながる"
 
     def _default_change_type(self, st, c) -> str:
         if c["kind"] in (Kind.TEST_CLASS, Kind.TEST_METHOD):
@@ -985,7 +1001,9 @@ class Engine:
                 continue
             iid = (c["intent_ids"] or ["I1"])[0]
             item = {"id": nid, "kind": c["kind"], "name": c["name"], "score": c["score"],
-                    "path_reason": self.path_reason(st, nid),
+                    "path_reason": self.path_reason(st, nid), "origin": c["origin"],
+                    "via_rel": c.get("via_rel"), "via_dir": c.get("via_dir"),
+                    "link": self._link_text(st, c),
                     "history": "／".join(n["message"] for n in c.get("learned", [])),
                     "change_type": c["change_type"], "data_flow": bool(c.get("data_flow")),
                     "learned": [n["type"] for n in c.get("learned", [])]}
@@ -1017,13 +1035,17 @@ class Engine:
         c = st["candidates"].get(r["id"])
         if not c:
             return
-        c["verdict"], c["confidence"] = r["verdict"], r["confidence"]
+        verdict, impact = normalise(r.get("verdict"), r.get("impact"))
+        c["verdict"], c["confidence"] = verdict, r["confidence"]
         c["reason"] = r.get("reason") or self.path_reason(st, r["id"])
+        c["impact"] = impact
+        c["evidence"] = {k: str(v)[:300] for k, v in (r.get("evidence") or {}).items() if v} or None
         if r.get("change_type") in ("add", "modify", "delete", "test", "doc"):
             c["change_type"] = r["change_type"]
         c["judged_by"], c["judged_score"] = by, c["score"]
         self.emit(st, "verdict", {"node_id": r["id"], "verdict": c["verdict"], "confidence": c["confidence"],
-                                  "reason": c["reason"], "judged_by": by})
+                                  "reason": c["reason"], "judged_by": by, "impact": c["impact"],
+                                  "evidence": c["evidence"]})
 
     # ------------------------------------------------------------ phase 5
     def _grep_terms(self, st) -> list[str]:
@@ -1260,18 +1282,28 @@ class Engine:
     def estimate(self, st) -> dict:
         lines, pending = [], []
         for nid, c in st["candidates"].items():
-            if c["kind"] not in EDITABLE:
+            impact = effective(c)
+            if impact == "none":
                 continue
             node = self.store.get(nid)
-            props = node.props if node else {}
-            tested = bool(self.store.in_edges(nid, [Rel.TESTS])) or any(
-                (self.store.get(e.src) or node).kind in (Kind.TEST_METHOD, Kind.TEST_CLASS)
-                for e in self.store.in_edges(nid, [Rel.CALLS, Rel.REFERENCES])) if node else False
-            hours, notes = self.estimator.element_hours(c, props, self.fan_in(nid), tested)
+            if impact in ("verify", "coordinate"):
+                # checked or coordinated, not edited: test / coordination hours, any kind but documents
+                if c["kind"] in (Kind.DOC, Kind.DOC_ENTITY):
+                    continue
+                hours, notes = self.estimator.side_hours(impact)
+                tested = None
+            else:
+                if c["kind"] not in EDITABLE:
+                    continue
+                props = node.props if node else {}
+                tested = bool(self.store.in_edges(nid, [Rel.TESTS])) or any(
+                    (self.store.get(e.src) or node).kind in (Kind.TEST_METHOD, Kind.TEST_CLASS)
+                    for e in self.store.in_edges(nid, [Rel.CALLS, Rel.REFERENCES])) if node else False
+                hours, notes = self.estimator.element_hours(c, props, self.fan_in(nid), tested)
             if hours <= 0:
                 continue
             row = {"node_id": nid, "name": c["name"], "kind": c["kind"], "change_type": c["change_type"],
-                   "hours": hours, "notes": notes, "tested": tested}
+                   "hours": hours, "notes": notes, "tested": tested, "impact": impact or "change"}
             dec = c.get("decision")
             if dec and dec["status"] == "confirmed":
                 lines.append(row)
@@ -1321,7 +1353,8 @@ class Engine:
         except Exception:          # learning is best-effort; a decision is never lost because of it
             log.warning("could not record a decision for learning", exc_info=True)
 
-    def decide(self, run_id, node_id, status, reason="", actor="user", change_type=None, difficulty=None):
+    def decide(self, run_id, node_id, status, reason="", actor="user", change_type=None, difficulty=None,
+               impact=None):
         st = self.state(run_id)
         with self._locks[run_id]:
             c = st["candidates"].get(node_id)
@@ -1329,8 +1362,12 @@ class Engine:
                 raise KeyError(node_id)
             if status in ("confirmed", "excluded"):
                 c["decision"] = {"status": status, "reason": reason, "actor": actor, "at": _now()}
+                if status == "confirmed":
+                    c["decision"]["impact"] = self._decided_impact(c, impact)
             elif status == "open":
                 c["decision"] = None
+            elif impact and c.get("decision") and c["decision"]["status"] == "confirmed":
+                c["decision"]["impact"] = self._decided_impact(c, impact)     # only the kind changes
             if change_type:
                 c["change_type"] = change_type
             if difficulty:
@@ -1340,6 +1377,14 @@ class Engine:
             self._learn(st, c, actor)
             self.recompute(st)
         return c
+
+    @staticmethod
+    def _decided_impact(c, impact=None) -> str:
+        """The kind a confirmation stands for: the reviewer's choice, else the judge's
+        (an affecting kind), else an edit."""
+        if impact in AFFECTING:
+            return impact
+        return c.get("impact") if c.get("impact") in AFFECTING else "change"
 
     def bulk_decide(self, run_id, items: list[dict], actor="user"):
         st = self.state(run_id)
@@ -1352,6 +1397,8 @@ class Engine:
                     c["decision"] = None
                 else:
                     c["decision"] = {"status": it["status"], "reason": it.get("reason", ""), "actor": actor, "at": _now()}
+                    if it["status"] == "confirmed":
+                        c["decision"]["impact"] = self._decided_impact(c, it.get("impact"))
                 if it.get("change_type"):
                     c["change_type"] = it["change_type"]
                 self.emit(st, "decision", {"node_id": c["node_id"], "decision": c["decision"], "actor": actor,

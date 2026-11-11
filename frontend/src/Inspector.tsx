@@ -1,10 +1,11 @@
 import { TX_LABEL } from "./ListView";
 import { judgedSuffix } from "./ui";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Fragment } from "react";
 import { api } from "./api";
 import { statusOf } from "./Graph";
 import type { Brief, Candidate, DataContext, DataUser, FileView, FlowContext, JobFlow, LinkGroup, NodeContext, NodeDetail, RunState } from "./types";
 import { KindChip, KIND_SHORT, subsystem } from "./kinds";
+import { AFFECTING, effectiveImpact, EVIDENCE_JA, IMPACT_HELP, IMPACT_JA, ImpactTag, type Impact } from "./impact";
 
 const STATUS_LABEL: Record<string, string> = {
   confirmed: "確定", human: "人が追加", excluded: "除外", impacted: "影響あり", uncertain: "要確認",
@@ -198,6 +199,7 @@ function NodePane({ run, id, c, go, onSelect, onChanged, busy, wide, onWide, isR
         {c && conf !== null && <div className="row conf"><div className="bar"><div style={{ width: `${conf * 100}%` }} className={`fill s-${st}`} /></div>
           <span className="mono small">確度 {conf.toFixed(2)}</span></div>}
         {c && <p className="reason">{c.reason || c.seed_reason}</p>}
+        {c && <ImpactBox c={c} />}
         {!c && <p className="muted small">この要素は今回の候補に入っていません。つながりを確かめるために開いています（解析結果は変わりません）。</p>}
       </div>
       {c && (c.learned?.length || 0) > 0 && (
@@ -591,6 +593,18 @@ function Decide({ run, c, busy, onChanged, onSelect }: { run: RunState; c: Candi
   };
   return (
     <div className="dfoot">
+      {c.decision?.status === "confirmed" && (
+        <div className="row gap6 small">
+          <span className="k">確定の種類</span>
+          <div className="modes" role="radiogroup" aria-label="確定の種類">
+            {AFFECTING.map((k) => (
+              <button key={k} type="button" role="radio" aria-checked={effectiveImpact(c) === k} title={IMPACT_HELP[k]}
+                className={effectiveImpact(c) === k ? "mode on" : "mode"} disabled={busy}
+                onClick={() => decide("keep", { impact: k })}>{IMPACT_JA[k]}</button>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="grid2">
         <label className="field"><span className="k">変更種別</span>
           <select className="input" value={c.change_type || "modify"} onChange={(e) => decide(c.decision ? c.decision.status : "keep", { change_type: e.target.value })}>
@@ -612,7 +626,13 @@ function Decide({ run, c, busy, onChanged, onSelect }: { run: RunState; c: Candi
         </div>
       ) : (
         <div className="actions">
-          <button className="btn primary" disabled={busy} onClick={() => decide("confirmed")}>影響ありで確定</button>
+          {!c.decision && AFFECTING.map((k) => {
+            const suggested = (c.impact && AFFECTING.includes(c.impact as Impact) ? c.impact : "change") === k;
+            return (
+              <button key={k} className={suggested ? "btn primary" : "btn"} disabled={busy} title={IMPACT_HELP[k]}
+                onClick={() => decide("confirmed", { impact: k })}>{IMPACT_JA[k]}で確定</button>
+            );
+          })}
           <button className="btn" disabled={busy} onClick={() => setExcluding(true)}>除外…</button>
           {c.decision && <button className="btn ghost" disabled={busy} onClick={() => decide("open")}>未判定に戻す</button>}
           {onSelect && <button className="btn ghost" onClick={onSelect}>一覧でこの候補を選ぶ</button>}
@@ -636,6 +656,24 @@ function AddBar({ run, id, name, onChanged }: { run: RunState; id: string; name:
           setDone(true); onChanged();
         }}>{done ? "追加しました" : "候補に追加"}</button>
       </div>
+    </div>
+  );
+}
+
+/** The kind of impact and its evidence (what to edit / what to test / whom to agree with). */
+function ImpactBox({ c }: { c: Candidate }) {
+  const k = effectiveImpact(c);
+  if (!k) return null;
+  const by = c.decision?.status === "confirmed" ? "人の確定" : c.judged_by === "ai" || c.judged_by === "reused" ? "AI の判定" : "規則による推定";
+  const ev = Object.entries(c.evidence || {}).filter(([key, v]) => v && key !== "basis");
+  return (
+    <div className="impactbox">
+      <div className="row gap6"><ImpactTag kind={k} /><span className="muted small">{IMPACT_HELP[k]}（{by}）</span></div>
+      {ev.length > 0 && (
+        <dl className="meta">
+          {ev.map(([key, v]) => <Fragment key={key}><dt>{EVIDENCE_JA[key] || key}</dt><dd>{v}</dd></Fragment>)}
+        </dl>
+      )}
     </div>
   );
 }

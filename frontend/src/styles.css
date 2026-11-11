@@ -433,3 +433,15 @@ details > summary { cursor: pointer; color: var(--text2); margin: 4px 0; }
 .issue { border: 1px solid var(--line2); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
 .issue-title { font-weight: 500; text-decoration: none; }
 .handoff .modes .mode { white-space: nowrap; }
+
+/* kind of impact: word + outline style (colour stays for judgement status) */
+.itag { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 4px; font-size: 12px;
+  white-space: nowrap; border: 1px solid var(--line3); color: var(--text); }
+.itag.small { height: 18px; padding: 0 6px; font-size: 11px; }
+.itag.i-change { background: var(--text); color: var(--bg); border-color: var(--text); font-weight: 500; }
+.itag.i-verify { border-style: solid; }
+.itag.i-coordinate { border-style: dashed; }
+.itag.i-none, .itag.i-unknown { color: var(--muted); border-style: dotted; }
+.impactbox { display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; border: 1px solid var(--line2); border-radius: 8px; }
+.impactbox .meta { margin: 0; }
+.lrow-st { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }

@@ -1,4 +1,5 @@
 import { KindChip, subsystem } from "./kinds";
+import { effectiveImpact, IMPACT_JA, ImpactTag, type Impact } from "./impact";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "./api";
 import type { Filters } from "./Graph";
@@ -79,19 +80,22 @@ export default function ListView({ run, filters, selected, onSelect, onChanged, 
   const [excluding, setExcluding] = useState<string | null>(null);   // node id, or "bulk"
   const [reason, setReason] = useState("");
   const [showDone, setShowDone] = useState(false);
+  // narrow to one kind of impact: what is edited, what is only tested, what is coordinated
+  const [impact, setImpact] = useState<"all" | Impact>("all");
   const [err, setErr] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
   const all = Object.values(run.candidates);
   const rows = useMemo(() => {
     let cs = visibleCandidates(run, filters);
+    if (impact !== "all") cs = cs.filter((c) => effectiveImpact(c) === impact);
     const conf = (c: Candidate) => c.confidence ?? c.score;
     if (sort === "score") cs = cs.sort((a, b) => conf(b) - conf(a));
     else if (sort === "kind") cs = cs.sort((a, b) => (KIND_JA[a.kind] || a.kind).localeCompare(KIND_JA[b.kind] || b.kind, "ja") || conf(b) - conf(a));
     else if (sort === "file") cs = cs.sort((a, b) => (a.file || "~").localeCompare(b.file || "~") || (a.line ?? 0) - (b.line ?? 0));
     else cs = cs.sort((a, b) => conf(b) - conf(a));
     return cs;
-  }, [run, filters, sort]);
+  }, [run, filters, sort, impact]);
   const size = useMemo(() => sizeOf(run, rows), [run, rows]);
   const whole = run.estimate?.days;
 
@@ -165,8 +169,11 @@ export default function ListView({ run, filters, selected, onSelect, onChanged, 
         <div className="lrow-main">
           <input type="checkbox" aria-label={`${c.name} を選択`} checked={checked.has(c.node_id)}
             onClick={(e) => e.stopPropagation()} onChange={() => toggle(c.node_id)} />
-          <span className={`pill p-${st}`}>{c.decision ? (c.decision.status === "confirmed" ? "確定" : "除外")
-            : c.verdict === "impacted" ? "影響あり" : c.verdict === "not_impacted" ? "影響低" : "要確認"}</span>
+          <div className="lrow-st">
+            <span className={`pill p-${st}`}>{c.decision ? (c.decision.status === "confirmed" ? "確定" : "除外")
+              : c.verdict === "impacted" ? "影響あり" : c.verdict === "not_impacted" ? "影響低" : "要確認"}</span>
+            <ImpactTag kind={c.decision?.status === "excluded" ? null : effectiveImpact(c)} small />
+          </div>
           <div className="lrow-name">
             <div className="nm"><KindChip kind={c.kind} file={c.file} /> <span className="nmt">{c.name}</span></div>
             <div className="meta">
@@ -242,6 +249,13 @@ export default function ListView({ run, filters, selected, onSelect, onChanged, 
             <option value="score">確からしさの高い順</option>
             <option value="kind">種類ごと</option>
             <option value="file">ファイルの場所順</option>
+          </select></label>
+        <label className="lv-sort"><span className="k">影響の種類</span>
+          <select className="input" value={impact} onChange={(e) => setImpact(e.target.value as "all" | Impact)}>
+            <option value="all">すべて</option>
+            {(["change", "verify", "coordinate", "unknown", "none"] as Impact[]).map((k) => (
+              <option key={k} value={k}>{IMPACT_JA[k]}（{all.filter((c) => effectiveImpact(c) === k).length}）</option>
+            ))}
           </select></label>
         <label className="lv-done"><input type="checkbox" checked={showDone} onChange={(e) => setShowDone(e.target.checked)} /> 判断済みも表示</label>
       </div>

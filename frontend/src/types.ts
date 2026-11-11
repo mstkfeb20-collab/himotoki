@@ -1,4 +1,5 @@
-export type Decision = { status: "confirmed" | "excluded"; reason: string; actor: string; at: number; inherited?: boolean } | null;
+export type Decision = { status: "confirmed" | "excluded"; reason: string; actor: string; at: number; inherited?: boolean;
+  impact?: "change" | "verify" | "coordinate" } | null;
 
 export interface Candidate {
   node_id: string;
@@ -13,6 +14,7 @@ export interface Candidate {
   intent_ids: string[];
   parent?: string | null;
   via_rel?: string | null;
+  via_dir?: "in" | "out" | null;
   path: string[];
   seed_reason?: string | null;
   verdict?: "impacted" | "uncertain" | "not_impacted" | null;
@@ -20,6 +22,9 @@ export interface Candidate {
   reason?: string | null;
   change_type?: string | null;
   difficulty?: string | null;
+  /** kind of impact from the judge (AI or rule): change / verify / coordinate / none / unknown */
+  impact?: string | null;
+  evidence?: Record<string, string> | null;
   decision: Decision;
   judged_by?: string | null;
   assignee?: string | null;
@@ -72,7 +77,8 @@ export interface RunState {
   candidates: Record<string, Candidate>;
   checks: Check[];
   estimate: {
-    days?: number; low?: number; high?: number; confirmed_hours?: number; pending_expected_hours?: number;
+    days?: number; low?: number; high?: number; confirmed_hours?: number; by_impact?: Record<string, { confirmed_days: number; expected_days: number; elements: number }>;
+    pending_expected_hours?: number;
     overhead?: number; calibration?: number; calibration_samples?: number; hours_per_day?: number;
     per_node?: Record<string, { h: number; e: number; s: "confirmed" | "pending"; p?: number; n?: string[] }>;
     lines?: EstimateLine[]; pending?: EstimateLine[];

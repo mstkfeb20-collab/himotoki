@@ -191,8 +191,10 @@ def impact_files(requirement: str, top: int = 10, graph: str | None = None) -> d
         if f not in files:
             if len(files) >= top:
                 continue
-            files[f] = {"file": f, "score": sc, "verdict": c.get("verdict"), "why": _chain(e, st, c["node_id"]),
-                        "elements": []}
+            files[f] = {"file": f, "score": sc, "verdict": c.get("verdict"), "impact": c.get("impact"),
+                        "why": _chain(e, st, c["node_id"]), "elements": []}
+        elif c.get("impact") == "change" and files[f].get("impact") != "change":
+            files[f]["impact"] = "change"            # a file is edited when any element in it is
         if len(files[f]["elements"]) < 3:
             files[f]["elements"].append({"id": c["node_id"], "name": c["name"], "kind": c["kind"], "line": c.get("line")})
     all_files = {c.get("file") for c in cands if c.get("file") and not c["file"].startswith("design:")}
@@ -217,14 +219,17 @@ def analyze_requirement(requirement: str, graph: str | None = None, top: int = 2
     st = e.state(rid)
     cands = sorted(st["candidates"].values(), key=lambda c: -(c.get("confidence") or c["score"]))
     return {"run_id": rid, "intents": st["intents"],
-            "candidates": [{**{k: c.get(k) for k in ("node_id", "kind", "name", "file", "line", "verdict", "confidence",
-                                                     "origin") if c.get(k) is not None},
+            "candidates": [{**{k: c.get(k) for k in ("node_id", "kind", "name", "file", "line", "verdict", "impact",
+                                                     "confidence", "origin") if c.get(k) is not None},
+                            **({"evidence": c["evidence"]} if c.get("evidence") else {}),
                             "reason": (c.get("reason") or "")[:200],
                             **({"tx_risks": [r.get("code") for r in c["tx_risks"][:4]]} if c.get("tx_risks") else {})}
                            for c in cands[:top]],
             "total_candidates": len(cands),
             "checks": [{k: c[k] for k in ("key", "title", "ok", "detail")} for c in st["checks"]],
-            "estimate_days": st["estimate"].get("days"), "llm_usage": st.get("llm_usage"),
+            "estimate_days": st["estimate"].get("days"), "estimate_by_impact": st["estimate"].get("by_impact"),
+            "impact_kinds": "change=中身を直す / verify=直さないが試験で確かめる / coordinate=コードの外で調整 / none / unknown",
+            "llm_usage": st.get("llm_usage"),
             "llm_budget": st["params"].get("llm")}
 
 

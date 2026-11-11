@@ -33,7 +33,7 @@ def reviewed(tmp_path):
     by = {c["name"]: c["node_id"] for c in e.state(rid)["candidates"].values()}
     for n in ("OrderForm.note", "orders.note", "orders.sql", "export_orders.sql", "ImportOrdersMain.main()",
               "OrderServiceBean.placeOrder()"):
-        e.decide(rid, by[n], "confirmed", "NOTE桁拡張")
+        e.decide(rid, by[n], "confirmed", "NOTE桁拡張", impact="change")   # all edited (NOTE is widened)
     e.decide(rid, by["OrderForm.getNote()"], "excluded", "getterは型変更なし")
     e.comment(rid, by["OrderForm.note"], "@Size(max=500) に変更", "masato")
     return ws, ws_dir, e, rid, by

@@ -188,6 +188,7 @@ class DecisionReq(BaseModel):
     actor: str = "user"
     change_type: str | None = None
     difficulty: str | None = None
+    impact: str | None = None          # change | verify | coordinate (what the confirmation stands for)
 
 
 class BulkReq(BaseModel):
@@ -551,7 +552,7 @@ def scope(run_id: str):
 def decide(run_id: str, req: DecisionReq):
     try:
         return run_engine(run_id).decide(run_id, req.node_id, req.status, req.reason, req.actor, req.change_type,
-                                         req.difficulty)
+                                         req.difficulty, req.impact)
     except KeyError:
         raise HTTPException(404, req.node_id)
 
