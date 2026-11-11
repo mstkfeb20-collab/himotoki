@@ -43,8 +43,11 @@ def main():
     tasks = json.load(open(a.tasks, encoding="utf-8"))["tasks"]
     out = os.path.expanduser(a.out)
     rows = []
+    conds = sorted({f[7:-5] for t in tasks for f in (os.listdir(os.path.join(out, t["id"]))
+                                                     if os.path.isdir(os.path.join(out, t["id"])) else [])
+                    if f.startswith("result-") and f.endswith(".json") and ".prev" not in f})
     for t in tasks:
-        for c in ("A", "B"):
+        for c in conds:
             p = os.path.join(out, t["id"], f"result-{c}.json")
             if not os.path.exists(p) or not os.path.getsize(p):
                 continue
@@ -74,7 +77,8 @@ def main():
               f"| {tools_short(r['tools'])} |"
               + (" ⚠" if r["error"] else ""))
     print()
-    for c, label in (("A", "Claude Code 単体"), ("B", "himotoki あり")):
+    labels = {"A": "Claude Code 単体", "B": "himotoki（impact_files）", "C": "himotoki（起点＋答え合わせ）"}
+    for c, label in ((c, labels.get(c, c)) for c in conds):
         rs = [r for r in rows if r["cond"] == c]
         if not rs:
             continue

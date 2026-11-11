@@ -143,6 +143,27 @@ def _chain(e, st, nid, limit=4) -> str:
 
 
 @mcp.tool()
+def start_points(requirement: str, limit: int = 15, graph: str | None = None) -> dict:
+    """Where to start for a requirement: the elements it names (by identifier, by the wording on
+    screens / in comments / in design documents, by an old value), each with why. Nothing is
+    propagated or ranked beyond the match — follow relations yourself with neighbors / get_element,
+    choose what has to change, then check your list with audit_scope."""
+    from .analysis.audit import start_points as sp
+    return sp(_engine(graph), requirement, limit)
+
+
+@mcp.tool()
+def audit_scope(requirement: str, files: list[str], graph: str | None = None) -> dict:
+    """Check a list of files you intend to change (repository-relative paths). Returns files that
+    are strongly tied to yours — the same column or table, an interface file, a job, a screen, a
+    message, a design-document row, an interface and its implementation — and are reached from
+    the requirement, but are not in your list, each with the chain of relations (via). Use it
+    before you finish; open what it names and decide."""
+    from .analysis.audit import audit_scope as au
+    return au(_engine(graph), requirement, files)
+
+
+@mcp.tool()
 def impact_files(requirement: str, top: int = 10, graph: str | None = None) -> dict:
     """START HERE for "what has to change for this requirement / ticket?". Ranks the files most
     likely to change, each with its strongest elements and the path that leads there from the
