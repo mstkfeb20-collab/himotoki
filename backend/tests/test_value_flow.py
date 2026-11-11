@@ -56,3 +56,7 @@ def test_dynamic_sql_mybatis_and_request_parameters(flows):
 
 def test_a_field_that_is_never_saved_has_no_flow(flows):
     assert not any(k[0] == "web.TankaForm.memo" for k in flows)
+
+
+def test_dyna_form_properties(flows):
+    assert flows[("formprop:KensakuForm.shohinNm", "col:m_shohin.shohin_nm")]["usage"] == "cond"

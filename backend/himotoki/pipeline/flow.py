@@ -302,6 +302,31 @@ class Flow:
                     continue
                 self.add((f"{mid}::p{j}", tuple(rest)), self.col(mk), f"{c['name']}.{m['name']}() {n.name} #{{{mk['name']}}}")
 
+    def _dyna_sources(self):
+        """DynaActionForm properties (declared in struts-config, read as form.get("x")): the
+        form parameter of the action class's methods, by property name."""
+        props = {}
+        for nid, n in self.lk.nodes.items():
+            if nid.startswith("formprop:"):
+                form, _, p = nid[len("formprop:"):].partition(".")
+                props.setdefault(form, []).append((nid, p))
+        out = []
+        if not props:
+            return out
+        for nid, n in self.lk.nodes.items():
+            if n.kind != Kind.ENDPOINT or not n.props.get("form") or n.props["form"] not in props:
+                continue
+            cls = self.jr.resolve(n.props.get("action_type") or "", None)
+            if not cls or cls not in self.jr.cls:
+                continue
+            for m in self.jr.cls[cls]["methods"]:
+                for i, (pt, pn) in enumerate(m["params"]):
+                    if "Form" in pt:
+                        mid = self.jr.mid(cls, m)
+                        for pid, p in props[n.props["form"]]:
+                            out.append((pid, (f"{mid}::p{i}", (p,))))
+        return out
+
     # ------------------------------------------------------------ reach
     def reach(self, start):
         """Columns reached from (node, path): {(col, usage): hops}."""
@@ -342,6 +367,7 @@ class Flow:
                 if fd.get("constant") is not None or fd.get("static"):
                     continue
                 sources.append((f"java:{fqn}.{fd['name']}", (f"F:{fqn}", (fd["name"],))))
+        sources += self._dyna_sources()
         qkeys = {ep[0] for ep, *_ in self.edges.get("Q", []) if ep}
         for k in sorted(qkeys):
             sources.append((f"reqparam:{k}", ("Q", (k,))))
