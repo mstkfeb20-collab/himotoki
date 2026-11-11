@@ -60,3 +60,16 @@ def test_a_field_that_is_never_saved_has_no_flow(flows):
 
 def test_dyna_form_properties(flows):
     assert flows[("formprop:KensakuForm.shohinNm", "col:m_shohin.shohin_nm")]["usage"] == "cond"
+
+
+def test_shared_helpers_do_not_mix_callers_and_constant_keys(flows):
+    # both actions pass their value through CodeUtil.zeroPad: each reaches only its own column
+    assert ("web.ShohinForm.shohinCd", "col:m_shohin.shohin_cd") in flows
+    assert "cond" in flows[("web.TankaForm.keyword", "col:m_shohin.shohin_cd")]["usage"]   # p.put(CodeUtil.KEY_CD, ..) -> #cd#
+    assert ("web.TankaForm.keyword", "col:t_shohin_rireki.shohin_cd") not in flows
+    assert ("web.ShohinForm.shohinCd", "col:m_shohin.tanka") not in flows
+
+
+def test_stored_procedure_parameters(flows):
+    assert flows[("reqparam:haishiCd", "col:m_shohin.shohin_cd")]["usage"] == "cond"
+    assert "write" in flows[("reqparam:riyu", "col:m_shohin.shohin_nm")]["usage"]   # through a local variable

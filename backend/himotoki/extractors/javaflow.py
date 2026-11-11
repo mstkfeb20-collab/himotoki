@@ -50,6 +50,19 @@ def _ext(atom: str, prop: str) -> str:
     return base + "|" + ".".join(parts[:MAX_PATH])
 
 
+def _key(v: str | None) -> str | None:
+    """A map / attribute key usable as a path element: a literal, or a constant resolved at
+    link time (SklConst.KEY_SOKO_CD -> `@C@SklConst@KEY_SOKO_CD`)."""
+    if not v:
+        return None
+    m = re.fullmatch(r"\{\{C:([\w.$]+)\}\}", v)
+    if m:
+        return "@C@" + m.group(1).replace(".", "@")
+    if "{{" in v or not re.fullmatch(r"[\w\-]+", v):
+        return None          # a key built at run time cannot be followed
+    return v
+
+
 def _prop(name: str, prefix: str) -> str:
     s = name[len(prefix):]
     return s[:1].lower() + s[1:] if s else ""
@@ -243,7 +256,7 @@ class MethodFlow:
                 out.add(f"T:{re.sub(r'<.*>', '', ty).strip()}|")      # the object, field by field
             return out
         if t == "this":
-            return set()
+            return {"TH|"}
         if t == "field_access":
             o = node.child_by_field_name("object")
             fld = _t(node.child_by_field_name("field"))
@@ -336,6 +349,17 @@ class MethodFlow:
         a = node.child_by_field_name("arguments")
         return list(a.named_children) if a is not None else []
 
+    def _stringish(self, node) -> bool:
+        t = node.type
+        if t in ("string_literal", "binary_expression") or t == "field_access":
+            return True
+        if t == "identifier":
+            ty = self.vtype.get(_t(node))
+            return ty == "String" or (ty is None and bool(re.fullmatch(r"[A-Z][A-Z0-9_]+", _t(node))))
+        if t == "method_invocation":
+            return _t(node.child_by_field_name("name")) in ("toString", "concat", "trim", "format", "valueOf")
+        return False
+
     def _receiver_kind(self, obj) -> str:
         nm = _t(obj).lower() if obj is not None else ""
         ty = (self.typeof(obj) or "").lower()
@@ -359,17 +383,17 @@ class MethodFlow:
         # StringBuffer / StringBuilder appends build SQL text in source order
         if name == "append" and obj is not None:
             root = self._chain_root(obj)
-            if root is not None and root.type == "identifier" and _t(root) in self.strs:
+            if root is not None and root.type == "identifier" and self.var_atom(_t(root)):
                 if obj.type == "method_invocation":
                     self._call(obj, line)
                 self._str_append(_t(root), self.sval(args[0]) if args else None)
+                buf = self.var_atom(_t(root))
                 for a in args:
-                    self.eval(a)
-                return set()
+                    self.flow(self.eval(a), {buf}, line)
+                return {buf}                      # append returns the buffer itself
         recv = self.eval(obj) if obj is not None else set()
         argv = [self.eval(a) for a in args]
-        key = self.sval(args[0]) if args else None
-        key = key if key and "{{" not in key and re.fullmatch(r"[\w.\-]+", key) else None
+        key = _key(self.sval(args[0])) if args else None
 
         # request parameters, session / request attributes
         if name in ("getParameter", "getParameterValues") and key:
@@ -425,7 +449,8 @@ class MethodFlow:
                 self.sinks.append({"k": "jdbc", "sql": sql, "vals": vals, "l": line})
                 return {f"c{self._record(node, obj, name, args, recv, argv, line)}|"}
         # iBATIS / MyBatis statement ids: sqlMapClient.insert("Order.insert", dto)
-        if name in _STMT_RUN and args and len(args) >= 2 and args[0].type == "string_literal":
+        if name in _STMT_RUN and args and len(args) >= 2 and args[0].type == "string_literal" and \
+                (rk == "sqlmap" or re.search(r"(?i)sqlmap|sqlsession|getsqlmap|sqlclient|session\b", _t(obj) if obj is not None else "")):
             sid = self.sval(args[0])
             if sid and re.fullmatch(r"[\w.$]+", sid):
                 self.sinks.append({"k": "stmt", "id": sid, "v": sorted(argv[1]), "l": line})
@@ -441,6 +466,17 @@ class MethodFlow:
             if st and dt and not st.startswith("TF:") and not dt.startswith("TF:"):
                 self.flow({f"T:{re.sub(r'<.*>', '', st)}|"}, {f"T:{re.sub(r'<.*>', '', dt)}|"}, line)
             return set()
+        # PropertyUtils.getSimpleProperty(bean, "x") / setProperty(bean, "x", v)
+        if name in ("getProperty", "getSimpleProperty", "getNestedProperty") and len(args) == 2 and obj is not None \
+                and re.search(r"(?i)util", _t(obj)):
+            k2 = _key(self.sval(args[1]))
+            return {_ext(a, k2) for a in argv[0]} if k2 else set()
+        if name in ("setProperty", "setSimpleProperty", "setNestedProperty") and len(args) == 3 and obj is not None \
+                and re.search(r"(?i)util", _t(obj)):
+            k2 = _key(self.sval(args[1]))
+            if k2:
+                self.flow(argv[2], {_ext(a, k2) for a in argv[0]}, line)
+            return set()
         # maps and attribute bags with a constant key
         if name in _PUT and len(argv) == 2 and key is not None and obj is not None:
             self.flow(argv[1], {_ext(a, key) for a in recv}, line)
@@ -453,6 +489,9 @@ class MethodFlow:
             if obj.type == "identifier" and _t(obj) in self.lists:
                 self.lists[_t(obj)].append(sorted(argv[-1]))
             return set()
+        if name in ("get", "getString", "getAttribute", "remove") and args and key is None and obj is not None \
+                and self._stringish(args[0]):
+            return set()                       # a key known only at run time: not followed
         if name in ("get", "next", "iterator", "elementAt", "getFirst", "getLast", "poll", "peek", "pop",
                     "values", "toArray", "subList") and obj is not None:
             return recv

@@ -12,7 +12,7 @@ public class ShohinRegistAction extends org.apache.struts.action.Action {
     public Object execute(Object mapping, ActionForm form, HttpServletRequest request) throws Exception {
         ShohinForm f = (ShohinForm) form;
         ShohinDto dto = new ShohinDto();
-        dto.setShohinCd(f.getShohinCd().trim());
+        dto.setShohinCd(jp.co.acme.common.CodeUtil.zeroPad(f.getShohinCd().trim(), 10));
         String nm = f.getShohinNm();
         dto.setShohinName(nm == null ? "" : nm.toUpperCase());
         request.getSession().setAttribute("SHOHIN", dto);

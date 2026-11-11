@@ -215,6 +215,10 @@ def main():
     truth_rows = [r for r in rows if r["type"] == "form_field_maps_column"]
     for r in rows:
         A, B = g.resolve(r["from"]), g.resolve(r["to"])
+        if r["type"] == "field_not_saved":
+            flow_fields.update(A)
+            nots.append(A)
+            continue
         c = per[r["type"]]
         c["total"] += 1
         if r["type"] == "length_fact":

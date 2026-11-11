@@ -16,10 +16,11 @@ from sqlglot.errors import ErrorLevel
 
 from ..model import Kind, Rel
 from ..pipeline.facts import FileFacts
+from ..pipeline.sqlparams import routine_params
 from ..text import decode_source, words
 
 NAME = "sql"
-VERSION = "3"
+VERSION = "4"
 
 KEYWORDS = set("""select from where and or not in is null as on join left right inner outer full cross group by
 order having union all distinct insert into values update set delete merge using when then else end case
@@ -363,9 +364,11 @@ def extract(path: str, data: bytes, rules) -> FileFacts:
                     rline = line + inner[: r.start()].count("\n")
                     rid = f"dbobj:{r.group(1).lower()}:{name}.{rname}"
                     traits = tx_traits(rbody)
+                    pmap = routine_params(rbody)
                     f.node(rid, Kind.DB_OBJECT, f"{name}.{rname}", rline, rline + rbody.count("\n"),
                            f"{r.group(1)} {words(name)} {words(rname)} {lead}", keys=[rid, f"proc:{name}.{rname}"],
-                           object_type=r.group(1).lower(), package=name, **({"tx": traits} if traits else {}))
+                           object_type=r.group(1).lower(), package=name, **({"tx": traits} if traits else {}),
+                           **({"param_columns": {str(k): v for k, v in pmap.items()}} if pmap else {}))
                     f.edge(oid, rid, Rel.CONTAINS)
                     plsql_refs(f, rid, rbody, rline, dialect)
                     # calls to sibling routines (unqualified) and to other packages (qualified)
@@ -379,6 +382,10 @@ def extract(path: str, data: bytes, rules) -> FileFacts:
                 traits = tx_traits(inner) if otype in ("procedure", "function", "trigger") else {}
                 if traits:
                     f.nodes[-1]["props"]["tx"] = traits
+                if otype in ("procedure", "function"):
+                    pmap = routine_params(body[m.start():])
+                    if pmap:
+                        f.nodes[-1]["props"]["param_columns"] = {str(k): v for k, v in pmap.items()}
                 if otype in ("view", "materialized view"):
                     crud_refs(f, oid, inner, line, via="db-object", dialect=dialect, conf=0.9)
                 else:

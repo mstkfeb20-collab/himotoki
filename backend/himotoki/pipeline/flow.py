@@ -56,13 +56,37 @@ class Flow:
                 self.impls[a].append(fqn)
         self.mutates: dict[str, set] = {}     # method id -> {(param index, path)}
         self.stmt_cache: dict[str, list] = {}
+        self.const_cache: dict[str, dict] = {}
+        self.pure: dict[str, set] = {}        # method id -> params its return value carries (pure helpers)
 
     # ------------------------------------------------------------ locations
+    def _ckey(self, c: dict, el: str) -> str:
+        """`@C@SklConst@KEY_X` -> the constant's value (else the reference itself, which still
+        matches the same reference elsewhere)."""
+        if not el.startswith("@C@"):
+            return el
+        if el in self.const_cache.get(c["fqn"], {}):
+            return self.const_cache[c["fqn"]][el]
+        parts = el[3:].split("@")
+        val = None
+        if len(parts) == 1:
+            f = self.jr.fields(c["fqn"]).get(parts[0])
+            val = f[1].get("constant") if f else None
+        else:
+            fq = self.jr.resolve(".".join(parts[:-1]), c)
+            f = self.jr.fields(fq).get(parts[-1]) if fq and fq in self.jr.cls else None
+            val = f[1].get("constant") if f else None
+        out = val if val and re.fullmatch(r"[\w\-]+", val) else el
+        self.const_cache.setdefault(c["fqn"], {})[el] = out
+        return out
+
     def loc(self, c: dict, mid: str, atom: str):
         base, path = _split(atom)
+        if any(p.startswith("@C@") for p in path):
+            path = tuple(self._ckey(c, p) for p in path)
         if base == "TH":
             if not path:
-                return None
+                return f"F:{c['fqn']}", ()
             f = self.jr.fields(c["fqn"]).get(path[0])
             if f is None:
                 o = self.jr.cls.get(c.get("outer") or "")
@@ -101,6 +125,7 @@ class Flow:
                     if re.fullmatch(r"p\d+", db) and dp:
                         muts.add((int(db[1:]), dp))
                 self.mutates[mid] = muts
+        self._summaries()
         for fqn, c in self.jr.cls.items():
             for m in c["methods"]:
                 fl = m.get("flow")
@@ -109,6 +134,75 @@ class Flow:
             for m in c["methods"]:
                 if c["kind"] == "interface" and not m["is_ctor"]:
                     self._mapper(c, m)
+
+    def _summaries(self):
+        """Helpers that only compute a result from their arguments (date / string / code
+        conversion) are applied at each call site instead of being entered: entering them
+        would mix the values of every caller (all callers' dates would reach every
+        caller's columns)."""
+        self.tcache = {}
+        cands = {}
+        for fqn, c in self.jr.cls.items():
+            for m in c["methods"]:
+                fl = m.get("flow")
+                if not fl or m["is_ctor"] or fl["s"]:
+                    continue
+                if any(_split(d)[0] in ("TH", "S") or _split(d)[0].startswith("T:") or
+                       (re.fullmatch(r"p\d+", _split(d)[0]) and _split(d)[1]) for _, d, _ in fl["f"]):
+                    continue                     # writes fields / session / its arguments
+                cands[self.jr.mid(fqn, m)] = (c, m, fl)
+        self.pure = {mid: set() for mid in cands}
+        for _ in range(4):
+            changed = False
+            for mid, (c, m, fl) in list(cands.items()):
+                if mid not in self.pure:
+                    continue
+                adj = defaultdict(set)
+                for a, d, _ in fl["f"]:
+                    adj[_split(a)[0]].add(_split(d)[0])
+                ok = True
+                for call in fl["c"]:
+                    tg = self._targets_cached(c, m, mid, call)
+                    if tg:
+                        if not all(self.jr.mid(o, tm) in self.pure for o, tm in tg):
+                            ok = False
+                            break
+                        js = set().union(*(self.pure[self.jr.mid(o, tm)] for o, tm in tg))
+                        for j in js:
+                            if j < len(call["args"]):
+                                for a in call["args"][j]:
+                                    adj[_split(a)[0]].add(f"c{call['k']}")
+                    elif call["n"] not in _NO_PASS:
+                        for a in call["recv"] + [x for v in call["args"] for x in v]:
+                            adj[_split(a)[0]].add(f"c{call['k']}")
+                if not ok:
+                    del self.pure[mid]
+                    changed = True
+                    continue
+                js = set()
+                for j in range(len(m["params"])):
+                    seen, q = {f"p{j}"}, [f"p{j}"]
+                    while q:
+                        x = q.pop()
+                        for y in adj.get(x, ()):
+                            if y not in seen:
+                                seen.add(y)
+                                q.append(y)
+                    if "ret" in seen:
+                        js.add(j)
+                if js != self.pure[mid]:
+                    self.pure[mid] = js
+                    changed = True
+            if not changed:
+                break
+        # a helper is applied at call sites only when its result comes from its arguments
+        self.pure = {k: v for k, v in self.pure.items() if v}
+
+    def _targets_cached(self, c, m, mid, call):
+        k = (mid, call["k"])
+        if k not in self.tcache:
+            self.tcache[k] = self._targets(c, m, call)
+        return self.tcache[k]
 
     def _hop(self, c, m, line, what=""):
         return f"{c['name']}.{m['name']}():{line}" + (f" {what}" if what else "")
@@ -134,23 +228,61 @@ class Flow:
         if not rt or rt not in self.jr.cls:
             return []
         out = []
+        want = self._qualifier(c, call.get("r"))
         for o, tm in self.jr.methods(rt, call["n"], call["a"])[:3]:
             out.append((o, tm))
             if tm.get("abstract") or self.jr.cls[o]["kind"] == "interface":
-                for sub in self.impls.get(o, []):
+                subs = self.impls.get(o, [])
+                if want:
+                    # @Qualifier("x") / @Resource(name="x"): only the bean of that name
+                    named = [x for x in subs if self._bean_name(x) == want]
+                    subs = named or subs
+                for sub in subs:
                     for sm in self.jr.cls[sub]["methods"]:
                         if sm["name"] == tm["name"] and len(sm["params"]) == len(tm["params"]) and not sm.get("abstract"):
                             out.append((sub, sm))
         return out
 
+    def _qualifier(self, c, r) -> str | None:
+        if not r or r.get("k") not in ("id", "fa"):
+            return None
+        if r.get("k") == "fa" and (r.get("o") or {}).get("k") != "this":
+            return None
+        f = self.jr.fields(c["fqn"]).get(r.get("n"))
+        if not f:
+            return None
+        for a in f[1].get("anns") or []:
+            g = a.get("args") or {}
+            if a["name"] == "Qualifier" and g.get("value"):
+                return g["value"]
+            if a["name"] == "Resource" and g.get("name"):
+                return g["name"]
+        return None
+
+    def _bean_name(self, fqn: str) -> str:
+        c = self.jr.cls[fqn]
+        for a in c.get("anns") or []:
+            v = (a.get("args") or {}).get("value")
+            if a["name"] in ("Service", "Component", "Repository", "Controller", "Named") and v:
+                return v
+        return c["name"][:1].lower() + c["name"][1:]
+
     def _call(self, c, m, mid, call, L):
         k = call["k"]
         res = (f"{mid}::c{k}", ())
         hop = self._hop(c, m, call["l"], call["n"] if call["n"] != "<init>" else f"new {call.get('new')}")
-        targets = self._targets(c, m, call)
+        targets = self._targets_cached(c, m, mid, call)
         if targets:
             for o, tm in targets:
                 tid = self.jr.mid(o, tm)
+                if tid in self.pure:
+                    # applied here: the arguments its result comes from -> the call's value
+                    for j in self.pure[tid]:
+                        if j < len(call["args"]):
+                            for a in call["args"][j]:
+                                self.add(L(a), res, hop)
+                    self.add((f"{tid}::ret", ()), res, hop)
+                    continue
                 for j, atoms in enumerate(call["args"]):
                     for a in atoms:
                         src = L(a)
@@ -185,6 +317,29 @@ class Flow:
             text = re.sub(r"\{\{C:([\w.$]+)\}\}", one, text)
         return text or ""
 
+    def _proc(self, sql: str):
+        """`{call PKG.PROC(?, ?)}` / `BEGIN PKG.PROC(?, ?); END;` -> per marker, the columns the
+        procedure's parameter at that position reaches (from its body)."""
+        m = re.search(r"(?is)(?:\bcall\s+|\bbegin\s+)([\w$#.]+)\s*\((.*)\)", sql or "")
+        if not m:
+            return None
+        name = m.group(1).lower()
+        node = None
+        for nid in self.lk.keys.get(f"proc:{name}", []):
+            n = self.lk.nodes.get(nid)
+            if n is not None and n.props.get("param_columns"):
+                node = n
+                break
+        if node is None:
+            return None
+        out = []
+        for a, b in _split_args(m.group(2)):
+            arg = m.group(2)[a:b]
+            if "?" in arg:
+                cols = node.props["param_columns"].get(str(_pos(m.group(2), a)), [])
+                out.append([(f"COL:{t}.{c}" if t else f"COLANY:{c}", (u or "cond",)) for t, c, u in cols])
+        return out
+
     def col(self, mk: dict):
         if not mk.get("column"):
             return None
@@ -196,6 +351,17 @@ class Flow:
         k = sk["k"]
         if k == "pos":
             sql = self._const(c, sk.get("sql"))
+            proc = self._proc(sql)
+            if proc is not None:
+                idx = sk["idx"]
+                if idx == "seq":
+                    seqs = [x for x in sinks if x["k"] == "pos" and x.get("stmt") == sk.get("stmt") and x["idx"] == "seq"]
+                    idx = seqs.index(sk) + 1
+                if isinstance(idx, int) and 1 <= idx <= len(proc):
+                    for col in proc[idx - 1]:
+                        for a in sk["v"]:
+                            self.add(L(a), col, hop + f" ?{idx} → {sql.strip()[:40]}")
+                return
             mks = markers(sql)
             if not mks:
                 return
@@ -376,3 +542,22 @@ class Flow:
             for (colkey, usage), hops in self.reach(st).items():
                 out.append((nid, colkey, usage, hops))
         return out
+
+
+def _split_args(s: str):
+    out, depth, start = [], 0, 0
+    for i, ch in enumerate(s):
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+        elif ch == "," and depth == 0:
+            out.append((start, i))
+            start = i + 1
+    out.append((start, len(s)))
+    return out
+
+
+def _pos(s: str, at: int) -> int:
+    """Position (0-based) of the argument starting at `at` in an argument list."""
+    return sum(1 for a, b in _split_args(s) if b < at)

@@ -34,7 +34,11 @@ def _norm(sql: str) -> tuple[str, list]:
         if m.group(0).startswith(":") and re.match(r"\d", m.group(1) or "0"):
             continue
         marks.append((m.start(), m.end(), m.group(1) or m.group(2) or m.group(3)))
-    return s, marks
+    # a marker's own text (#{x,jdbcType=VARCHAR}) must not split lists or look like a column
+    chars = list(s)
+    for a, b, _ in marks:
+        chars[a:b] = ["?"] + [" "] * (b - a - 1)
+    return "".join(chars), marks
 
 
 def _split_top(s: str) -> list[tuple[int, int]]:
@@ -206,4 +210,53 @@ def markers(sql: str) -> list[dict]:
     for ms, me, nm in marks:
         t, c, u = target.get(ms, (None, None, None))
         out.append({"name": nm, "table": t, "column": c, "usage": u})
+    return out
+
+
+def routine_params(src: str) -> dict:
+    """A stored procedure: which columns each of its parameters reaches.
+
+    The parameter list `(p_no IN VARCHAR2, p_biko IN VARCHAR2 ...)` is read from the
+    header; local variables assigned from parameters (`v_naiyo := p_cd || ':' || p_biko`)
+    carry them; each DML / SELECT in the body is analysed with the parameter names as
+    markers. -> {position (0-based): [[table, column, usage], ...]}"""
+    head = re.match(r"\s*(?:create\s+(?:or\s+replace\s+)?)?(?:procedure|function)\s+[\w.$#\"]+\s*\((.*?)\)\s*"
+                    r"(?:return\s+\w+\s*)?(?:is|as)\b", src, re.I | re.S)
+    if not head:
+        return {}
+    params = []
+    for part in _split_top(head.group(1)):
+        w = head.group(1)[part[0]:part[1]].split()
+        if w:
+            params.append(w[0].lower())
+    if not params:
+        return {}
+    body = src[head.end():]
+    body = re.sub(r"--[^\n]*", " ", body)
+    alias = {p: {p} for p in params}
+    for m in re.finditer(r"\b([A-Za-z_][\w$#]*)\s*:=\s*([^;]+);", body):
+        used = {p for p in params if re.search(rf"\b{re.escape(p)}\b", m.group(2), re.I)}
+        for p in list(alias):
+            if alias[p] & {u for u in used}:
+                pass
+        if used:
+            v = m.group(1).lower()
+            alias.setdefault(v, set()).update(set().union(*(alias.get(u, {u}) for u in used)))
+    names = sorted(alias, key=len, reverse=True)
+    out: dict[int, list] = {}
+    for st in re.finditer(r"\b(insert|update|delete|merge|select)\b.*?;", body, re.I | re.S):
+        sql = st.group(0)[:-1]
+        if not re.search(r"\b(into|from|update|merge)\b", sql, re.I):
+            continue
+        rx = re.compile(r"(?<![\w$#.:'])(" + "|".join(re.escape(n) for n in names) + r")(?![\w$#])", re.I)
+        sql_m = rx.sub(lambda mm: "#{" + mm.group(1).lower() + "}", sql)
+        # SELECT ... INTO v_x FROM: the INTO list is not a marker
+        if re.match(r"\s*select\b", sql_m, re.I):
+            sql_m = re.sub(r"\binto\s+[\w$#{}.,\s]+?(?=\bfrom\b)", "", sql_m, count=1, flags=re.I)
+        for mk in markers(sql_m):
+            if not mk.get("column") or not mk.get("name"):
+                continue
+            for p in alias.get(mk["name"], ()):
+                if p in params:
+                    out.setdefault(params.index(p), []).append([mk["table"], mk["column"], mk["usage"]])
     return out
