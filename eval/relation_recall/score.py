@@ -77,7 +77,7 @@ class Graph:
         N = self.nodes
         hits = set()
         if el:
-            ns, _, v = el.partition(":") if re.match(r"^(datafile|action|formbean|jsp|validation|layout|report|doc|config|msg|func|cron):", el) else ("", "", el)
+            ns, _, v = el.partition(":") if re.match(r"^(datafile|action|formbean|jsp|validation|layout|report|doc|config|msg|func|cron|param):", el) else ("", "", el)
             if ns == "datafile":
                 hits |= datafile_keys(v) & N.keys()
             elif ns == "action":
@@ -88,10 +88,13 @@ class Graph:
                 if not prop:
                     hits |= {f"formbean:{form}"} & N.keys()
                 else:
+                    prop = re.sub(r"\[\d*\]", "", prop)
                     hits |= {f"formprop:{form}.{prop}"} & N.keys()
                     for e in self.st.out_edges(f"formbean:{form}") if f"formbean:{form}" in N else []:
                         if e.rel == "CONFIGURES":
-                            hits |= {f"{e.dst}.{prop}"} & N.keys()
+                            hits |= self.field_path(e.dst, prop.split("."))
+            elif ns == "param":
+                hits |= {f"reqparam:{v}"} & N.keys()
             elif ns == "validation":
                 hits |= {f"valid:{v}"} & N.keys()
             elif ns == "layout" and f:
@@ -143,6 +146,32 @@ class Graph:
                     return True
         return False
 
+    def field_path(self, cls_id: str, parts: list) -> set:
+        """java:Form + [header, shipDate] -> the field shipDate of the type of Form.header."""
+        cur = cls_id
+        for i, p in enumerate(parts):
+            fid = f"{cur}.{p}"
+            if fid not in self.nodes:
+                return set()
+            if i == len(parts) - 1:
+                return {fid}
+            t = re.sub(r".*<\s*([\w.]+)\s*>.*", r"\1", str(self.nodes[fid].props.get("type") or ""))
+            t = t.split(".")[-1].replace("[]", "")
+            nxt = [n for n in self.nodes if n.startswith("java:") and n.endswith("." + t) and self.nodes[n].kind == "Class"]
+            if len(nxt) != 1:
+                return set()
+            cur = nxt[0]
+        return set()
+
+    def flows(self, A, B):
+        """FLOWS_TO edges from A to B -> set of usages."""
+        out = set()
+        for a in A:
+            for e in self.st.out_edges(a):
+                if e.rel == "FLOWS_TO" and e.dst in B:
+                    out |= set(str(e.props.get("usage") or "").split(","))
+        return out
+
     def direct(self, A, B):
         return any(b in self.adj.get(a, ()) for a in A for b in B) or bool(A & B)
 
@@ -182,6 +211,8 @@ def main():
     rows = [json.loads(l) for l in open(a.truth, encoding="utf-8") if l.strip()]
     per = collections.defaultdict(lambda: collections.Counter())
     misses = collections.defaultdict(list)
+    truth_pairs, flow_fields, nots = set(), set(), []
+    truth_rows = [r for r in rows if r["type"] == "form_field_maps_column"]
     for r in rows:
         A, B = g.resolve(r["from"]), g.resolve(r["to"])
         c = per[r["type"]]
@@ -194,6 +225,29 @@ def main():
             c["unmapped"] += 1
             misses[r["type"]].append({"why": "unmapped " + ("from" if not A else "to"), **r})
             continue
+        if r["type"] == "form_field_maps_column":
+            # only the value-flow analysis counts here (no name matching, no other edges)
+            fol = r.get("followable", True)
+            c["followable" if fol else "unfollowable"] += 1
+            us = g.flows(A, B)
+            want = "cond" if re.search(r"検索|条件|WHERE", r.get("note") or "") else "write"
+            if us:
+                c["direct"] += 1
+                c["near"] += 1
+                c["found_followable" if fol else "found_unfollowable"] += 1
+                if want in us:
+                    c["usage_ok"] += 1
+                else:
+                    misses[r["type"]].append({"why": "usage " + ",".join(sorted(us)), **r})
+                truth_pairs.add((frozenset(A), frozenset(B)))
+            else:
+                misses[r["type"]].append({"why": "missing" + ("" if fol else " (unfollowable)"), **r})
+            flow_fields.update(A)
+            continue
+        if r["type"] == "field_not_saved":
+            flow_fields.update(A)
+            nots.append(A)
+            continue
         if g.direct(A, B):
             c["direct"] += 1
             c["near"] += 1
@@ -202,6 +256,22 @@ def main():
             misses[r["type"]].append({"why": "near only", **r})
         else:
             misses[r["type"]].append({"why": "missing", **r})
+    # precision of value flow: predicted FLOWS_TO from the screen fields of the truth
+    truth_set = set()
+    for r in truth_rows:
+        for x in g.resolve(r["from"]):
+            for y in g.resolve(r["to"]):
+                truth_set.add((x, y))
+    pred = set()
+    for x in flow_fields:
+        for e in st.out_edges(x):
+            if e.rel == "FLOWS_TO":
+                pred.add((x, e.dst))
+    tp = len(pred & truth_set)
+    flow_prec = {"predicted": len(pred), "correct": tp, "precision": round(tp / max(1, len(pred)), 3),
+                 "not_saved_fields": len(nots),
+                 "not_saved_with_flow": sum(1 for A in nots if any(e.rel == "FLOWS_TO" for x in A for e in st.out_edges(x)))}
+    per.pop("field_not_saved", None)
     tot = collections.Counter()
     table = []
     for t, c in sorted(per.items()):
@@ -214,13 +284,16 @@ def main():
                "direct_recall": round(tot["direct"] / max(1, tot["total"]), 3),
                "near_recall": round(tot["near"] / max(1, tot["total"]), 3),
                "nodes": len(g.nodes)}
-    out = {"summary": summary, "by_type": table, "misses": misses}
+    out = {"summary": summary, "by_type": table, "misses": misses, "value_flow_precision": flow_prec}
     if a.out:
         json.dump(out, open(a.out, "w"), ensure_ascii=False, indent=1)
     print(json.dumps(summary, ensure_ascii=False))
+    print("value flow precision:", json.dumps(flow_prec, ensure_ascii=False))
     for t in table:
         print(f"{t['type']:28} {t['total']:4}  direct {t['direct_recall']:.2f}  near {t['near_recall']:.2f}  unmapped {t.get('unmapped', 0)}"
-              + (f"  length-known {t.get('length', 0) / t['total']:.2f}" if t['type'] == 'length_fact' else ""))
+              + (f"  length-known {t.get('length', 0) / t['total']:.2f}" if t['type'] == 'length_fact' else "")
+              + (f"  followable {t.get('found_followable', 0)}/{t.get('followable', 0)}  unfollowable {t.get('found_unfollowable', 0)}/{t.get('unfollowable', 0)}  usage-ok {t.get('usage_ok', 0)}"
+                 if t['type'] == 'form_field_maps_column' else ""))
 
 
 if __name__ == "__main__":
