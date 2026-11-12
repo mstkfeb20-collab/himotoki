@@ -1,0 +1,752 @@
+{
+  "tasks": [
+    {
+      "id": "cr01",
+      "branch": "cr/01",
+      "requirement": "【依頼部署】契約サービス部 業務企画グループ\n【件名】解約受付画面のエラーメッセージ見直し、およびエラー画面の問合せ先変更\n【内容】\n(1) 解約受付で、既に解約済みの契約や満期になった契約を解約しようとしたときに出る「解約できない状態の契約です。」というメッセージが分かりにくく、センターから「何をすればよいのか分からない」と問合せが多数来ています。表示文言を次のとおり変更してください。\n　変更後：「この契約は解約できません。既に解約済み、または満期を迎えている可能性があります。契約詳細で契約状態を確認してください。」\n(2) 12月の組織改編でヘルプデスクがITサービスデスクに統合され、内線番号が1234から5100に変わります。契約管理システムでシステムエラーになったときに表示される画面の問合せ先を「ITサービスデスク（内線 5100）」に変更し、あわせて「連絡の際は、発生日時と操作していた画面名をお伝えください。」という一文を追加してください。\n【希望時期】12月1日の組織改編に合わせてリリース",
+      "changes": [
+        {
+          "file": "kyk-online/src/MessageResources_src.properties",
+          "why": "メッセージ errors.kyk0401.status（解約受付の状態エラー）の文言を変更（編集用の原本）"
+        },
+        {
+          "file": "kyk-online/src/MessageResources.properties",
+          "why": "実際に読み込まれる native2ascii 変換後のリソース。_src と同じ文言変更を \\uXXXX 形式で反映"
+        },
+        {
+          "file": "kyk-online/WebContent/jsp/common/systemError.jsp",
+          "why": "システムエラー画面の問合せ先をITサービスデスク（内線5100）に変更し、連絡時の案内文を追加"
+        }
+      ],
+      "also_check": [
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/action/KaiyakuAction.java",
+          "why": "errors.kyk0401.status は PL/SQL の戻り値が 0 以外（状態エラー・契約なし・システム異常）すべてで表示されるため、文言が各ケースで不自然にならないか確認"
+        },
+        {
+          "file": "db/plsql/PKG_KYK_KAIYAKU.pkb",
+          "why": "o_rc=1/9 を返す条件（状態≠10、契約なし、例外）を確認し、新文言で案内してよいケースか確認"
+        },
+        {
+          "file": "kyk-online/WebContent/WEB-INF/web.xml",
+          "why": "500エラー時の遷移先として systemError.jsp が設定されていることの確認（エラー画面表示試験）"
+        },
+        {
+          "file": "kyk-online/WebContent/WEB-INF/struts-config.xml",
+          "why": "global-exceptions で systemError.jsp に遷移するため、業務例外以外の例外時の表示確認"
+        },
+        {
+          "file": "kyk-online/build.xml",
+          "why": "MessageResources_src.properties はWARに含めない設定のため、変換済みファイルが正しく配置されることを確認"
+        }
+      ]
+    },
+    {
+      "id": "cr02",
+      "branch": "cr/02",
+      "requirement": "【依頼部署】契約サービス部 解約管理チーム\n【件名】解約理由の選択肢追加\n【内容】\n解約受付画面の「解約理由」が「他社へ切替」「車両売却・廃車」「その他」の3つしかなく、火災保険・傷害保険の解約はほとんど「その他」で登録されており、解約理由の分析（月次の解約分析レポート）ができません。次の3つを選択肢に追加してください。\n　・建物売却・転居（略称：転居）\n　・保険料の負担（略称：保険料）\n　・補償の重複（他契約へ統合）（略称：重複）\n表示順は「他社へ切替」「車両売却・廃車」の後、上記3つの順とし、「その他」は従来どおり最後にしてください。\n既に「その他」で登録済みの解約データは修正不要です。\n【希望時期】次回定例リリース",
+      "changes": [
+        {
+          "file": "db/data/KYK_CODE_MST.sql",
+          "why": "コードマスタ初期データ（構築・再作成用）に KYRY 03/04/05 を表示順3〜5で追加"
+        }
+      ],
+      "new_files": [
+        {
+          "file": "db/release/20261201_DML_KYK_CODE_MST_KYRY.sql",
+          "why": "本番・検証環境のコードマスタに解約理由3件を追加するリリース用DML"
+        }
+      ],
+      "also_check": [
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/servlet/CodeInitServlet.java",
+          "why": "コードマスタは起動時に CodeUtil にキャッシュされるため、データ投入後に kyk-online の再起動が必要"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/action/KaiyakuAction.java",
+          "why": "CodeUtil.getLabelValueList(KYRY) で解約理由プルダウンを生成しているため、追加コードが表示順どおりに出ることを確認"
+        },
+        {
+          "file": "kyk-online/WebContent/jsp/kyk04/kyk0401.jsp",
+          "why": "解約理由プルダウンの表示確認"
+        },
+        {
+          "file": "db/plsql/PKG_KYK_KAIYAKU.pkb",
+          "why": "解約理由コードを KYK_KAIYAKU.KAIYAKU_RIYU_CD と異動履歴の IDO_RIYU（コード:詳細）に格納する。CHAR(2) に収まることの確認"
+        },
+        {
+          "file": "db/ddl/table/KYK_CODE_MST.sql",
+          "why": "CODE_NM VARCHAR2(60)・CODE_RNM VARCHAR2(20) に追加名称が収まることの確認"
+        },
+        {
+          "file": "kyk-common/src/jp/co/tsubame/kyk/common/dao/CodeMstDao.java",
+          "why": "YUKO_FLG=1 かつ HYOJI_JUN 順で取得していることの確認"
+        }
+      ]
+    },
+    {
+      "id": "cr03",
+      "branch": "cr/03",
+      "requirement": "【依頼部署】契約サービス部 契約管理グループ\n【件名】契約登録「証券をメールで送付する」の登録内容を保存してほしい\n【背景】\n契約登録画面には2013年から「証券をメールで送付する」のチェック欄がありますが、チェックしても契約に記録されておらず、後から「メール送付を希望したのに紙で届いた」「希望したかどうか確認できない」という苦情・問合せが続いています。\n【内容】\n(1) 契約登録時に「証券をメールで送付する」の指定有無を契約情報として保存してください。\n(2) 契約詳細画面に「証券送付方法」（メール／郵送）を表示してください。\n(3) メール送付を指定したのに契約者のメールアドレスが未登録の場合は、確認画面に進めず、「契約者のメールアドレスが登録されていないため、証券のメール送付は選択できません。顧客登録・変更でメールアドレスを登録してください。」と表示してください。\n(4) 既存の契約はすべて「郵送」扱いで構いません。\n※メール送付の実処理（証券PDFの送信）は別案件で対応予定のため今回は不要です。\n【希望時期】2026年12月リリース",
+      "changes": [
+        {
+          "file": "db/ddl/table/KYK_KEIYAKU.sql",
+          "why": "MAIL_SOFU_FLG CHAR(1) DEFAULT 0 NOT NULL 列とコメントを追加（DDL正本の更新）"
+        },
+        {
+          "file": "doc/テーブル定義/KYK_KEIYAKU_契約.csv",
+          "why": "テーブル定義書に証券メール送付フラグを追加"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/dto/KeiyakuTorokuDto.java",
+          "why": "確認→登録の受け渡しDTOに mailSofuFlg を追加"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/entity/KeiyakuEntity.java",
+          "why": "iBATIS の parameterClass に mailSofuFlg を追加"
+        },
+        {
+          "file": "kyk-online/src/sqlmap/Keiyaku.xml",
+          "why": "insertKeiyaku に MAIL_SOFU_FLG 列を追加"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/service/impl/KeiyakuServiceImpl.java",
+          "why": "DTO→Entity の詰め替えに mailSofuFlg を追加"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/action/Kyk0201ConfirmAction.java",
+          "why": "チェック値(on)を 1/0 に変換してDTOに設定。メール送付指定時に契約者メールアドレス未登録ならエラー"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/form/KeiyakuTorokuForm.java",
+          "why": "「保存処理は次期対応」の改版履歴コメントを更新"
+        },
+        {
+          "file": "kyk-online/src/MessageResources_src.properties",
+          "why": "エラーメッセージ errors.kyk0201.mail.notfound を追加（原本）"
+        },
+        {
+          "file": "kyk-online/src/MessageResources.properties",
+          "why": "同メッセージを native2ascii 形式で追加（実行時に読み込まれる側）"
+        },
+        {
+          "file": "kyk-online/WebContent/jsp/kyk01/kyk0102.jsp",
+          "why": "契約詳細に証券送付方法（メール／郵送）を表示"
+        },
+        {
+          "file": "doc/画面設計/KYK0201_契約登録入力_画面項目定義.xlsx",
+          "why": "mailSofuFlg のDB項目を「（予定）」から確定に、備考・更新日・改訂履歴を更新"
+        }
+      ],
+      "new_files": [
+        {
+          "file": "db/release/20261201_ALTER_KYK_KEIYAKU_MAIL_SOFU_FLG.sql",
+          "why": "本番DBへの列追加（既存行は0=郵送）と切り戻し手順"
+        }
+      ],
+      "also_check": [
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/dao/KeiyakuShosaiDao.java",
+          "why": "SELECT K.* のため新列は自動で Map に入る。kyk0102.jsp の MAIL_SOFU_FLG 参照が取得できることを確認"
+        },
+        {
+          "file": "kyk-online/WebContent/jsp/kyk02/kyk0202.jsp",
+          "why": "確認画面の「証券送付」表示はフォームの on 値で判定しており変更不要だが、エラー時の戻り・再確認で表示が一致するか確認"
+        },
+        {
+          "file": "kyk-online/WebContent/jsp/kyk02/kyk0201.jsp",
+          "why": "エラー時に入力画面へ戻ったときチェック状態・エラー表示の確認"
+        },
+        {
+          "file": "kyk-common/src/jp/co/tsubame/kyk/common/util/BeanUtil.java",
+          "why": "フォーム→DTOの同名コピーで mailSofuFlg に on がコピーされた後、Action で上書きしている順序の確認"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/dao/KokyakuDao.java",
+          "why": "findById が MAIL_ADDR を取得していることの確認（チェックの前提）"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/service/impl/KeiyakuServiceImplOld.java",
+          "why": "未使用の旧実装。MAIL_SOFU_FLG を指定しないINSERTだが DEFAULT 0 があるため影響なしであることを確認"
+        },
+        {
+          "file": "kyk-batch/src/jp/co/tsubame/kyk/batch/KYKB040ShokenHakko.java",
+          "why": "証券発行バッチは今回変更しない（メール送付の実処理は別案件）。KYK_KEIYAKU への列追加で既存SQLが影響を受けないことの確認"
+        },
+        {
+          "file": "db/plsql/PKG_KYK_KAIYAKU.pkb",
+          "why": "KYK_KEIYAKU を更新するPL/SQL。列追加後の再コンパイル・動作確認"
+        },
+        {
+          "file": "db/plsql/PKG_KYK_BATCH.pkb",
+          "why": "KYK_KEIYAKU を参照・更新するPL/SQL。列追加後の再コンパイル確認"
+        }
+      ]
+    },
+    {
+      "id": "cr04",
+      "branch": "cr/04",
+      "requirement": "【依頼部署】営業推進部／契約サービス部\n【件名】電話番号の入力桁数拡張（海外番号・内線付き番号への対応）\n【背景】\n海外赴任中の契約者の携帯番号（例：+1-212-555-0123）や、法人契約者・代理店の「代表番号＋内線」（例：03-1234-5678-1234）が登録できず、備考欄に手書きで記録している状況です。電話番号欄が13文字までしか入らないことが原因と聞いています。\n【内容】\n契約管理システムで電話番号を扱うすべての箇所で、最大20文字まで登録・入力できるようにしてください。対象は次のとおりです。\n　・顧客登録・変更の「電話番号」「携帯電話番号」\n　・住所変更（異動）の「新電話番号」\n　・代理店登録の「電話番号」\n　・証券再発行依頼の「連絡先電話番号」\n　・契約検索、顧客検索（子画面）の検索条件「電話番号」\nあわせて、顧客の電話番号・携帯電話番号は国番号を表す「+」も入力できるようにしてください（現在は数字とハイフンのみ）。\n既に登録済みの電話番号はそのままで構いません。\n【希望時期】2027年1月リリース",
+      "changes": [
+        {
+          "file": "db/ddl/table/KYK_KOKYAKU.sql",
+          "why": "TEL_NO・KEITAI_NO を VARCHAR2(13)→(20)"
+        },
+        {
+          "file": "db/ddl/table/KYK_DAIRITEN.sql",
+          "why": "代理店 TEL_NO を VARCHAR2(13)→(20)"
+        },
+        {
+          "file": "doc/テーブル定義/KYK_KOKYAKU_顧客.csv",
+          "why": "テーブル定義書の TEL_NO・KEITAI_NO の桁数を20に"
+        },
+        {
+          "file": "kyk-online/WebContent/WEB-INF/validation.xml",
+          "why": "契約検索・顧客登録（電話・携帯）・顧客検索の telNo 系 maxlength を20に。顧客登録の mask に + を追加"
+        },
+        {
+          "file": "kyk-online/WebContent/jsp/kyk01/kyk0101.jsp",
+          "why": "契約検索 電話番号欄の maxlength/size を変更"
+        },
+        {
+          "file": "kyk-online/WebContent/jsp/kyk03/kyk0301.jsp",
+          "why": "顧客登録・変更 電話番号・携帯電話番号欄の maxlength/size を変更"
+        },
+        {
+          "file": "kyk-online/WebContent/jsp/kyk03/kyk0302.jsp",
+          "why": "顧客検索（子画面）電話番号欄の maxlength/size を変更"
+        },
+        {
+          "file": "doc/画面設計/KYK0101_契約検索_画面項目定義.csv",
+          "why": "電話番号の桁数を20に、更新日・更新者を更新"
+        },
+        {
+          "file": "doc/画面設計/KYK0301_顧客登録変更_画面項目定義.csv",
+          "why": "電話番号・携帯電話番号の桁数・入力可能文字を更新"
+        },
+        {
+          "file": "kyk-ido/src/main/java/jp/co/tsubame/kyk/ido/entity/KykKokyaku.java",
+          "why": "S2JDBCエンティティ telNo の @Column(length) を20に"
+        },
+        {
+          "file": "kyk-ido/src/main/java/jp/co/tsubame/kyk/ido/form/JushoHenkoForm.java",
+          "why": "住所変更 新電話番号の @Maxlength を20に"
+        },
+        {
+          "file": "kyk-ido/src/main/webapp/WEB-INF/view/kyk0501/index.jsp",
+          "why": "住所変更 新電話番号欄の maxlength/size を変更"
+        },
+        {
+          "file": "doc/画面設計/KYK0501_住所変更異動_画面項目定義.md",
+          "why": "新電話番号の桁数を20に、更新者欄を更新"
+        },
+        {
+          "file": "kyk-ido/src/main/java/jp/co/tsubame/kyk/ido/form/DairitenTorokuForm.java",
+          "why": "代理店 電話番号の @Maxlength を20に"
+        },
+        {
+          "file": "kyk-ido/src/main/webapp/WEB-INF/view/kyk0701/index.jsp",
+          "why": "代理店登録 電話番号欄の maxlength/size を変更"
+        },
+        {
+          "file": "doc/画面設計/KYK0701_代理店登録_画面項目定義.xlsx",
+          "why": "電話番号の桁数を20に、更新日・改訂履歴を更新"
+        },
+        {
+          "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/validator/ShokenSaihakkoValidator.java",
+          "why": "連絡先電話番号の桁数チェックを13→20に"
+        },
+        {
+          "file": "kyk-web2/src/main/webapp/WEB-INF/views/kyk0801/input.jsp",
+          "why": "連絡先電話番号欄の maxlength/size を変更"
+        },
+        {
+          "file": "doc/画面設計/KYK0801_証券再発行依頼_画面項目定義.md",
+          "why": "連絡先電話番号の桁数を20に、更新者欄を更新"
+        }
+      ],
+      "new_files": [
+        {
+          "file": "db/release/20270112_ALTER_TEL_NO_20.sql",
+          "why": "本番DBの KYK_KOKYAKU.TEL_NO/KEITAI_NO・KYK_DAIRITEN.TEL_NO の桁拡張（MODIFY）"
+        }
+      ],
+      "also_check": [
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/dao/KeiyakuKensakuDao.java",
+          "why": "電話番号検索はハイフン除去して TEL_NO/KEITAI_NO と完全一致比較。+ を含む番号・20桁の番号で検索できることを確認"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/action/KeiyakuKensakuAction.java",
+          "why": "StringUtil.removeHyphen で検索値を加工している。+ が残ることの確認"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/dao/KokyakuKensakuDao.java",
+          "why": "telNo を前方一致（LIKE）で検索。動作確認"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/dao/KokyakuDao.java",
+          "why": "TEL_NO/KEITAI_NO の登録・更新SQL。20桁で登録できることの確認"
+        },
+        {
+          "file": "kyk-online/WebContent/WEB-INF/struts-config.xml",
+          "why": "kokyakuForm（DynaValidatorForm）の telNo/keitaiTelNo 定義確認"
+        },
+        {
+          "file": "kyk-ido/src/main/java/jp/co/tsubame/kyk/ido/service/JushoHenkoService.java",
+          "why": "住所変更で KYK_KOKYAKU.TEL_NO を更新する。20桁更新の確認"
+        },
+        {
+          "file": "kyk-ido/src/main/java/jp/co/tsubame/kyk/ido/entity/KykDairiten.java",
+          "why": "telNo に @Column(length) 指定なし（未使用エンティティ）。変更不要の確認"
+        },
+        {
+          "file": "kyk-ido/src/main/resources/META-INF/sql/jp/co/tsubame/kyk/ido/service/DairitenService/insertDairiten.sql",
+          "why": "代理店 TEL_NO の登録SQL。20桁で登録できることの確認"
+        },
+        {
+          "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/command/ShokenSaihakkoCommand.java",
+          "why": "renrakuTelNo は現在DB保存されていない（設計書上は追加予定）。画面上の桁のみの変更であることの確認"
+        },
+        {
+          "file": "kyk-web2/src/main/webapp/WEB-INF/views/kyk0801/confirm.jsp",
+          "why": "確認画面の連絡先表示（20桁）のレイアウト確認"
+        },
+        {
+          "file": "kyk-ido/src/main/webapp/WEB-INF/view/kyk0501/confirm.jsp",
+          "why": "確認画面の新電話番号表示（20桁）のレイアウト確認"
+        },
+        {
+          "file": "db/ddl/index.sql",
+          "why": "IX_KOKYAKU_02（TEL_NO）。MODIFY で桁拡張してもインデックス再作成は不要であることの確認"
+        },
+        {
+          "file": "kyk-online/WebContent/jsp/kyk01/kyk0102.jsp",
+          "why": "契約詳細には電話番号は表示していないことの確認（対象外）"
+        }
+      ]
+    },
+    {
+      "id": "cr05",
+      "branch": "cr/05",
+      "requirement": "【依頼部署】営業推進部 継続推進チーム\n【件名】契約検索に「満期日」の検索条件を追加\n【背景】\n満期を迎える契約の継続（更改）勧奨を代理店と進めるにあたり、「来月満期の契約」「特定の代理店の3か月以内に満期の契約」を一覧で確認したいが、現在の契約検索では満期日で絞り込めないため、全件をCSV出力してExcelで加工しています。\n【内容】\n(1) 契約検索画面に「満期日（From）」「満期日（To）」の検索条件を追加してください（契約日（From/To）の下に配置）。\n　入力形式は契約日と同じ yyyy/MM/dd、どちらか片方だけの指定も可能とし、日付として正しくない場合はエラーにしてください。\n(2) 検索結果の「CSV出力」でも同じ条件で絞り込まれるようにしてください。\n※満期日とは保険期間の終了日（保険終期日）のことです。\n【希望時期】2026年12月",
+      "changes": [
+        {
+          "file": "kyk-online/WebContent/jsp/kyk01/kyk0101.jsp",
+          "why": "満期日（From）（To）の入力欄を追加"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/form/KeiyakuKensakuForm.java",
+          "why": "hokenShukiYmdFrom/To プロパティを追加"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/dto/KeiyakuKensakuCondDto.java",
+          "why": "検索条件DTOに満期日From/Toを追加"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/action/KeiyakuKensakuAction.java",
+          "why": "画面入力(yyyy/MM/dd)→yyyyMMdd に変換して条件DTOへ設定"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/action/KeiyakuCsvAction.java",
+          "why": "CSV出力は検索Actionのコピーで条件を個別に詰めているため、同じく満期日条件を設定"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/dao/KeiyakuKensakuDao.java",
+          "why": "動的WHEREに HOKEN_SHUKI_YMD の範囲条件を追加（件数・検索・CSVで共通）"
+        },
+        {
+          "file": "kyk-online/WebContent/WEB-INF/validation.xml",
+          "why": "満期日From/To の日付形式チェック（yyyy/MM/dd）を追加"
+        },
+        {
+          "file": "kyk-online/src/MessageResources_src.properties",
+          "why": "エラーメッセージ用の項目名ラベルを追加（原本）"
+        },
+        {
+          "file": "kyk-online/src/MessageResources.properties",
+          "why": "同ラベルを native2ascii 形式で追加"
+        },
+        {
+          "file": "doc/画面設計/KYK0101_契約検索_画面項目定義.csv",
+          "why": "満期日（From）（To）の項目を追加、更新日を更新"
+        }
+      ],
+      "also_check": [
+        {
+          "file": "db/ddl/index.sql",
+          "why": "IX_KEIYAKU_03（HOKEN_SHUKI_YMD）が存在し、満期日条件で索引が使われることを実行計画で確認"
+        },
+        {
+          "file": "kyk-online/WebContent/WEB-INF/struts-config.xml",
+          "why": "/kyk0101/search は validate=true、/kyk0101/csv は validate=false。CSVでは日付形式チェックが効かない点の確認"
+        },
+        {
+          "file": "kyk-online/WebContent/js/common.js",
+          "why": "クリアボタン（clearForm）で追加したテキスト欄もクリアされることの確認"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/action/Kyk0101InitAction.java",
+          "why": "初期表示で新項目が空表示になることの確認"
+        },
+        {
+          "file": "kyk-common/src/jp/co/tsubame/kyk/common/util/DateUtil.java",
+          "why": "toYmd の変換仕様（1桁月日の0埋め、空はnull）の確認"
+        },
+        {
+          "file": "kyk-online/src/kyk.properties",
+          "why": "最大件数 kyk.search.maxRows=500 の超過メッセージの確認"
+        },
+        {
+          "file": "db/plsql/PKG_KYK_BATCH.pkb",
+          "why": "満期処理で KEIYAKU_STS_KBN が 80 に更新される。状態との組合せ検索結果の確認"
+        }
+      ]
+    },
+    {
+      "id": "cr06",
+      "branch": "cr/06",
+      "requirement": "【依頼部署】営業推進部 継続推進チーム\n【件名】満期案内の抽出時期の前倒し、および抽出日数の可変化\n【内容】\n(1) 現在、満期案内の対象は「満期日の60日前」から抽出されていますが、代理店から「案内が届くのが遅く、更改の手続きが間に合わない」との声が多いため、「満期日の90日前」から抽出するよう変更してください。\n(2) 今後、継続キャンペーンの時期などに抽出日数を一時的に変えたい（例：120日）ことがあるため、プログラムを修正せずに運用部門の設定で日数を変えられるようにしてください。指定がない場合は90日としてください。\n(3) 日次処理のログに出ている「抽出件数」が実際に案内対象になった件数と合っていないと運用部門から指摘があります。抽出件数を正しく出力し、あわせて満期到来で状態を「満期」に更新した件数も出力してください。\n【希望時期】2026年12月（1月の継続キャンペーンに間に合わせたい）",
+      "changes": [
+        {
+          "file": "db/plsql/PKG_KYK_BATCH.pks",
+          "why": "PRC_MANKI_CHUSHUTSU に抽出日数 p_nissu（DEFAULT 90）を追加"
+        },
+        {
+          "file": "db/plsql/PKG_KYK_BATCH.pkb",
+          "why": "抽出期間を固定60日から p_nissu（既定90日・範囲チェック）に変更。SQL%ROWCOUNT を UPDATE 後に出していたため抽出件数が満期更新件数になっていた不具合を修正"
+        },
+        {
+          "file": "kyk-batch/sql/KYKB030_manki.sql",
+          "why": "SQL*Plus 置換変数 &2（抽出日数）をプロシージャに渡す"
+        },
+        {
+          "file": "kyk-batch/shell/KYKB030.sh",
+          "why": "第2引数（抽出日数、省略時90）を受け取り SQL*Plus に渡す"
+        },
+        {
+          "file": "doc/バッチ一覧.md",
+          "why": "KYKB030 の引数（処理日・抽出日数）と省略時の値を追記"
+        }
+      ],
+      "also_check": [
+        {
+          "file": "kyk-batch/jp1/KYK_DAILY.ajs",
+          "why": "KYKB030 の prm は空のため既定90日で動く。キャンペーン時の日数指定は JP1 の prm 変更で行う運用の確認"
+        },
+        {
+          "file": "db/ddl/table/KYK_KEIYAKU_MANKI_WK.sql",
+          "why": "抽出対象が増える（60→90日）ためワークの件数・容量の確認"
+        },
+        {
+          "file": "db/ddl/index.sql",
+          "why": "IX_KEIYAKU_03（HOKEN_SHUKI_YMD）で抽出期間の範囲検索を行う。性能確認"
+        },
+        {
+          "file": "kyk-batch/shell/common/kyk_env.sh",
+          "why": "SQL*Plus 接続情報・NLS_LANG（ログの日本語出力）の確認"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/dao/KeiyakuKensakuDao.java",
+          "why": "満期更新（状態80）の件数・タイミングは変わらないが、契約検索の状態表示に影響がないことの確認"
+        }
+      ]
+    },
+    {
+      "id": "cr07",
+      "branch": "cr/07",
+      "requirement": "【依頼部署】経理部 収納管理グループ（障害連絡票 No.2026-0412）\n【件名】一時払の契約に毎月請求が作成されている\n【事象】\n払込回数が「一時払」の契約について、保険料の全額が毎月請求データとして作成されていることが判明しました。例：契約番号 K20260000123（2026/4始期・1年・一時払 36,000円）に、4月から毎月36,000円の請求が作られています。口座振替の契約は既に数件、2回目以降の引落しが行われお客様から苦情が入っています。\n【依頼内容】\n(1) 一時払の契約は、保険期間中に1回だけ（初回のみ）請求されるよう、月次の請求データ作成処理を修正してください。月払の契約の請求は従来どおりです。\n(2) 既に作成済みの誤った請求（2回目以降）のうち、まだ入金されていないものは「取消」にしてください。\n(3) 既に入金済みのものは経理部で返金処理を行うため、対象の一覧（請求番号・契約番号・請求年月・金額・状態）をCSVでください。\n【希望時期】至急（次回の月次処理（11/20）までに）",
+      "changes": [
+        {
+          "file": "kyk-batch/src/jp/co/tsubame/kyk/batch/KYKB010SeikyuSakusei.java",
+          "why": "対象抽出SQLに「一時払は取消以外の請求が既にあれば対象外」の条件を追加し、2回目以降の請求を作成しないよう修正"
+        }
+      ],
+      "new_files": [
+        {
+          "file": "db/release/20261120_DML_KYK_SEIKYU_ICHIJIBARAI_TORIKESHI.sql",
+          "why": "データ補正：バックアップ取得、重複請求一覧のCSV出力（返金対応用）、未入金の重複請求を9:取消に更新"
+        }
+      ],
+      "also_check": [
+        {
+          "file": "kyk-batch/src/jp/co/tsubame/kyk/batch/KYKB020NyukinKeshikomi.java",
+          "why": "取消(9)にした請求に振替結果が返ってきた場合も状態2に更新・入金登録してしまう。補正タイミングと収納代行会社への振替取消依頼の確認"
+        },
+        {
+          "file": "kyk-batch/src/jp/co/tsubame/kyk/batch/KYKB110TesuryoKeisan.java",
+          "why": "手数料は契約の保険料合計から計算しており請求データは参照しないため影響なしの確認"
+        },
+        {
+          "file": "kyk-web2/src/main/resources/jp/co/tsubame/kyk/web2/mapper/SeikyuMapper.xml",
+          "why": "請求・入金照会で取消(9)の請求がどう表示されるか（未収のみ条件に含まれる）の確認"
+        },
+        {
+          "file": "db/ddl/table/KYK_SEIKYU.sql",
+          "why": "SEIKYU_STS_KBN 9:取消 の定義確認"
+        },
+        {
+          "file": "db/ddl/index.sql",
+          "why": "IX_SEIKYU_01(KEIYAKU_NO, SEIKYU_YM) が追加した NOT EXISTS で使われることの確認"
+        },
+        {
+          "file": "kyk-batch/jp1/KYK_MONTHLY.ajs",
+          "why": "修正モジュールのリリースを月次処理（20日）前に行う段取りの確認"
+        }
+      ]
+    },
+    {
+      "id": "cr08",
+      "branch": "cr/08",
+      "requirement": "【依頼部署】契約サービス部／情報セキュリティ推進室\n【件名】顧客情報「FAX番号」の項目廃止\n【背景】\nFAX番号は2012年に登録を取りやめましたが、顧客登録・変更画面には入力欄が残っており、「入力したのに保存されない」という問合せがセンターに定期的に来ています。また、個人情報の保有を必要最小限にする全社方針（2026年度）により、使っていない個人情報項目はデータごと削除することになりました。\n【内容】\n(1) 顧客登録・変更画面からFAX番号の入力欄を削除してください。\n(2) 顧客情報として保存されている過去のFAX番号はデータベースから削除してください（項目自体の削除。バックアップ不要、情報セキュリティ委員会承認済み）。\n(3) 画面項目定義書・テーブル定義書からも削除してください。\n※代理店のFAX番号は元々管理していないため対象外です。\n【希望時期】2027年1月リリース",
+      "changes": [
+        {
+          "file": "db/ddl/table/KYK_KOKYAKU.sql",
+          "why": "FAX_NO 列とコメントを削除"
+        },
+        {
+          "file": "doc/テーブル定義/KYK_KOKYAKU_顧客.csv",
+          "why": "FAX_NO 行を削除し、以降の No/ID を詰めた"
+        },
+        {
+          "file": "kyk-online/WebContent/WEB-INF/struts-config.xml",
+          "why": "DynaValidatorForm kokyakuForm の form-property faxNo を削除"
+        },
+        {
+          "file": "kyk-online/WebContent/WEB-INF/validation.xml",
+          "why": "kokyakuForm の faxNo 桁チェック定義を削除（存在しないプロパティの検証定義は実行時エラーになるため）"
+        },
+        {
+          "file": "kyk-online/src/MessageResources_src.properties",
+          "why": "項目名ラベル kokyakuForm.faxNo を削除（原本）"
+        },
+        {
+          "file": "kyk-online/src/MessageResources.properties",
+          "why": "同ラベルを native2ascii 版からも削除"
+        },
+        {
+          "file": "kyk-online/WebContent/jsp/kyk03/kyk0301.jsp",
+          "why": "FAX番号の入力欄（行）を削除"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/dao/KokyakuDao.java",
+          "why": "findById の SELECT から FAX_NO を削除（列削除後はSQLエラーになるため）、setFaxNo を削除"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/dto/KokyakuDto.java",
+          "why": "faxNo フィールドと getter/setter を削除"
+        },
+        {
+          "file": "doc/画面設計/KYK0301_顧客登録変更_画面項目定義.csv",
+          "why": "FAX番号の行を削除し No/ID を詰め、更新日を更新"
+        }
+      ],
+      "new_files": [
+        {
+          "file": "db/release/20270112_ALTER_KYK_KOKYAKU_DROP_FAX_NO.sql",
+          "why": "本番DBの KYK_KOKYAKU.FAX_NO 列削除（事前・事後確認付き）"
+        }
+      ],
+      "also_check": [
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/action/KokyakuTorokuAction.java",
+          "why": "BeanUtils.copyProperties で DTO⇔DynaForm を同名コピーしている。faxNo を両方から削除したためコピーで例外にならないことの確認"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/service/impl/KokyakuServiceImpl.java",
+          "why": "更新時に旧データを findById で取得する。列削除後の登録・更新・住所変更履歴の確認"
+        },
+        {
+          "file": "kyk-ido/src/main/java/jp/co/tsubame/kyk/ido/entity/KykKokyaku.java",
+          "why": "S2JDBC エンティティは元々 FAX_NO を持たない（コメントのみ記載）。列削除後も住所変更の更新が動くことの確認"
+        },
+        {
+          "file": "kyk-ido/src/main/java/jp/co/tsubame/kyk/ido/service/JushoHenkoService.java",
+          "why": "KYK_KOKYAKU の SELECT/UPDATE を行う。列削除後の動作確認"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/dao/KokyakuKensakuDao.java",
+          "why": "顧客検索のSELECTに FAX_NO が含まれていないことの確認"
+        },
+        {
+          "file": "kyk-online/src/jp/co/tsubame/kyk/online/dao/KeiyakuShosaiDao.java",
+          "why": "KYK_KOKYAKU からは列指定で取得しており FAX_NO を含まないことの確認"
+        },
+        {
+          "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/repository/ShokenHakkoRepository.java",
+          "why": "KYK_KOKYAKU を結合するSQL。FAX_NO を参照していないことの確認"
+        },
+        {
+          "file": "kyk-web2/src/main/resources/jp/co/tsubame/kyk/web2/mapper/SeikyuMapper.xml",
+          "why": "KYK_KOKYAKU を結合するSQL。FAX_NO を参照していないことの確認"
+        },
+        {
+          "file": "doc/改修履歴.md",
+          "why": "2012/04 FAX番号の登録廃止の経緯確認"
+        }
+      ]
+    },
+    {
+      "id": "cr09",
+      "branch": "cr/09",
+      "requirement": "【依頼部署】経理部 収納管理グループ\n【件名】収納代行会社の切替に伴う入金消込の対応（2027年4月）\n【背景】\n2027年4月から保険料の収納代行会社を切り替えます。新しい収納代行会社では口座振替に加えてコンビニ払込・クレジットカード払いの収納結果も1つのファイルで届きます。\n【内容】\n(1) 収納結果ファイルのレイアウトが変わります（別紙「収納結果ファイル仕様書 v1.2」参照）。\n　・1レコード 150バイト（現行120バイト）、ファイル名は SHUNO_KEKKA_YYYYMMDD.dat（現行 FURIKAE_KEKKA_YYYYMMDD.dat）\n　・結果コードが2桁になります（「00」が収納済、それ以外は収納不能）\n　・35バイト目に「収納方法」（1:口座振替 2:コンビニ 3:クレジットカード）が追加されます\n　・請求番号・収納日・金額の位置は現行と同じです\n(2) 入金データには収納方法（どの方法で入金されたか）を記録してください。現在はすべて口座振替として記録されています。\n(3) ファイルの到着が当日夜ではなく翌朝6時30分頃になるため、入金消込の処理を毎朝7時に実行するようにしてください。満期案内抽出・証券発行など他の夜間処理の時間は変えないでください。\n(4) 請求・入金照会画面の「入金方法」の選択肢が空で使えないので、入金方法で絞り込めるようにし、一覧にも入金方法を表示してください。\n【希望時期】2027年4月1日（切替日）",
+      "changes": [
+        {
+          "file": "kyk-batch/src/jp/co/tsubame/kyk/batch/KYKB020NyukinKeshikomi.java",
+          "why": "新レイアウト（150byte、結果コード2桁、35桁目収納方法）で読み込み。入金方法区分を固定1→ファイルの収納方法に。レコード長・収納方法の不正は警告"
+        },
+        {
+          "file": "kyk-batch/shell/KYKB020.sh",
+          "why": "入力ファイル名を SHUNO_KEKKA_YYYYMMDD.dat に変更"
+        },
+        {
+          "file": "kyk-batch/jp1/KYK_DAILY.ajs",
+          "why": "夜間ジョブネットから KYKB020 を外し、KYKB030→KYKB040 の順序関係のみに変更"
+        },
+        {
+          "file": "kyk-batch/README.txt",
+          "why": "ajsdefine で登録する定義ファイルに KYK_NYUKIN.ajs を追記"
+        },
+        {
+          "file": "doc/バッチ一覧.md",
+          "why": "KYKB020 の起動ジョブネット・時刻・入力ファイルを更新"
+        },
+        {
+          "file": "db/data/KYK_CODE_MST.sql",
+          "why": "入金方法コード NKHH（1:口座振替 2:コンビニ払込 3:クレジットカード）を初期データに追加"
+        },
+        {
+          "file": "doc/コード定義.csv",
+          "why": "NKHH の備考「未登録」をコード値の説明に更新"
+        },
+        {
+          "file": "kyk-web2/src/main/resources/jp/co/tsubame/kyk/web2/mapper/SeikyuMapper.xml",
+          "why": "コードマスタを外部結合し入金方法名を取得"
+        },
+        {
+          "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/model/SeikyuRow.java",
+          "why": "一覧行に nyukinHohoNm を追加"
+        },
+        {
+          "file": "kyk-web2/src/main/webapp/WEB-INF/views/kyk1001/search.jsp",
+          "why": "一覧に「入金方法」列を追加"
+        }
+      ],
+      "new_files": [
+        {
+          "file": "kyk-batch/jp1/KYK_NYUKIN.ajs",
+          "why": "KYKB020 を毎朝7:00に起動する新ジョブネット /KYK/KYK_NYUKIN の定義"
+        },
+        {
+          "file": "db/release/20270401_DML_KYK_CODE_MST_NKHH.sql",
+          "why": "本番コードマスタへの入金方法コード登録"
+        }
+      ],
+      "also_check": [
+        {
+          "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/controller/SeikyuShokaiController.java",
+          "why": "入金方法プルダウンは codeListHelper.getList(\"NKHH\") で取得。コード登録後に選択肢が表示されることの確認"
+        },
+        {
+          "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/support/CodeListHelper.java",
+          "why": "@Cacheable でキャッシュされ失効しないため、コード投入後に kyk-web2 の再起動が必要"
+        },
+        {
+          "file": "doc/画面設計/KYK1001_請求入金照会_画面項目定義.md",
+          "why": "検索条件の定義のみで一覧項目の記載がない。入金方法プルダウンの動作確認"
+        },
+        {
+          "file": "kyk-batch/src/jp/co/tsubame/kyk/batch/KYKB010SeikyuSakusei.java",
+          "why": "請求作成側は振替日（27日）を口座振替のみ設定。収納代行会社切替後の請求データ連携・振替日の扱いを経理部に確認"
+        },
+        {
+          "file": "kyk-batch/src/jp/co/tsubame/kyk/batch/BatchBase.java",
+          "why": "戻り値4（警告）時のコミット・JP1 の警告終了判定（wth=4）の確認"
+        },
+        {
+          "file": "kyk-batch/shell/common/kyk_func.sh",
+          "why": "ログ出力・Java起動の共通処理の確認"
+        },
+        {
+          "file": "db/ddl/table/KYK_NYUKIN.sql",
+          "why": "NYUKIN_HOHO_KBN CHAR(1) に収納方法を格納できることの確認"
+        },
+        {
+          "file": "kyk-batch/jp1/KYK_MONTHLY.ajs",
+          "why": "月次ジョブネットは変更なし。7:00の KYKB020 と月次処理（23:30開始）が重ならないことの確認"
+        }
+      ]
+    },
+    {
+      "id": "cr10",
+      "branch": "cr/10",
+      "requirement": "【依頼部署】契約サービス部 異動事務チーム\n【件名】住所変更時の「証券送付先も変更する」が反映されない\n【事象】\n住所変更（異動）画面で「証券送付先も変更する」にチェックして登録しても、証券の再発行依頼の送付先が旧住所のままで、再発行した証券が旧住所に送られて返送されてくる事例が月に数件発生しています（チェック欄はあるのに機能していないと聞きました）。\n【依頼内容】\n(1) 「証券送付先も変更する」にチェックして住所変更した場合、その顧客が契約者になっている有効な契約について、まだ発行されていない証券再発行依頼のうち送付先が「契約者住所」のものの送付先（郵便番号・住所）を新しい住所に変更してください。\n　送付先を「指定住所」にしている依頼は、お客様が個別に指定したものなので変更しないでください。\n(2) 住所変更の確認画面に、証券送付先を変更するかどうかを表示してください。\n(3) 一度チェックして確認画面に進み、戻ってチェックを外した場合に、チェックした状態のまま登録されることがないようにしてください。\n【希望時期】2027年2月",
+      "changes": [
+        {
+          "file": "kyk-ido/src/main/java/jp/co/tsubame/kyk/ido/action/Kyk0501Action.java",
+          "why": "TODO（次期対応）を解消。confirm 実行時にチェックボックスをリセット（セッションスコープフォームで前回値が残るため）"
+        },
+        {
+          "file": "kyk-ido/src/main/java/jp/co/tsubame/kyk/ido/form/JushoHenkoForm.java",
+          "why": "チェックボックスのリセットメソッド resetCheckbox を追加"
+        },
+        {
+          "file": "kyk-ido/src/main/java/jp/co/tsubame/kyk/ido/dto/JushoHenkoDto.java",
+          "why": "Beans.createAndCopy でフォームから同名コピーされるよう sofusakiHenkoFlg を追加"
+        },
+        {
+          "file": "kyk-ido/src/main/java/jp/co/tsubame/kyk/ido/service/JushoHenkoService.java",
+          "why": "フラグON時に SQLファイルで KYK_SHOKEN_HAKKO の送付先を新住所に更新（同一トランザクション）"
+        },
+        {
+          "file": "kyk-ido/src/main/webapp/WEB-INF/view/kyk0501/confirm.jsp",
+          "why": "確認画面に証券送付先の変更有無を表示"
+        },
+        {
+          "file": "doc/画面設計/KYK0501_住所変更異動_画面項目定義.md",
+          "why": "sofusakiHenkoFlg のDB項目・処理内容（備考）と更新者を更新"
+        }
+      ],
+      "new_files": [
+        {
+          "file": "kyk-ido/src/main/resources/META-INF/sql/jp/co/tsubame/kyk/ido/service/JushoHenkoService/updateShokenSofusaki.sql",
+          "why": "未発行・送付先=契約者住所の証券発行依頼の送付先郵便番号・住所を更新する2WaySQL（住所は160バイトで切捨て）"
+        }
+      ],
+      "also_check": [
+        {
+          "file": "kyk-ido/src/main/webapp/WEB-INF/view/kyk0501/index.jsp",
+          "why": "チェックボックス sofusakiHenkoFlg の入力欄（戻る→再確認の動き）の確認"
+        },
+        {
+          "file": "db/ddl/table/KYK_SHOKEN_HAKKO.sql",
+          "why": "SOFUSAKI_YUBIN CHAR(7)・SOFUSAKI_JUSHO VARCHAR2(160)。新住所（最大240バイト）との桁差の確認"
+        },
+        {
+          "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/repository/ShokenHakkoRepository.java",
+          "why": "再発行依頼登録時の送付先（契約者住所は JUSHO1||JUSHO2||JUSHO3・郵便番号ハイフンなし）と同じ形式で更新していることの確認"
+        },
+        {
+          "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/service/impl/ShokenHakkoServiceImpl.java",
+          "why": "送付先区分 1:契約者住所 の場合の住所設定ロジックの確認"
+        },
+        {
+          "file": "kyk-batch/src/jp/co/tsubame/kyk/batch/KYKB040ShokenHakko.java",
+          "why": "未発行(0)の依頼を夜間に印刷センターへ連携するため、住所変更と証券発行のタイミング（当日中の変更が当夜の連携に反映）の確認"
+        },
+        {
+          "file": "kyk-ido/src/main/resources/customizer.dicon",
+          "why": "Service に requiredTx が掛かっており、顧客更新・履歴登録・送付先更新が同一トランザクションになることの確認"
+        },
+        {
+          "file": "kyk-ido/src/main/java/jp/co/tsubame/kyk/ido/service/DairitenService.java",
+          "why": "updateBySqlFile の SQLファイルパス指定方式（既存実装）との整合確認"
+        },
+        {
+          "file": "kyk-ido/src/main/resources/dao.dicon",
+          "why": "SQLファイルの文字コード（UTF-8）設定の確認"
+        }
+      ]
+    }
+  ]
+}
