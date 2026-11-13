@@ -1,0 +1,2278 @@
+[
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr01",
+"cond": "A",
+"truth": 3,
+"listed": 4,
+"hit": 3,
+"missed": [],
+"extra": [
+"docs/02_販売管理/基本設計書_販売管理.docx"
+],
+"input": 28,
+"cache_write": 63847,
+"cache_read": 635009,
+"output": 5210,
+"cost": 0.7420898,
+"turns": 19,
+"tools": {
+"Bash": 6,
+"Glob": 4,
+"Grep": 4,
+"Read": 2,
+"StructuredOutput": 1
+},
+"seconds": 58
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr01",
+"cond": "C",
+"truth": 3,
+"listed": 3,
+"hit": 3,
+"missed": [],
+"extra": [],
+"input": 22,
+"cache_write": 28970,
+"cache_read": 462851,
+"output": 3718,
+"cost": 0.3987782,
+"turns": 16,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Grep": 3,
+"Read": 3,
+"Bash": 2,
+"Glob": 1,
+"mcp__himotoki__search_elements": 1,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 41
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr02",
+"cond": "A",
+"truth": 3,
+"listed": 3,
+"hit": 3,
+"missed": [],
+"extra": [],
+"input": 28,
+"cache_write": 38541,
+"cache_read": 711849,
+"output": 5652,
+"cost": 0.5638498,
+"turns": 17,
+"tools": {
+"Bash": 7,
+"Grep": 2,
+"Glob": 3,
+"Read": 2,
+"StructuredOutput": 1
+},
+"seconds": 62
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr02",
+"cond": "C",
+"truth": 3,
+"listed": 3,
+"hit": 3,
+"missed": [],
+"extra": [],
+"input": 20,
+"cache_write": 27593,
+"cache_read": 417171,
+"output": 3803,
+"cost": 0.3803182,
+"turns": 14,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Grep": 2,
+"Read": 2,
+"Bash": 1,
+"Glob": 1,
+"mcp__himotoki__neighbors": 1,
+"mcp__himotoki__get_element": 1,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 43
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr03",
+"cond": "A",
+"truth": 4,
+"listed": 7,
+"hit": 4,
+"missed": [],
+"extra": [
+"hanbai/sql/ddl/T_JUCHU_H.sql",
+"docs/02_販売管理/基本設計書_販売管理.docx",
+"docs/02_販売管理/テーブル定義書/T_JUCHU_H_受注ヘッダ.xlsx"
+],
+"input": 20,
+"cache_write": 38810,
+"cache_read": 476625,
+"output": 4974,
+"cost": 0.5053650000000001,
+"turns": 10,
+"tools": {
+"Bash": 7,
+"StructuredOutput": 1
+},
+"seconds": 46
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr03",
+"cond": "C",
+"truth": 4,
+"listed": 4,
+"hit": 4,
+"missed": [],
+"extra": [],
+"input": 24,
+"cache_write": 40583,
+"cache_read": 600924,
+"output": 4190,
+"cost": 0.5287448,
+"turns": 12,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Bash": 5,
+"mcp__himotoki__audit_scope": 1,
+"mcp__himotoki__search_elements": 1,
+"StructuredOutput": 1
+},
+"seconds": 40
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr04",
+"cond": "A",
+"truth": 15,
+"listed": 40,
+"hit": 15,
+"missed": [],
+"extra": [
+"kobai/src/main/resources/messages_kobai.properties",
+"master/sql/ddl/M_SHIIRE.sql",
+"master/sql/ddl/M_SHIIRE_RIREKI.sql",
+"master/webapp/WEB-INF/jsp/master/shiire/shiireInput.jsp",
+"master/webapp/WEB-INF/jsp/master/shiire/shiireConfirm.jsp",
+"master/webapp/WEB-INF/jsp/master/shiire/shiireDetail.jsp",
+"master/webapp/WEB-INF/validation.xml",
+"kobai/sql/ddl/T_SHIHARAI.sql",
+"kobai/sql/ddl/T_SHIHARAI_YOTEI.sql",
+"kobai/report/form/R_KOB050.xml",
+"docs/00_共通/共通メッセージ一覧.xlsx",
+"docs/01_マスタ管理/テーブル定義書/M_KBN_区分マスタ.xlsx",
+"docs/01_マスタ管理/テーブル定義書/M_SHIIRE_仕入先マスタ.xlsx",
+"docs/01_マスタ管理/画面設計書/MST030_仕入先マスタメンテナンス.xlsx",
+"docs/01_マスタ管理/帳票設計書/R_MST030_仕入先一覧表.xlsx",
+"docs/03_購買管理/外部設計書_総合振込.docx",
+"docs/03_購買管理/画面仕様書/画面仕様書_KOB040_支払予定一覧.xlsx",
+"docs/03_購買管理/テーブル仕様書/テーブル仕様書_T_SHIHARAI.xlsx",
+"docs/03_購買管理/テーブル仕様書/テーブル仕様書_T_SHIHARAI_YOTEI.xlsx",
+"docs/03_購買管理/帳票設計書/R_KOB050_支払予定表.xlsx",
+"docs/03_購買管理/帳票設計書/R_KOB030_支払明細書.xlsx",
+"docs/05_会計連携/基本設計書_会計連携.docx",
+"docs/05_会計連携/table/M_KAMOKU.xlsx",
+"docs/05_会計連携/table/M_SHIWAKE_PTN.xlsx",
+"docs/05_会計連携/連携ファイル定義書/IF-KAI-001_会計仕訳連携.xlsx"
+],
+"input": 44,
+"cache_write": 87006,
+"cache_read": 1511398,
+"output": 13350,
+"cost": 1.2655036,
+"turns": 40,
+"tools": {
+"Bash": 1,
+"Glob": 5,
+"Grep": 18,
+"Read": 13,
+"StructuredOutput": 1
+},
+"seconds": 129
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr04",
+"cond": "C",
+"truth": 15,
+"listed": 24,
+"hit": 14,
+"missed": [
+"docs/03_購買管理/基本設計書_購買管理.docx"
+],
+"extra": [
+"docs/03_購買管理/外部設計書_総合振込.docx",
+"docs/03_購買管理/テーブル仕様書/テーブル仕様書_T_SHIHARAI.xlsx",
+"docs/03_購買管理/テーブル仕様書/テーブル仕様書_T_SHIHARAI_YOTEI.xlsx",
+"docs/01_マスタ管理/テーブル定義書/M_SHIIRE_仕入先マスタ.xlsx",
+"docs/01_マスタ管理/画面設計書/MST030_仕入先マスタメンテナンス.xlsx",
+"master/sql/ddl/M_SHIIRE.sql",
+"master/sql/ddl/M_SHIIRE_RIREKI.sql",
+"master/webapp/WEB-INF/jsp/master/shiire/shiireInput.jsp",
+"kobai/report/form/R_KOB050.xml",
+"docs/03_購買管理/帳票設計書/R_KOB050_支払予定表.xlsx"
+],
+"input": 34,
+"cache_write": 82906,
+"cache_read": 1228150,
+"output": 9361,
+"cost": 1.096234,
+"turns": 20,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Bash": 5,
+"mcp__himotoki__search_elements": 3,
+"mcp__himotoki__audit_scope": 1,
+"Grep": 2,
+"mcp__himotoki__get_element": 4,
+"StructuredOutput": 1
+},
+"seconds": 92
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr05",
+"cond": "A",
+"truth": 24,
+"listed": 32,
+"hit": 23,
+"missed": [
+"docs/04_在庫物流/バッチ処理定義書_在庫物流.xlsx"
+],
+"extra": [
+"common/src/main/java/jp/co/minato/kikan/common/constant/KbnConst.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/juchu/JuchuService.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/batch/JuchuTorikomiBatch.java",
+"hanbai/webapp/js/juchu.js",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/shukka/ShukkaShijiAction.java",
+"hanbai/webapp/WEB-INF/jsp/hanbai/shukkaShiji.jsp",
+"docs/02_販売管理/画面設計書/HAN030_出荷指示.xlsx",
+"docs/02_販売管理/基本設計書_販売管理.docx",
+"docs/04_在庫物流/基本設計書_在庫物流.docx"
+],
+"input": 50,
+"cache_write": 125284,
+"cache_read": 2307202,
+"output": 13119,
+"cost": 1.7262924,
+"turns": 47,
+"tools": {
+"Bash": 4,
+"Read": 30,
+"Glob": 4,
+"Grep": 6,
+"StructuredOutput": 1
+},
+"seconds": 131
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr05",
+"cond": "C",
+"truth": 24,
+"listed": 24,
+"hit": 22,
+"missed": [
+"docs/02_販売管理/バッチ処理定義書_販売管理.xlsx",
+"docs/04_在庫物流/バッチ処理定義書_在庫物流.xlsx"
+],
+"extra": [
+"common/src/main/java/jp/co/minato/kikan/common/constant/KbnConst.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/batch/JuchuTorikomiBatch.java"
+],
+"input": 36,
+"cache_write": 65736,
+"cache_read": 1083823,
+"output": 10813,
+"cost": 0.9590566,
+"turns": 31,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Bash": 3,
+"Glob": 3,
+"Read": 14,
+"Grep": 5,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 102
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr06",
+"cond": "A",
+"truth": 6,
+"listed": 20,
+"hit": 6,
+"missed": [],
+"extra": [
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/uriage/UriageDao.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/henpin/HenpinDao.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/uriage/UriageForm.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/henpin/HenpinForm.java",
+"hanbai/webapp/WEB-INF/jsp/hanbai/uriage/uriageInput.jsp",
+"hanbai/webapp/WEB-INF/jsp/hanbai/uriage/uriageConfirm.jsp",
+"hanbai/webapp/WEB-INF/jsp/hanbai/uriage/uriageDetail.jsp",
+"hanbai/webapp/WEB-INF/jsp/hanbai/henpin/henpinConfirm.jsp",
+"hanbai/sql/ddl/T_URIAGE_M.sql",
+"docs/02_販売管理/画面設計書/HAN040_売上入力.xlsx",
+"docs/02_販売管理/画面設計書/HAN050_返品入力.xlsx",
+"docs/02_販売管理/テーブル定義書/T_URIAGE_M_売上明細.xlsx",
+"docs/02_販売管理/テーブル定義書/T_URIAGE_H_売上ヘッダ.xlsx",
+"docs/00_共通/方式設計書.docx"
+],
+"input": 38,
+"cache_write": 76113,
+"cache_read": 1153609,
+"output": 11009,
+"cost": 1.0599578,
+"turns": 31,
+"tools": {
+"Bash": 2,
+"Grep": 8,
+"Glob": 5,
+"Read": 13,
+"StructuredOutput": 1
+},
+"seconds": 111
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr06",
+"cond": "C",
+"truth": 6,
+"listed": 10,
+"hit": 6,
+"missed": [],
+"extra": [
+"hanbai/webapp/WEB-INF/jsp/hanbai/uriage/uriageInput.jsp",
+"hanbai/webapp/WEB-INF/jsp/hanbai/uriage/uriageConfirm.jsp",
+"hanbai/webapp/WEB-INF/jsp/hanbai/uriage/uriageDetail.jsp",
+"docs/02_販売管理/画面設計書/HAN040_売上入力.xlsx"
+],
+"input": 34,
+"cache_write": 81945,
+"cache_read": 910941,
+"output": 7533,
+"cost": 0.9885441999999999,
+"turns": 23,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Grep": 1,
+"Bash": 7,
+"mcp__himotoki__search_elements": 2,
+"mcp__himotoki__neighbors": 1,
+"mcp__himotoki__get_element": 5,
+"Read": 1,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 79
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr07",
+"cond": "A",
+"truth": 7,
+"listed": 10,
+"hit": 7,
+"missed": [],
+"extra": [
+"docs/00_共通/共通メッセージ一覧.xlsx",
+"docs/05_会計連携/画面設計書/KAI020_締め状況照会.xlsx",
+"kaikei/webapp/WEB-INF/jsp/kaikei/getsujiShime.jsp"
+],
+"input": 24,
+"cache_write": 40441,
+"cache_read": 549281,
+"output": 5947,
+"cost": 0.5524201999999999,
+"turns": 17,
+"tools": {
+"Bash": 4,
+"Grep": 3,
+"Read": 4,
+"Glob": 3,
+"StructuredOutput": 1
+},
+"seconds": 62
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr07",
+"cond": "C",
+"truth": 7,
+"listed": 8,
+"hit": 7,
+"missed": [],
+"extra": [
+"kaikei/webapp/WEB-INF/jsp/kaikei/getsujiShime.jsp"
+],
+"input": 26,
+"cache_write": 28926,
+"cache_read": 558124,
+"output": 5437,
+"cost": 0.4518768,
+"turns": 15,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Grep": 1,
+"Bash": 4,
+"mcp__himotoki__audit_scope": 1,
+"mcp__himotoki__search_elements": 2,
+"mcp__himotoki__get_element": 2,
+"StructuredOutput": 1
+},
+"seconds": 57
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr08",
+"cond": "A",
+"truth": 100,
+"listed": 100,
+"hit": 99,
+"missed": [
+"kobai/src/main/resources/messages_kobai.properties"
+],
+"extra": [
+"kobai/src/main/java/jp/co/minato/kikan/kobai/common/KobaiCheck.java"
+],
+"input": 58,
+"cache_write": 169128,
+"cache_read": 2847004,
+"output": 23703,
+"cost": 2.3967167999999996,
+"turns": 39,
+"tools": {
+"Bash": 4,
+"Read": 15,
+"Grep": 16,
+"Glob": 1,
+"StructuredOutput": 1
+},
+"seconds": 226
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr08",
+"cond": "C",
+"truth": 100,
+"listed": 99,
+"hit": 98,
+"missed": [
+"common/webapp/WEB-INF/jsp/common/search/shiireSearch.jsp",
+"docs/01_マスタ管理/基本設計書_マスタ管理.docx"
+],
+"extra": [
+"docs/00_共通/テーブル定義書/T_SAIBAN_採番管理.xlsx"
+],
+"input": 44,
+"cache_write": 90699,
+"cache_read": 1497779,
+"output": 20493,
+"cost": 1.4351838,
+"turns": 34,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Bash": 1,
+"Grep": 15,
+"Read": 7,
+"Glob": 2,
+"mcp__himotoki__search_elements": 3,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 174
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr09",
+"cond": "A",
+"truth": 22,
+"listed": 36,
+"hit": 22,
+"missed": [],
+"extra": [
+"master/src/main/java/jp/co/minato/kikan/master/shohin/ShohinListAction.java",
+"common/webapp/js/common.js",
+"common/src/main/java/jp/co/minato/kikan/common/constant/MsgConst.java",
+"master/src/main/resources/messages_master.properties",
+"edi/sql/ope/edi_err_saitorikomi.sql",
+"edi/src/main/resources/messages_edi.properties",
+"edi/src/main/java/jp/co/minato/kikan/edi/partner/T02HokuyoJuchuConverter.java",
+"edi/src/main/resources/layout/T02_JUCHU_D.properties",
+"edi/src/main/java/jp/co/minato/kikan/edi/edierror/EdiErrorListDao.java",
+"docs/01_マスタ管理/基本設計書_マスタ管理.docx",
+"docs/01_マスタ管理/CRUD表_マスタ管理.xlsx",
+"docs/06_EDI/画面設計書/EDI020_EDIエラー一覧.xlsx",
+"docs/06_EDI/IF定義/IF-EDI-T02_北洋ドラッグ受注(JCA).xlsx",
+"docs/00_共通/共通メッセージ一覧.xlsx"
+],
+"input": 42,
+"cache_write": 80622,
+"cache_read": 1632535,
+"output": 11390,
+"cost": 1.199451,
+"turns": 28,
+"tools": {
+"Bash": 13,
+"Glob": 4,
+"Read": 3,
+"Grep": 5,
+"StructuredOutput": 1
+},
+"seconds": 116
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr09",
+"cond": "C",
+"truth": 22,
+"listed": 24,
+"hit": 21,
+"missed": [
+"docs/04_在庫物流/バッチ処理定義書_在庫物流.xlsx"
+],
+"extra": [
+"edi/src/main/resources/messages_edi.properties",
+"edi/sql/ope/edi_err_saitorikomi.sql",
+"docs/01_マスタ管理/基本設計書_マスタ管理.docx"
+],
+"input": 26,
+"cache_write": 55560,
+"cache_read": 767303,
+"output": 8274,
+"cost": 0.7635246,
+"turns": 14,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Bash": 8,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 80
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr10",
+"cond": "A",
+"truth": 8,
+"listed": 10,
+"hit": 8,
+"missed": [],
+"extra": [
+"docs/00_共通/運用設計書.docx",
+"edi/README.txt"
+],
+"input": 30,
+"cache_write": 70458,
+"cache_read": 999933,
+"output": 7287,
+"cost": 0.9095105999999998,
+"turns": 23,
+"tools": {
+"Bash": 6,
+"Grep": 6,
+"Read": 7,
+"Glob": 1,
+"StructuredOutput": 1
+},
+"seconds": 78
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr10",
+"cond": "C",
+"truth": 8,
+"listed": 7,
+"hit": 7,
+"missed": [
+"docs/06_EDI/基本設計書_EDI.docx"
+],
+"extra": [],
+"input": 28,
+"cache_write": 29649,
+"cache_read": 625091,
+"output": 5109,
+"cost": 0.4645022,
+"turns": 15,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Bash": 5,
+"mcp__himotoki__search_elements": 1,
+"mcp__himotoki__audit_scope": 1,
+"Grep": 2,
+"Glob": 1,
+"StructuredOutput": 1
+},
+"seconds": 57
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr11",
+"cond": "A",
+"truth": 12,
+"listed": 13,
+"hit": 12,
+"missed": [],
+"extra": [
+"docs/01_マスタ管理/CRUD表_マスタ管理.xlsx"
+],
+"input": 20,
+"cache_write": 31968,
+"cache_read": 431301,
+"output": 5361,
+"cost": 0.4493042,
+"turns": 15,
+"tools": {
+"Grep": 5,
+"Bash": 2,
+"Read": 5,
+"StructuredOutput": 1
+},
+"seconds": 52
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr11",
+"cond": "C",
+"truth": 12,
+"listed": 11,
+"hit": 11,
+"missed": [
+"docs/01_マスタ管理/基本設計書_マスタ管理.docx"
+],
+"extra": [],
+"input": 20,
+"cache_write": 28314,
+"cache_read": 415824,
+"output": 5274,
+"cost": 0.41523679999999996,
+"turns": 13,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Grep": 2,
+"Bash": 2,
+"Glob": 1,
+"Read": 2,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 52
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr12",
+"cond": "A",
+"truth": 49,
+"listed": 54,
+"hit": 49,
+"missed": [],
+"extra": [
+"kobai/webapp/WEB-INF/jsp/kobai/hacchu/hacchuConfirm.jsp",
+"docs/01_マスタ管理/画面設計書/MST170_仕入先別仕入単価照会.xlsx",
+"docs/01_マスタ管理/バッチ処理定義書_マスタ管理.xlsx",
+"docs/06_EDI/IF定義/IF-EDI-S01_大和製菓発注(JCA).xlsx",
+"docs/06_EDI/画面設計書/EDI060_EDI発注データ照会.xlsx"
+],
+"input": 68,
+"cache_write": 146665,
+"cache_read": 3982396,
+"output": 21219,
+"cost": 2.3944512000000002,
+"turns": 45,
+"tools": {
+"Bash": 11,
+"Read": 13,
+"Glob": 1,
+"Grep": 17,
+"StructuredOutput": 1
+},
+"seconds": 203
+},
+{
+"run": "/home/claude/compare/l-r1",
+"task": "cr12",
+"cond": "C",
+"truth": 49,
+"listed": 53,
+"hit": 49,
+"missed": [],
+"extra": [
+"kobai/webapp/WEB-INF/jsp/kobai/hacchu/hacchuConfirm.jsp",
+"docs/01_マスタ管理/画面設計書/MST170_仕入先別仕入単価照会.xlsx",
+"docs/06_EDI/IF定義/IF-EDI-S01_大和製菓発注(JCA).xlsx",
+"docs/06_EDI/画面設計書/EDI060_EDI発注データ照会.xlsx"
+],
+"input": 56,
+"cache_write": 131765,
+"cache_read": 2246322,
+"output": 19381,
+"cost": 1.8912284000000001,
+"turns": 57,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Bash": 1,
+"Grep": 17,
+"Read": 28,
+"Glob": 5,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 178
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr01",
+"cond": "A",
+"truth": 3,
+"listed": 4,
+"hit": 3,
+"missed": [],
+"extra": [
+"docs/02_販売管理/基本設計書_販売管理.docx"
+],
+"input": 28,
+"cache_write": 89827,
+"cache_read": 805784,
+"output": 5208,
+"cost": 0.9840448,
+"turns": 18,
+"tools": {
+"Bash": 2,
+"Read": 7,
+"Grep": 5,
+"Glob": 1,
+"StructuredOutput": 1
+},
+"seconds": 61
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr01",
+"cond": "C",
+"truth": 3,
+"listed": 3,
+"hit": 3,
+"missed": [],
+"extra": [],
+"input": 26,
+"cache_write": 27923,
+"cache_read": 561116,
+"output": 4184,
+"cost": 0.41939119999999996,
+"turns": 17,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Grep": 4,
+"Read": 3,
+"Bash": 3,
+"mcp__himotoki__audit_scope": 1,
+"mcp__himotoki__search_elements": 1,
+"StructuredOutput": 1
+},
+"seconds": 47
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr02",
+"cond": "A",
+"truth": 3,
+"listed": 5,
+"hit": 3,
+"missed": [],
+"extra": [
+"docs/02_販売管理/基本設計書_販売管理.docx",
+"docs/02_販売管理/画面設計書/HAN060_請求一覧.xlsx"
+],
+"input": 26,
+"cache_write": 30982,
+"cache_read": 567026,
+"output": 5451,
+"cost": 0.47038520000000006,
+"turns": 15,
+"tools": {
+"Bash": 7,
+"Glob": 2,
+"Grep": 3,
+"StructuredOutput": 1
+},
+"seconds": 59
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr02",
+"cond": "C",
+"truth": 3,
+"listed": 3,
+"hit": 3,
+"missed": [],
+"extra": [],
+"input": 18,
+"cache_write": 21814,
+"cache_read": 348075,
+"output": 3993,
+"cost": 0.324059,
+"turns": 14,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Grep": 2,
+"Read": 1,
+"Bash": 2,
+"mcp__himotoki__get_element": 1,
+"mcp__himotoki__neighbors": 1,
+"Glob": 1,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 42
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr03",
+"cond": "A",
+"truth": 4,
+"listed": 7,
+"hit": 4,
+"missed": [],
+"extra": [
+"docs/02_販売管理/基本設計書_販売管理.docx",
+"hanbai/sql/ddl/T_JUCHU_H.sql",
+"docs/02_販売管理/テーブル定義書/T_JUCHU_H_受注ヘッダ.xlsx"
+],
+"input": 22,
+"cache_write": 38927,
+"cache_read": 530929,
+"output": 4210,
+"cost": 0.5018897999999999,
+"turns": 14,
+"tools": {
+"Bash": 7,
+"Glob": 1,
+"Grep": 3,
+"StructuredOutput": 1
+},
+"seconds": 40
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr03",
+"cond": "C",
+"truth": 4,
+"listed": 4,
+"hit": 4,
+"missed": [],
+"extra": [],
+"input": 24,
+"cache_write": 30227,
+"cache_read": 518945,
+"output": 4105,
+"cost": 0.42780099999999993,
+"turns": 12,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Bash": 5,
+"mcp__himotoki__audit_scope": 1,
+"mcp__himotoki__search_elements": 1,
+"StructuredOutput": 1
+},
+"seconds": 38
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr04",
+"cond": "A",
+"truth": 15,
+"listed": 34,
+"hit": 14,
+"missed": [
+"docs/00_共通/区分値一覧.xlsx"
+],
+"extra": [
+"master/webapp/WEB-INF/jsp/master/shiire/shiireInput.jsp",
+"master/webapp/WEB-INF/jsp/master/shiire/shiireConfirm.jsp",
+"master/webapp/WEB-INF/jsp/master/shiire/shiireDetail.jsp",
+"master/webapp/WEB-INF/validation.xml",
+"master/sql/ddl/M_SHIIRE.sql",
+"master/sql/ddl/M_SHIIRE_RIREKI.sql",
+"kobai/sql/ddl/T_SHIHARAI.sql",
+"kobai/sql/ddl/T_SHIHARAI_YOTEI.sql",
+"docs/01_マスタ管理/テーブル定義書/M_KBN_区分マスタ.xlsx",
+"docs/01_マスタ管理/テーブル定義書/M_SHIIRE_仕入先マスタ.xlsx",
+"docs/01_マスタ管理/画面設計書/MST030_仕入先マスタメンテナンス.xlsx",
+"docs/01_マスタ管理/基本設計書_マスタ管理.docx",
+"docs/03_購買管理/外部設計書_総合振込.docx",
+"docs/03_購買管理/画面仕様書/画面仕様書_KOB040_支払予定一覧.xlsx",
+"docs/03_購買管理/テーブル仕様書/テーブル仕様書_T_SHIHARAI.xlsx",
+"docs/03_購買管理/テーブル仕様書/テーブル仕様書_T_SHIHARAI_YOTEI.xlsx",
+"docs/03_購買管理/帳票設計書/R_KOB050_支払予定表.xlsx",
+"docs/05_会計連携/table/M_KAMOKU.xlsx",
+"docs/05_会計連携/table/M_SHIWAKE_PTN.xlsx",
+"docs/05_会計連携/基本設計書_会計連携.docx"
+],
+"input": 42,
+"cache_write": 106479,
+"cache_read": 1627712,
+"output": 13816,
+"cost": 1.4538624000000002,
+"turns": 46,
+"tools": {
+"Bash": 2,
+"Grep": 15,
+"Glob": 4,
+"Read": 22,
+"StructuredOutput": 1
+},
+"seconds": 135
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr04",
+"cond": "C",
+"truth": 15,
+"listed": 24,
+"hit": 15,
+"missed": [],
+"extra": [
+"docs/01_マスタ管理/テーブル定義書/M_SHIIRE_仕入先マスタ.xlsx",
+"docs/03_購買管理/テーブル仕様書/テーブル仕様書_T_SHIHARAI.xlsx",
+"docs/03_購買管理/テーブル仕様書/テーブル仕様書_T_SHIHARAI_YOTEI.xlsx",
+"docs/03_購買管理/外部設計書_総合振込.docx",
+"docs/05_会計連携/基本設計書_会計連携.docx",
+"master/webapp/WEB-INF/jsp/master/shiire/shiireInput.jsp",
+"master/webapp/WEB-INF/jsp/master/shiire/shiireConfirm.jsp",
+"master/webapp/WEB-INF/jsp/master/shiire/shiireDetail.jsp",
+"docs/01_マスタ管理/画面設計書/MST030_仕入先マスタメンテナンス.xlsx"
+],
+"input": 34,
+"cache_write": 61539,
+"cache_read": 1051809,
+"output": 8844,
+"cost": 0.8796898000000002,
+"turns": 19,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Bash": 4,
+"mcp__himotoki__search_elements": 2,
+"mcp__himotoki__get_element": 1,
+"Read": 2,
+"Grep": 3,
+"mcp__himotoki__audit_scope": 1,
+"Glob": 1,
+"StructuredOutput": 1
+},
+"seconds": 85
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr05",
+"cond": "A",
+"truth": 24,
+"listed": 30,
+"hit": 22,
+"missed": [
+"docs/02_販売管理/バッチ処理定義書_販売管理.xlsx",
+"docs/04_在庫物流/バッチ処理定義書_在庫物流.xlsx"
+],
+"extra": [
+"common/src/main/java/jp/co/minato/kikan/common/constant/KbnConst.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/juchu/JuchuService.java",
+"docs/02_販売管理/基本設計書_販売管理.docx",
+"docs/04_在庫物流/基本設計書_在庫物流.docx",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/batch/JuchuTorikomiBatch.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/shukka/ShukkaShijiAction.java",
+"hanbai/webapp/WEB-INF/jsp/hanbai/shukkaShiji.jsp",
+"docs/02_販売管理/画面設計書/HAN030_出荷指示.xlsx"
+],
+"input": 48,
+"cache_write": 132512,
+"cache_read": 2273161,
+"output": 13392,
+"cost": 1.7827602000000002,
+"turns": 50,
+"tools": {
+"Bash": 3,
+"Read": 32,
+"Glob": 4,
+"Grep": 8,
+"StructuredOutput": 1
+},
+"seconds": 132
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr05",
+"cond": "C",
+"truth": 24,
+"listed": 29,
+"hit": 22,
+"missed": [
+"docs/02_販売管理/バッチ処理定義書_販売管理.xlsx",
+"docs/04_在庫物流/バッチ処理定義書_在庫物流.xlsx"
+],
+"extra": [
+"hanbai/webapp/js/juchu.js",
+"common/src/main/java/jp/co/minato/kikan/common/constant/KbnConst.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/shukka/ShukkaShijiAction.java",
+"hanbai/webapp/WEB-INF/jsp/hanbai/shukkaShiji.jsp",
+"docs/02_販売管理/画面設計書/HAN030_出荷指示.xlsx",
+"docs/01_マスタ管理/テーブル定義書/M_KBN_区分マスタ.xlsx",
+"docs/02_販売管理/基本設計書_販売管理.docx"
+],
+"input": 38,
+"cache_write": 75257,
+"cache_read": 1205400,
+"output": 11703,
+"cost": 1.077348,
+"turns": 24,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Bash": 10,
+"Glob": 2,
+"Grep": 4,
+"Read": 2,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 110
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr06",
+"cond": "A",
+"truth": 6,
+"listed": 26,
+"hit": 6,
+"missed": [],
+"extra": [
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/uriage/UriageForm.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/henpin/HenpinForm.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/uriage/UriageDao.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/henpin/HenpinDao.java",
+"hanbai/webapp/WEB-INF/jsp/hanbai/uriage/uriageInput.jsp",
+"hanbai/webapp/WEB-INF/jsp/hanbai/uriage/uriageConfirm.jsp",
+"hanbai/webapp/WEB-INF/jsp/hanbai/uriage/uriageDetail.jsp",
+"hanbai/webapp/WEB-INF/jsp/hanbai/henpin/henpinConfirm.jsp",
+"hanbai/webapp/WEB-INF/jsp/hanbai/henpin/henpinDetail.jsp",
+"hanbai/sql/ddl/T_URIAGE_H.sql",
+"hanbai/sql/ddl/T_URIAGE_M.sql",
+"hanbai/sql/ddl/_create_all.sql",
+"db/grant/grant_kikan_app.sql",
+"db/synonym/create_synonym.sql",
+"docs/02_販売管理/画面設計書/HAN040_売上入力.xlsx",
+"docs/02_販売管理/画面設計書/HAN050_返品入力.xlsx",
+"docs/02_販売管理/テーブル定義書/T_URIAGE_M_売上明細.xlsx",
+"docs/02_販売管理/テーブル定義書/T_URIAGE_H_売上ヘッダ.xlsx",
+"docs/02_販売管理/CRUD表_販売管理.xlsx",
+"docs/00_共通/方式設計書.docx"
+],
+"input": 42,
+"cache_write": 78246,
+"cache_read": 1441464,
+"output": 11934,
+"cost": 1.1531087999999998,
+"turns": 37,
+"tools": {
+"Bash": 1,
+"Glob": 4,
+"Grep": 14,
+"Read": 15,
+"StructuredOutput": 1
+},
+"seconds": 118
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr06",
+"cond": "C",
+"truth": 6,
+"listed": 20,
+"hit": 6,
+"missed": [],
+"extra": [
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/uriage/UriageDao.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/henpin/HenpinDao.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/uriage/UriageForm.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/henpin/HenpinForm.java",
+"hanbai/webapp/WEB-INF/jsp/hanbai/uriage/uriageInput.jsp",
+"hanbai/webapp/WEB-INF/jsp/hanbai/uriage/uriageConfirm.jsp",
+"hanbai/webapp/WEB-INF/jsp/hanbai/uriage/uriageDetail.jsp",
+"hanbai/webapp/WEB-INF/jsp/hanbai/henpin/henpinConfirm.jsp",
+"hanbai/webapp/WEB-INF/jsp/hanbai/henpin/henpinDetail.jsp",
+"hanbai/sql/ddl/T_URIAGE_M.sql",
+"docs/02_販売管理/テーブル定義書/T_URIAGE_M_売上明細.xlsx",
+"docs/02_販売管理/テーブル定義書/T_URIAGE_H_売上ヘッダ.xlsx",
+"docs/02_販売管理/画面設計書/HAN040_売上入力.xlsx",
+"docs/02_販売管理/画面設計書/HAN050_返品入力.xlsx"
+],
+"input": 30,
+"cache_write": 77911,
+"cache_read": 741113,
+"output": 7531,
+"cost": 0.9222506,
+"turns": 17,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Bash": 8,
+"Grep": 1,
+"SendUserMessage": 1,
+"Glob": 1,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 77
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr07",
+"cond": "A",
+"truth": 7,
+"listed": 12,
+"hit": 7,
+"missed": [],
+"extra": [
+"docs/00_共通/共通メッセージ一覧.xlsx",
+"kaikei/webapp/WEB-INF/jsp/kaikei/getsujiShime.jsp",
+"docs/05_会計連携/画面設計書/KAI020_締め状況照会.xlsx",
+"docs/00_共通/運用設計書.docx",
+"docs/05_会計連携/CRUD表_会計連携.xlsx"
+],
+"input": 28,
+"cache_write": 33211,
+"cache_read": 604191,
+"output": 6561,
+"cost": 0.5178582,
+"turns": 25,
+"tools": {
+"Bash": 4,
+"Grep": 4,
+"Read": 11,
+"Glob": 3,
+"StructuredOutput": 1
+},
+"seconds": 68
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr07",
+"cond": "C",
+"truth": 7,
+"listed": 8,
+"hit": 7,
+"missed": [],
+"extra": [
+"docs/00_共通/共通メッセージ一覧.xlsx"
+],
+"input": 28,
+"cache_write": 34098,
+"cache_read": 630257,
+"output": 5572,
+"cost": 0.5103873999999999,
+"turns": 19,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Grep": 2,
+"Bash": 4,
+"mcp__himotoki__neighbors": 2,
+"mcp__himotoki__search_elements": 3,
+"mcp__himotoki__get_element": 2,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 61
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr08",
+"cond": "A",
+"truth": 100,
+"listed": 103,
+"hit": 99,
+"missed": [
+"kobai/src/main/resources/messages_kobai.properties"
+],
+"extra": [
+"docs/00_共通/方式設計書.docx",
+"docs/01_マスタ管理/バッチ処理定義書_マスタ管理.xlsx",
+"docs/03_購買管理/基本設計書_購買管理.docx",
+"docs/06_EDI/画面設計書/EDI060_EDI発注データ照会.xlsx"
+],
+"input": 60,
+"cache_write": 176823,
+"cache_read": 3312051,
+"output": 22710,
+"cost": 2.5314342,
+"turns": 45,
+"tools": {
+"Bash": 3,
+"Read": 18,
+"Grep": 19,
+"Glob": 2,
+"StructuredOutput": 1
+},
+"seconds": 218
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr08",
+"cond": "C",
+"truth": 100,
+"listed": 100,
+"hit": 100,
+"missed": [],
+"extra": [],
+"input": 40,
+"cache_write": 87427,
+"cache_read": 1379245,
+"output": 18004,
+"cost": 1.3355050000000002,
+"turns": 22,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Bash": 8,
+"Grep": 4,
+"Read": 2,
+"mcp__himotoki__neighbors": 1,
+"mcp__himotoki__search_elements": 1,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 159
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr09",
+"cond": "A",
+"truth": 22,
+"listed": 30,
+"hit": 21,
+"missed": [
+"docs/04_在庫物流/バッチ処理定義書_在庫物流.xlsx"
+],
+"extra": [
+"master/src/main/resources/messages_master.properties",
+"edi/src/main/resources/messages_edi.properties",
+"edi/sql/ope/edi_err_saitorikomi.sql",
+"edi/src/main/java/jp/co/minato/kikan/edi/partner/T02HokuyoJuchuConverter.java",
+"edi/src/main/resources/layout/T02_JUCHU_D.properties",
+"docs/01_マスタ管理/基本設計書_マスタ管理.docx",
+"docs/06_EDI/table/T_EDI_JUCHU_WK.xlsx",
+"docs/06_EDI/画面設計書/EDI020_EDIエラー一覧.xlsx",
+"docs/06_EDI/IF定義/IF-EDI-T02_北洋ドラッグ受注(JCA).xlsx"
+],
+"input": 58,
+"cache_write": 91976,
+"cache_read": 2448861,
+"output": 12516,
+"cost": 1.4761322000000001,
+"turns": 44,
+"tools": {
+"Bash": 4,
+"Read": 20,
+"Glob": 3,
+"Grep": 12,
+"SendUserMessage": 2,
+"StructuredOutput": 1
+},
+"seconds": 129
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr09",
+"cond": "C",
+"truth": 22,
+"listed": 23,
+"hit": 21,
+"missed": [
+"docs/04_在庫物流/バッチ処理定義書_在庫物流.xlsx"
+],
+"extra": [
+"edi/src/main/resources/messages_edi.properties",
+"edi/sql/ope/edi_err_saitorikomi.sql"
+],
+"input": 44,
+"cache_write": 53683,
+"cache_read": 1304423,
+"output": 10179,
+"cost": 0.8941046000000001,
+"turns": 23,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Grep": 2,
+"Bash": 13,
+"mcp__himotoki__audit_scope": 1,
+"mcp__himotoki__search_elements": 1,
+"Glob": 1,
+"StructuredOutput": 1
+},
+"seconds": 104
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr10",
+"cond": "A",
+"truth": 8,
+"listed": 8,
+"hit": 7,
+"missed": [
+"docs/00_共通/ジョブ一覧.xlsx"
+],
+"extra": [
+"docs/06_EDI/table/M_EDI_TORIHIKISAKI.xlsx"
+],
+"input": 24,
+"cache_write": 39413,
+"cache_read": 590245,
+"output": 5153,
+"cost": 0.5365089999999999,
+"turns": 13,
+"tools": {
+"Bash": 8,
+"Read": 1,
+"Grep": 1,
+"StructuredOutput": 1
+},
+"seconds": 55
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr10",
+"cond": "C",
+"truth": 8,
+"listed": 8,
+"hit": 8,
+"missed": [],
+"extra": [],
+"input": 26,
+"cache_write": 31496,
+"cache_read": 612241,
+"output": 5803,
+"cost": 0.49058019999999997,
+"turns": 16,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Grep": 4,
+"Bash": 4,
+"mcp__himotoki__neighbors": 1,
+"mcp__himotoki__audit_scope": 1,
+"Glob": 1,
+"StructuredOutput": 1
+},
+"seconds": 60
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr11",
+"cond": "A",
+"truth": 12,
+"listed": 14,
+"hit": 12,
+"missed": [],
+"extra": [
+"master/webapp/WEB-INF/jsp/master/tokui/tokuiInput_old.jsp",
+"docs/01_マスタ管理/CRUD表_マスタ管理.xlsx"
+],
+"input": 18,
+"cache_write": 33316,
+"cache_read": 399544,
+"output": 5092,
+"cost": 0.44834879999999994,
+"turns": 12,
+"tools": {
+"Bash": 4,
+"Grep": 1,
+"Read": 4,
+"StructuredOutput": 1
+},
+"seconds": 49
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr11",
+"cond": "C",
+"truth": 12,
+"listed": 13,
+"hit": 12,
+"missed": [],
+"extra": [
+"docs/01_マスタ管理/CRUD表_マスタ管理.xlsx"
+],
+"input": 18,
+"cache_write": 29937,
+"cache_read": 369945,
+"output": 5253,
+"cost": 0.418617,
+"turns": 13,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Grep": 3,
+"Bash": 1,
+"Glob": 1,
+"Read": 2,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 51
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr12",
+"cond": "A",
+"truth": 49,
+"listed": 55,
+"hit": 49,
+"missed": [],
+"extra": [
+"kobai/webapp/WEB-INF/jsp/kobai/hacchu/hacchuConfirm.jsp",
+"edi/src/main/resources/layout/S01_HACCHU.properties",
+"docs/06_EDI/IF定義/IF-EDI-S01_大和製菓発注(JCA).xlsx",
+"docs/01_マスタ管理/画面設計書/MST170_仕入先別仕入単価照会.xlsx",
+"docs/06_EDI/画面設計書/EDI060_EDI発注データ照会.xlsx",
+"docs/01_マスタ管理/バッチ処理定義書_マスタ管理.xlsx"
+],
+"input": 64,
+"cache_write": 126917,
+"cache_read": 3316487,
+"output": 19200,
+"cost": 2.0628894,
+"turns": 47,
+"tools": {
+"Bash": 4,
+"Read": 20,
+"Glob": 3,
+"Grep": 17,
+"StructuredOutput": 1
+},
+"seconds": 186
+},
+{
+"run": "/home/claude/compare/l-r2",
+"task": "cr12",
+"cond": "C",
+"truth": 49,
+"listed": 53,
+"hit": 48,
+"missed": [
+"docs/03_購買管理/バッチ処理定義書_購買管理.xlsx"
+],
+"extra": [
+"kobai/webapp/WEB-INF/jsp/kobai/hacchu/hacchuConfirm.jsp",
+"docs/01_マスタ管理/画面設計書/MST170_仕入先別仕入単価照会.xlsx",
+"docs/06_EDI/画面設計書/EDI060_EDI発注データ照会.xlsx",
+"docs/06_EDI/IF定義/IF-EDI-S01_大和製菓発注(JCA).xlsx",
+"docs/00_共通/共通メッセージ一覧.xlsx"
+],
+"input": 46,
+"cache_write": 105082,
+"cache_read": 1859892,
+"output": 17186,
+"cost": 1.5565384,
+"turns": 30,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Bash": 7,
+"Grep": 8,
+"Read": 6,
+"mcp__himotoki__audit_scope": 1,
+"mcp__himotoki__search_elements": 3,
+"StructuredOutput": 1
+},
+"seconds": 157
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr01",
+"cond": "A",
+"truth": 3,
+"listed": 4,
+"hit": 3,
+"missed": [],
+"extra": [
+"docs/02_販売管理/基本設計書_販売管理.docx"
+],
+"input": 28,
+"cache_write": 55455,
+"cache_read": 536282,
+"output": 4601,
+"cost": 0.6430283999999999,
+"turns": 23,
+"tools": {
+"Bash": 4,
+"Glob": 4,
+"Grep": 6,
+"Read": 6,
+"StructuredOutput": 1
+},
+"seconds": 53
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr01",
+"cond": "C",
+"truth": 3,
+"listed": 3,
+"hit": 3,
+"missed": [],
+"extra": [],
+"input": 26,
+"cache_write": 28481,
+"cache_read": 557868,
+"output": 3982,
+"cost": 0.4191656,
+"turns": 18,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Grep": 4,
+"Read": 3,
+"Bash": 2,
+"mcp__himotoki__search_elements": 1,
+"Glob": 1,
+"mcp__himotoki__neighbors": 1,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 45
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr02",
+"cond": "A",
+"truth": 3,
+"listed": 4,
+"hit": 3,
+"missed": [],
+"extra": [
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/report/SeikyushoReport.java"
+],
+"input": 30,
+"cache_write": 40946,
+"cache_read": 758593,
+"output": 6471,
+"cost": 0.6088266,
+"turns": 15,
+"tools": {
+"Bash": 12,
+"StructuredOutput": 1
+},
+"seconds": 70
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr02",
+"cond": "C",
+"truth": 3,
+"listed": 2,
+"hit": 2,
+"missed": [
+"docs/02_販売管理/帳票設計書/R_HAN040_請求書.xlsx"
+],
+"extra": [],
+"input": 26,
+"cache_write": 30215,
+"cache_read": 594071,
+"output": 4484,
+"cost": 0.4503182,
+"turns": 19,
+"tools": {
+"ToolSearch": 2,
+"mcp__himotoki__start_points": 1,
+"Grep": 1,
+"Read": 3,
+"Bash": 1,
+"Glob": 2,
+"mcp__himotoki__neighbors": 1,
+"mcp__himotoki__get_element": 3,
+"mcp__himotoki__audit_scope": 1,
+"mcp__himotoki__search_elements": 1,
+"StructuredOutput": 1
+},
+"seconds": 51
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr03",
+"cond": "A",
+"truth": 4,
+"listed": 7,
+"hit": 4,
+"missed": [],
+"extra": [
+"hanbai/sql/ddl/T_JUCHU_H.sql",
+"docs/02_販売管理/テーブル定義書/T_JUCHU_H_受注ヘッダ.xlsx",
+"docs/02_販売管理/基本設計書_販売管理.docx"
+],
+"input": 24,
+"cache_write": 43933,
+"cache_read": 588550,
+"output": 5000,
+"cost": 0.56927,
+"turns": 20,
+"tools": {
+"Bash": 5,
+"Read": 5,
+"Grep": 4,
+"Glob": 3,
+"StructuredOutput": 1
+},
+"seconds": 48
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr03",
+"cond": "C",
+"truth": 4,
+"listed": 4,
+"hit": 4,
+"missed": [],
+"extra": [],
+"input": 26,
+"cache_write": 27189,
+"cache_read": 564655,
+"output": 4349,
+"cost": 0.41752700000000004,
+"turns": 13,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Bash": 7,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 42
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr04",
+"cond": "A",
+"truth": 15,
+"listed": 37,
+"hit": 14,
+"missed": [
+"docs/05_会計連携/バッチ処理定義書_会計連携.xlsx"
+],
+"extra": [
+"kobai/src/main/resources/messages_kobai.properties",
+"kobai/src/main/java/jp/co/minato/kikan/kobai/bean/ShiharaiBean.java",
+"kobai/sql/ope/fb_resend.sql",
+"master/webapp/WEB-INF/jsp/master/shiire/shiireInput.jsp",
+"master/webapp/WEB-INF/jsp/master/shiire/shiireConfirm.jsp",
+"master/webapp/WEB-INF/jsp/master/shiire/shiireDetail.jsp",
+"master/src/main/java/jp/co/minato/kikan/master/shiire/ShiireEditAction.java",
+"master/webapp/WEB-INF/validation.xml",
+"master/sql/ddl/M_SHIIRE.sql",
+"master/sql/ddl/M_SHIIRE_RIREKI.sql",
+"docs/01_マスタ管理/テーブル定義書/M_KBN_区分マスタ.xlsx",
+"docs/01_マスタ管理/テーブル定義書/M_SHIIRE_仕入先マスタ.xlsx",
+"docs/01_マスタ管理/画面設計書/MST030_仕入先マスタメンテナンス.xlsx",
+"docs/03_購買管理/外部設計書_総合振込.docx",
+"docs/03_購買管理/画面仕様書/画面仕様書_KOB040_支払予定一覧.xlsx",
+"docs/03_購買管理/帳票設計書/R_KOB050_支払予定表.xlsx",
+"docs/03_購買管理/帳票設計書/R_KOB030_支払明細書.xlsx",
+"docs/03_購買管理/テーブル仕様書/テーブル仕様書_T_SHIHARAI.xlsx",
+"docs/03_購買管理/テーブル仕様書/テーブル仕様書_T_SHIHARAI_YOTEI.xlsx",
+"docs/05_会計連携/基本設計書_会計連携.docx",
+"docs/05_会計連携/table/M_KAMOKU.xlsx",
+"docs/05_会計連携/table/M_SHIWAKE_PTN.xlsx",
+"docs/05_会計連携/連携ファイル定義書/IF-KAI-001_会計仕訳連携.xlsx"
+],
+"input": 34,
+"cache_write": 82584,
+"cache_read": 1071496,
+"output": 12002,
+"cost": 1.1151472,
+"turns": 34,
+"tools": {
+"Bash": 2,
+"Grep": 10,
+"Read": 15,
+"Glob": 4,
+"StructuredOutput": 1
+},
+"seconds": 115
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr04",
+"cond": "C",
+"truth": 15,
+"listed": 20,
+"hit": 13,
+"missed": [
+"docs/00_共通/区分値一覧.xlsx",
+"docs/05_会計連携/バッチ処理定義書_会計連携.xlsx"
+],
+"extra": [
+"docs/03_購買管理/外部設計書_総合振込.docx",
+"docs/01_マスタ管理/テーブル定義書/M_KBN_区分マスタ.xlsx",
+"docs/01_マスタ管理/テーブル定義書/M_SHIIRE_仕入先マスタ.xlsx",
+"docs/01_マスタ管理/画面設計書/MST030_仕入先マスタメンテナンス.xlsx",
+"docs/05_会計連携/基本設計書_会計連携.docx",
+"docs/03_購買管理/テーブル仕様書/テーブル仕様書_T_SHIHARAI.xlsx",
+"docs/03_購買管理/テーブル仕様書/テーブル仕様書_T_SHIHARAI_YOTEI.xlsx"
+],
+"input": 36,
+"cache_write": 81669,
+"cache_read": 1264585,
+"output": 10615,
+"cost": 1.1187129999999998,
+"turns": 30,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Bash": 3,
+"Grep": 6,
+"Read": 7,
+"Glob": 2,
+"mcp__himotoki__search_elements": 3,
+"mcp__himotoki__audit_scope": 1,
+"mcp__himotoki__get_element": 3,
+"StructuredOutput": 1
+},
+"seconds": 102
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr05",
+"cond": "A",
+"truth": 24,
+"listed": 30,
+"hit": 22,
+"missed": [
+"docs/02_販売管理/バッチ処理定義書_販売管理.xlsx",
+"docs/04_在庫物流/バッチ処理定義書_在庫物流.xlsx"
+],
+"extra": [
+"common/src/main/java/jp/co/minato/kikan/common/constant/KbnConst.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/juchu/JuchuService.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/shukka/ShukkaShijiAction.java",
+"hanbai/webapp/WEB-INF/jsp/hanbai/shukkaShiji.jsp",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/batch/JuchuTorikomiBatch.java",
+"docs/02_販売管理/画面設計書/HAN030_出荷指示.xlsx",
+"docs/02_販売管理/基本設計書_販売管理.docx",
+"docs/04_在庫物流/基本設計書_在庫物流.docx"
+],
+"input": 52,
+"cache_write": 153961,
+"cache_read": 2624610,
+"output": 13085,
+"cost": 2.0185180000000003,
+"turns": 52,
+"tools": {
+"Bash": 3,
+"Read": 32,
+"Glob": 4,
+"Grep": 10,
+"StructuredOutput": 1
+},
+"seconds": 132
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr05",
+"cond": "C",
+"truth": 24,
+"listed": 27,
+"hit": 23,
+"missed": [
+"docs/00_共通/区分値一覧.xlsx"
+],
+"extra": [
+"common/src/main/java/jp/co/minato/kikan/common/constant/KbnConst.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/shukka/ShukkaShijiAction.java",
+"hanbai/webapp/WEB-INF/jsp/hanbai/shukkaShiji.jsp",
+"docs/02_販売管理/画面設計書/HAN030_出荷指示.xlsx"
+],
+"input": 40,
+"cache_write": 71709,
+"cache_read": 1249052,
+"output": 11649,
+"cost": 1.0566224,
+"turns": 32,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Bash": 2,
+"Grep": 8,
+"Glob": 4,
+"Read": 12,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 111
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr06",
+"cond": "A",
+"truth": 6,
+"listed": 22,
+"hit": 6,
+"missed": [],
+"extra": [
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/uriage/UriageForm.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/henpin/HenpinForm.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/uriage/UriageDao.java",
+"hanbai/src/main/java/jp/co/minato/kikan/hanbai/henpin/HenpinDao.java",
+"hanbai/webapp/WEB-INF/jsp/hanbai/uriage/uriageInput.jsp",
+"hanbai/webapp/WEB-INF/jsp/hanbai/uriage/uriageConfirm.jsp",
+"hanbai/webapp/WEB-INF/jsp/hanbai/uriage/uriageDetail.jsp",
+"hanbai/webapp/WEB-INF/jsp/hanbai/henpin/henpinConfirm.jsp",
+"hanbai/webapp/WEB-INF/jsp/hanbai/henpin/henpinDetail.jsp",
+"hanbai/sql/ddl/T_URIAGE_M.sql",
+"hanbai/sql/ddl/T_URIAGE_H.sql",
+"docs/02_販売管理/画面設計書/HAN040_売上入力.xlsx",
+"docs/02_販売管理/画面設計書/HAN050_返品入力.xlsx",
+"docs/02_販売管理/テーブル定義書/T_URIAGE_M_売上明細.xlsx",
+"docs/02_販売管理/テーブル定義書/T_URIAGE_H_売上ヘッダ.xlsx",
+"docs/00_共通/方式設計書.docx"
+],
+"input": 40,
+"cache_write": 113189,
+"cache_read": 1707633,
+"output": 11908,
+"cost": 1.4853585999999996,
+"turns": 38,
+"tools": {
+"Bash": 3,
+"Read": 18,
+"Glob": 3,
+"Grep": 11,
+"StructuredOutput": 1
+},
+"seconds": 122
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr06",
+"cond": "C",
+"truth": 6,
+"listed": 6,
+"hit": 5,
+"missed": [
+"docs/02_販売管理/バッチ処理定義書_販売管理.xlsx"
+],
+"extra": [
+"docs/02_販売管理/画面設計書/HAN040_売上入力.xlsx"
+],
+"input": 32,
+"cache_write": 81010,
+"cache_read": 824582,
+"output": 6115,
+"cost": 0.9354244,
+"turns": 26,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Grep": 6,
+"Read": 6,
+"Bash": 2,
+"mcp__himotoki__search_elements": 2,
+"mcp__himotoki__neighbors": 1,
+"mcp__himotoki__get_element": 3,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 65
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr07",
+"cond": "A",
+"truth": 7,
+"listed": 9,
+"hit": 7,
+"missed": [],
+"extra": [
+"docs/05_会計連携/画面設計書/KAI020_締め状況照会.xlsx",
+"docs/05_会計連携/CRUD表_会計連携.xlsx"
+],
+"input": 20,
+"cache_write": 33264,
+"cache_read": 428963,
+"output": 5593,
+"cost": 0.4638446,
+"turns": 22,
+"tools": {
+"Bash": 1,
+"Grep": 4,
+"Read": 9,
+"Glob": 5,
+"StructuredOutput": 1
+},
+"seconds": 56
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr07",
+"cond": "C",
+"truth": 7,
+"listed": 8,
+"hit": 7,
+"missed": [],
+"extra": [
+"docs/00_共通/共通メッセージ一覧.xlsx"
+],
+"input": 20,
+"cache_write": 24710,
+"cache_read": 383514,
+"output": 4328,
+"cost": 0.3610228,
+"turns": 12,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Grep": 2,
+"Bash": 3,
+"Glob": 1,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 45
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr08",
+"cond": "A",
+"truth": 100,
+"listed": 103,
+"hit": 99,
+"missed": [
+"kobai/src/main/resources/messages_kobai.properties"
+],
+"extra": [
+"docs/00_共通/テーブル定義書/T_SAIBAN_採番管理.xlsx",
+"docs/00_共通/方式設計書.docx",
+"docs/03_購買管理/基本設計書_購買管理.docx",
+"docs/01_マスタ管理/バッチ処理定義書_マスタ管理.xlsx"
+],
+"input": 70,
+"cache_write": 172985,
+"cache_read": 3871769,
+"output": 23693,
+"cost": 2.632373799999999,
+"turns": 49,
+"tools": {
+"Bash": 3,
+"Read": 19,
+"Grep": 24,
+"StructuredOutput": 1
+},
+"seconds": 229
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr08",
+"cond": "C",
+"truth": 100,
+"listed": 98,
+"hit": 98,
+"missed": [
+"docs/01_マスタ管理/基本設計書_マスタ管理.docx",
+"docs/06_EDI/画面設計書/EDI030_EDI取引先マスタメンテナンス.xlsx"
+],
+"extra": [],
+"input": 50,
+"cache_write": 114666,
+"cache_read": 1993121,
+"output": 21938,
+"cost": 1.7549122,
+"turns": 37,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Bash": 6,
+"Read": 11,
+"Grep": 8,
+"Glob": 2,
+"mcp__himotoki__neighbors": 1,
+"mcp__himotoki__search_elements": 3,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 190
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr09",
+"cond": "A",
+"truth": 22,
+"listed": 26,
+"hit": 20,
+"missed": [
+"docs/04_在庫物流/バッチ処理定義書_在庫物流.xlsx",
+"master/webapp/WEB-INF/jsp/master/shohin/shohinList.jsp"
+],
+"extra": [
+"master/src/main/resources/messages_master.properties",
+"edi/sql/ope/edi_err_saitorikomi.sql",
+"edi/src/main/resources/messages_edi.properties",
+"edi/src/main/java/jp/co/minato/kikan/edi/partner/T02HokuyoJuchuConverter.java",
+"edi/src/main/resources/layout/T02_JUCHU_D.properties",
+"docs/01_マスタ管理/基本設計書_マスタ管理.docx"
+],
+"input": 40,
+"cache_write": 99226,
+"cache_read": 1658671,
+"output": 11461,
+"cost": 1.3549221999999999,
+"turns": 37,
+"tools": {
+"Bash": 2,
+"Read": 20,
+"Glob": 3,
+"Grep": 9,
+"StructuredOutput": 1
+},
+"seconds": 110
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr09",
+"cond": "C",
+"truth": 22,
+"listed": 23,
+"hit": 20,
+"missed": [
+"docs/04_在庫物流/バッチ処理定義書_在庫物流.xlsx",
+"master/webapp/WEB-INF/validation.xml"
+],
+"extra": [
+"common/src/main/java/jp/co/minato/kikan/common/constant/MsgConst.java",
+"docs/01_マスタ管理/基本設計書_マスタ管理.docx",
+"docs/01_マスタ管理/CRUD表_マスタ管理.xlsx"
+],
+"input": 36,
+"cache_write": 46361,
+"cache_read": 989097,
+"output": 9932,
+"cost": 0.7674914,
+"turns": 24,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Bash": 5,
+"Grep": 7,
+"Read": 4,
+"Glob": 2,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 95
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr10",
+"cond": "A",
+"truth": 8,
+"listed": 9,
+"hit": 7,
+"missed": [
+"docs/00_共通/ジョブ一覧.xlsx"
+],
+"extra": [
+"edi/src/main/java/jp/co/minato/kikan/edi/partner/T04ChuoJuchuConverter.java",
+"edi/README.txt"
+],
+"input": 28,
+"cache_write": 44116,
+"cache_read": 742313,
+"output": 5909,
+"cost": 0.6196826000000001,
+"turns": 16,
+"tools": {
+"Bash": 7,
+"Read": 2,
+"Grep": 4,
+"StructuredOutput": 1
+},
+"seconds": 64
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr10",
+"cond": "C",
+"truth": 8,
+"listed": 7,
+"hit": 7,
+"missed": [
+"docs/00_共通/ジョブ一覧.xlsx"
+],
+"extra": [],
+"input": 28,
+"cache_write": 31656,
+"cache_read": 651150,
+"output": 5231,
+"cost": 0.48821000000000003,
+"turns": 17,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Grep": 3,
+"Bash": 3,
+"mcp__himotoki__search_elements": 3,
+"Glob": 1,
+"mcp__himotoki__audit_scope": 1,
+"mcp__himotoki__get_element": 1,
+"StructuredOutput": 1
+},
+"seconds": 59
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr11",
+"cond": "A",
+"truth": 12,
+"listed": 13,
+"hit": 12,
+"missed": [],
+"extra": [
+"master/webapp/WEB-INF/jsp/master/tokui/tokuiInput_old.jsp"
+],
+"input": 16,
+"cache_write": 23496,
+"cache_read": 307024,
+"output": 4748,
+"cost": 0.34439679999999995,
+"turns": 12,
+"tools": {
+"Grep": 3,
+"Bash": 1,
+"Glob": 1,
+"Read": 4,
+"StructuredOutput": 1
+},
+"seconds": 45
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr11",
+"cond": "C",
+"truth": 12,
+"listed": 12,
+"hit": 12,
+"missed": [],
+"extra": [],
+"input": 22,
+"cache_write": 29626,
+"cache_read": 464226,
+"output": 5596,
+"cost": 0.4418612,
+"turns": 16,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Grep": 3,
+"Bash": 2,
+"Glob": 1,
+"mcp__himotoki__neighbors": 1,
+"Read": 3,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 56
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr12",
+"cond": "A",
+"truth": 49,
+"listed": 56,
+"hit": 49,
+"missed": [],
+"extra": [
+"master/src/main/resources/jp/co/minato/kikan/master/mapper/ShiireTankaMapper.xml",
+"kobai/webapp/WEB-INF/jsp/kobai/hacchu/hacchuConfirm.jsp",
+"edi/src/main/resources/layout/S01_HACCHU.properties",
+"docs/01_マスタ管理/画面設計書/MST170_仕入先別仕入単価照会.xlsx",
+"docs/01_マスタ管理/バッチ処理定義書_マスタ管理.xlsx",
+"docs/06_EDI/IF定義/IF-EDI-S01_大和製菓発注(JCA).xlsx",
+"docs/06_EDI/画面設計書/EDI060_EDI発注データ照会.xlsx"
+],
+"input": 58,
+"cache_write": 127930,
+"cache_read": 2792342,
+"output": 19576,
+"cost": 1.9736604000000002,
+"turns": 65,
+"tools": {
+"Bash": 2,
+"Read": 38,
+"Glob": 4,
+"Grep": 18,
+"StructuredOutput": 1
+},
+"seconds": 187
+},
+{
+"run": "/home/claude/compare/l-r3",
+"task": "cr12",
+"cond": "C",
+"truth": 49,
+"listed": 51,
+"hit": 48,
+"missed": [
+"docs/03_購買管理/バッチ処理定義書_購買管理.xlsx"
+],
+"extra": [
+"kobai/webapp/WEB-INF/jsp/kobai/hacchu/hacchuConfirm.jsp",
+"docs/01_マスタ管理/画面設計書/MST170_仕入先別仕入単価照会.xlsx",
+"docs/06_EDI/画面設計書/EDI060_EDI発注データ照会.xlsx"
+],
+"input": 44,
+"cache_write": 124238,
+"cache_read": 1624334,
+"output": 17310,
+"cost": 1.6651468,
+"turns": 35,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"Bash": 4,
+"Grep": 12,
+"Read": 10,
+"Glob": 3,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 151
+}
+]
