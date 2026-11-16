@@ -20,7 +20,7 @@ from ..pipeline.sqlparams import routine_params
 from ..text import decode_source, words
 
 NAME = "sql"
-VERSION = "4"
+VERSION = "5"
 
 KEYWORDS = set("""select from where and or not in is null as on join left right inner outer full cross group by
 order having union all distinct insert into values update set delete merge using when then else end case
@@ -393,10 +393,14 @@ def extract(path: str, data: bytes, rules) -> FileFacts:
             continue
         if re.match(r"\s*(insert|update|delete|merge)\b", body, re.I):
             a = analyze(body, dialect)
+            # data put in with literal values (initial / master data, a data patch) populates the
+            # table; a statement with parameters or reading other tables is processing that writes it
+            seed = not re.search(r"\?|#\{|#\w+#|/\*\s*\w+\s*\*/|(?<![:\w]):[A-Za-z_]\w*|&\w+", body) and \
+                not re.search(r"\bselect\b", body, re.I)
             for t, ops in a["tables"].items():
                 if ops & {"C", "U", "D"}:
-                    f.ref(fid, f"table:{t}", Rel.POPULATES, 1.0, line, via="dml", positional=a["positional"],
-                          ops="".join(sorted(ops)))
+                    f.ref(fid, f"table:{t}", Rel.POPULATES if seed else Rel.WRITES, 1.0 if seed else 0.9, line,
+                          via="dml", positional=a["positional"], ops="".join(sorted(ops)))
             continue
         if re.match(r"\s*(select|with)\b", body, re.I):
             crud_refs(f, fid, body, line, via="query", dialect=dialect)

@@ -22,7 +22,7 @@ JAVA = Language(tree_sitter_java.language())
 BRANCH_TYPES = {"if_statement", "for_statement", "enhanced_for_statement", "while_statement", "do_statement",
                 "catch_clause", "switch_label", "ternary_expression"}
 NAME = "java"
-VERSION = "5"
+VERSION = "6"
 _parser = None
 
 
@@ -293,6 +293,10 @@ def _method_body(body) -> dict:
                     "a": len(args.named_children) if args else 0, "l": line}
             if in_loop:
                 call["loop"] = True
+            if args is not None and len(args.named_children) > 0:
+                # argument names, for telling overloads apart at link time (types are known there)
+                call["an"] = [_t(x) if x.type == "identifier" else (
+                    "<str>" if x.type == "string_literal" else "") for x in args.named_children]
             out["calls"].append(call)
         elif t == "string_literal":
             sv = _str(cur)

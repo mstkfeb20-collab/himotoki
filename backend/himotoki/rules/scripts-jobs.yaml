@@ -14,9 +14,11 @@ text:
       # name on a command line (comments excluded); only names of indexed classes resolve
       - {regex: '(?m)^[ \t]*[^#\n]*?[\s"''=]((?:[a-z_][\w]*\.){2,}[A-Z]\w+)(?=[\s"'';]|$)', key: "class:{1}", rel: RUNS, conf: 0.75}
       - {regex: 'CommandLineJobRunner\s+(\S+)\s+([\w\-]+)', key: "batchjob:{2}", rel: RUNS, conf: 0.95}
-      - {regex: '(?:sqlplus|sqlcl)\b[^\n]*@\s*"?([\w./${}\-]+\.sql)', key: "file:{1}", rel: RUNS, conf: 0.85}
-      - {regex: '\bpsql\b[^\n]*\s-f\s+"?([\w./${}\-]+\.sql)', key: "file:{1}", rel: RUNS, conf: 0.85}
-      - {regex: '(?:^|[\s;&|(`])(?:sh|bash|ksh|\.)?\s*"?([\w./${}\-]+\.(?:sh|ksh|bash))\b', key: "file:{1}", rel: RUNS, conf: 0.8}
+      - {regex: '(?:sqlplus|sqlcl)\b[^\n]*@\s*"?([\w./${}\-]+\.sql)', key: "file:{1}", rel: EXECUTES, conf: 0.85}
+      - {regex: '\bpsql\b[^\n]*\s-f\s+"?([\w./${}\-]+\.sql)', key: "file:{1}", rel: EXECUTES, conf: 0.85}
+      # `. common.sh` / `source common.sh` takes in functions and settings: not a run
+      - {regex: '(?m)^[ \t]*(?:\.|source)[ \t]+"?([\w./${}\-]+\.(?:sh|ksh|bash|env|conf))\b', key: "file:{1}", rel: INCLUDES, conf: 0.9}
+      - {regex: '(?m)^(?![ \t]*(?:\.|source)[ \t])[^#\n]*?(?:^|[\s;&|(`])(?:sh|bash|ksh)?\s*"?([\w./${}\-]+\.(?:sh|ksh|bash))\b', key: "file:{1}", rel: RUNS, conf: 0.8}
       - {regex: '>>?\s*"?([\w./${}\-]+\.(?:dat|csv|tsv|txt|fix|out))\b', key: "datafile:{1}", rel: WRITES, conf: 0.8}
       - {regex: '(?:<|\bcat\b|\bcp\b|\bmv\b|-i\s|--input[= ]|IN_FILE=|INPUT=)\s*"?([\w./${}\-]+\.(?:dat|csv|tsv|txt|fix))\b', key: "datafile:{1}", rel: READS, conf: 0.7}
       - {regex: '\b(?:psql|sqlplus)\b[^\n]*?\s-c\s+"([^"]+)"', key: "{1}", sql: true, conf: 0.85}

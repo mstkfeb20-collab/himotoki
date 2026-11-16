@@ -93,3 +93,10 @@ def test_length_facts_flag_differences(store):
     assert ("DDL", "10", False) in by and ("入力チェック", "10", False) in by
     assert ("画面", "8", True) in by and ("連携レイアウト", "8", True) in by
     assert lf["mismatch"]
+
+
+def test_a_column_name_shared_by_tables_goes_only_where_the_context_points(store):
+    # SHOHIN_CD exists in M_SHOHIN and T_SHOHIN_RIREKI: the layout names M_SHOHIN, the report queries it
+    for src in ("layout:if/layout/SHOHIN_layout.txt#SHOHIN_CD", "xml:report/R_ABC030.xml#4:field"):
+        dsts = {e.dst for e in store.out_edges(src) if e.dst.startswith("col:")}
+        assert dsts == {"col:m_shohin.shohin_cd"}, (src, dsts)

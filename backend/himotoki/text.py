@@ -51,7 +51,7 @@ def singular(word: str) -> str:
     return w
 
 
-_ID_RX = re.compile(r"(?<![A-Za-z0-9])([A-Za-z]{1,8}(?:[-_][A-Za-z]{1,8}){0,2}[-_]?\d{2,6}(?:[A-Z](?![a-z]))?)(?![0-9])")
+_ID_RX = re.compile(r"(?<![A-Za-z0-9])([A-Za-z]{1,8}(?:[-_][A-Za-z]{1,8}){0,2}[-_]?\d{2,6}(?:[-_][A-Za-z]{0,3}\d{1,4})*(?:[A-Z](?![a-z]))?)(?![0-9])")
 
 
 def system_ids(text: str) -> list[str]:

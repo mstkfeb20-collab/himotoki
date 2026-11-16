@@ -95,13 +95,20 @@ class Linker:
             self.add_edge(e["src"], e["dst"], e["rel"], e["props"])
         self.java = jr
         later = []
+        self._amb = []                       # column names that several tables have, settled by context
         for f in facts_list:
             for r in f.refs:
                 if r["key"].lower().startswith(DEFERRED):
                     later.append(r)
                     continue
+                if self._ambiguous_col(r["key"], r.get("props")):
+                    self._amb.append(("ref", r, f.path))
+                    continue
                 self._resolve_ref(r)
             for lk in f.payload.get("links", []):
+                if self._ambiguous_col(lk["to"], None):
+                    self._amb.append(("link", lk, f.path))
+                    continue
                 a = self.resolve_key(lk["from"])
                 b = self.resolve_key(lk["to"])
                 for sa, ca in a:
@@ -113,6 +120,7 @@ class Linker:
                     self._miss(lk["from"] if not a else lk["to"], lk.get("via", ""), f.path)
         for r in later:
             self._resolve_ref(r)
+        self._settle_ambiguous()
         self._value_flow()
         runtime = self._match_runtime()
         drift = self._drift()
@@ -502,6 +510,76 @@ class Linker:
             if k in self.keys and len(self.keys[k]) <= 3:
                 return [(h, 0.7) for h in self.keys[k]]
         return self._ns_sysid(v, props)
+
+    # ------------------------------------------------------------ same column name, several tables
+    def _ambiguous_col(self, key: str, props) -> bool:
+        if not key.lower().startswith("colany:") or (props or {}).get("tables"):
+            return False
+        return len(self.cols_by_name.get(key.split(":", 1)[1].lower(), [])) > 1
+
+    def _group(self, src_id: str, path: str) -> str:
+        """Where the context of a reference is shared: the sheet of a document row, else the file."""
+        if src_id.startswith("doc:") and "!" in src_id:
+            return src_id.split("!", 1)[0]
+        return path
+
+    def _settle_ambiguous(self):
+        """A column written without its table (CUST_CD in a design sheet, a layout, a report
+        field, a resultMap) is linked only to the table its context points to: a table named
+        in the file or sheet name, else the table the other references of the same sheet /
+        file go to. Without such a context it is not linked at all, rather than linked to
+        every table that has a column of that name; those are counted as ambiguous."""
+        if not self._amb:
+            return
+        votes = defaultdict(Counter)
+        for e in self.edges.values():
+            sn = self.nodes.get(e.src)
+            if sn is None or not sn.file:
+                continue
+            t = e.dst[6:] if e.dst.startswith("table:") else e.dst[4:].rsplit(".", 1)[0] if e.dst.startswith("col:") else None
+            if t:
+                votes[self._group(e.src, sn.file)][t] += 1
+                if self._group(e.src, sn.file) != sn.file:
+                    votes[sn.file][t] += 0.25
+        # second opinion: the table that has the most of the columns this sheet / file names
+        cover = defaultdict(Counter)
+        for kind, r, path in self._amb:
+            key = r["key"] if kind == "ref" else r["to"]
+            sid = r["src"] if kind == "ref" else path
+            for c in self.cols_by_name.get(key.split(":", 1)[1].lower(), []):
+                cover[self._group(sid, path)][c[4:].rsplit(".", 1)[0]] += 1
+        self.ambiguous = Counter()
+        for kind, r, path in self._amb:
+            key = r["key"] if kind == "ref" else r["to"]
+            src_ids = [r["src"]] if kind == "ref" else [x for x, _ in self.resolve_key(r["from"])]
+            if not src_ids:
+                continue
+            col = key.split(":", 1)[1].lower()
+            cands = self.cols_by_name.get(col, [])
+            tables = {c[4:].rsplit(".", 1)[0]: c for c in cands if c.startswith("col:")}
+            ctx = " ".join([path, src_ids[0], str((r.get("props") or {}).get("context", ""))]).lower()
+            named = [t for t in tables if re.search(rf"(?<![a-z0-9]){re.escape(t)}(?![a-z0-9])", ctx)]
+            pick = named
+            if not pick:
+                g = self._group(src_ids[0] if kind == "ref" else path, path)
+                v = votes.get(g) or votes.get(path) or Counter()
+                cv = cover.get(g) or Counter()
+                scored = sorted(((v.get(t, 0), cv.get(t, 0), t) for t in tables), reverse=True)
+                if scored and (scored[0][0] > 0 or scored[0][1] > 1) and \
+                        (len(scored) == 1 or scored[0][:2] > scored[1][:2]):
+                    pick = [scored[0][2]]
+            if len(pick) != 1:
+                self.ambiguous[path] += 1
+                continue
+            target = tables[pick[0]]
+            if kind == "ref":
+                rr = dict(r)
+                rr["key"] = f"column:{pick[0]}.{col}"
+                self._resolve_ref(rr)
+            else:
+                for sa, ca in self.resolve_key(r["from"]):
+                    self.add_edge(sa, target, r["rel"], {"conf": round(r["conf"] * ca, 3), "src": r.get("src_kind", "rule"),
+                                                         "via": r.get("via"), "line": r.get("line")})
 
     def out_edges_of(self, nid: str):
         if not hasattr(self, "_out_idx"):

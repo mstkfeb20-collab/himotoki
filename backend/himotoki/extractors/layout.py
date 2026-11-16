@@ -17,7 +17,7 @@ from ..text import decode_source, words
 from .text import _glob_rx
 
 NAME = "layout"
-VERSION = "1"
+VERSION = "2"
 
 DATA_EXT = r"(?:dat|csv|tsv|txt|fix|fixed|seq|lst|prn|gz|zip)"
 _NAME_H = re.compile(r"(?i)^(項目名?\(?物理\)?|物理名|物理項目名|項目ID|フィールド名?|field(_?name)?|name|項目名称?|カラム名?|column)$")
@@ -143,6 +143,7 @@ def extract(path: str, data: bytes, rules) -> FileFacts:
     base = path.rsplit("/", 1)[-1]
     f.node(fid, Kind.CONFIG, base, 1, src.count("\n") + 1, words(path) + " " + re.sub(r"\s+", " ", src)[:3000],
            keys=[fid], layout=True, fields=len(fields))
+    head = re.sub(r"\s+", " ", src[:400])          # a table named in the layout's heading settles same-name columns
     total = 0
     for fl in fields:
         nid = f"layout:{path}#{fl['name']}"
@@ -153,7 +154,8 @@ def extract(path: str, data: bytes, rules) -> FileFacts:
         f.edge(fid, nid, Rel.CONTAINS, 1.0, "parser")
         col = fl["name"].replace("-", "_").lower()
         extra = {"length": str(fl["length"])} if fl.get("length") else {}
-        f.ref(nid, f"colany:{col}", Rel.MAPS_TO, 0.75, fl["line"], via="layout", optional=True, **extra)
+        f.ref(nid, f"colany:{col}", Rel.MAPS_TO, 0.75, fl["line"], via="layout", optional=True,
+              context=head, **extra)
         total = max(total, (fl.get("start") or 0) + (fl.get("length") or 0) - 1)
     named = set()
     for m in re.finditer(r"([\w$.{}\-]+\." + DATA_EXT + r")\b", src):

@@ -205,6 +205,36 @@ class JavaResolver:
                     return ra
         return None
 
+    def _overload(self, c, m, ms, names):
+        """Overloads with the same number of parameters: keep those whose parameter types
+        fit the declared types of the arguments (a local, a parameter, a field, a literal)."""
+        local = {p[1]: p[0] for p in m["params"]}
+        local.update(m.get("locals", {}))
+        fields = self.fields(c["fqn"])
+        simple = lambda t: re.sub(r"<.*>|\[\]|.*\.", "", t or "").strip()
+        known = []
+        for n in names:
+            if n == "<str>":
+                known.append("String")
+            elif n in local:
+                known.append(simple(local[n]))
+            elif n in fields:
+                known.append(simple(fields[n][1].get("type")))
+            else:
+                known.append(None)
+        if not any(known):
+            return None
+        out = []
+        for o, tm in ms:
+            ps = [simple(p[0]) for p in tm["params"]]
+            if len(ps) != len(known):
+                continue
+            if all(k is None or k == p or p in ("Object", "T") or
+                   (self.resolve(k, c) and self.resolve(p, self.cls[o]) in self.ancestors(self.resolve(k, c)))
+                   for k, p in zip(known, ps)):
+                out.append((o, tm))
+        return out
+
     def _method(self, c, m):
         mid = self.mid(c["fqn"], m)
         fields = self.fields(c["fqn"])
@@ -236,11 +266,14 @@ class JavaResolver:
             if not rt or rt not in self.cls:
                 continue
             ms = self.methods(rt, call["n"], call["a"])
+            if len(ms) > 1 and call.get("an"):
+                ms = self._overload(c, m, ms, call["an"]) or ms
             if ms:
                 exact = any(len(x[1]["params"]) == call["a"] for x in ms)
                 for o, tm in ms[:3]:
                     self.add(mid, self.mid(o, tm), Rel.CALLS, 0.95 if exact else 0.7, line=call["l"])
-            else:
+            elif rt != c["fqn"] and rt not in self.ancestors(c["fqn"]):
+                # an unresolved method of another class (inherited from a library) still names it
                 self.add(mid, f"java:{rt}", Rel.REFERENCES, 0.8, line=call["l"], call=call["n"])
             am = re.match(r"(get|set|is|has)([A-Z]\w*)", call["n"])
             if am:
@@ -331,7 +364,9 @@ class JavaResolver:
                     break
             base = re.sub(r"Impl$", "", base) if base not in self.by_simple else base
             target = self.resolve(base, c)
-            if target and not self.cls[target]["is_test"]:
+            uses = {r for m in c["methods"] for r in m.get("_refd", ())}
+            if target and not self.cls[target]["is_test"] and target in uses:
+                # the name says what it tests only when the test actually uses that class
                 self.add(f"java:{fqn}", f"java:{target}", Rel.TESTS, 0.9, via="naming")
             for m in c["methods"]:
                 for r in m.get("_refd", ()):
