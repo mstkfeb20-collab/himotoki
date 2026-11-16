@@ -1,0 +1,377 @@
+[
+ {
+  "n": 1074,
+  "verdict": "correct",
+  "note": "MST130一覧4行目 税率区分(ZEIRITSU_KBN)、主テーブルM_ZEIRITSU"
+ },
+ {
+  "n": 1075,
+  "verdict": "correct",
+  "note": "T_MITSUMORI_H定義書11行目にMITSU_DATE"
+ },
+ {
+  "n": 1076,
+  "verdict": "correct",
+  "note": "M_ZEIRITSU定義書18行目にKOSHIN_PG"
+ },
+ {
+  "n": 1077,
+  "verdict": "correct",
+  "note": "M_SHIIRE定義書36行目にKOSHIN_USER"
+ },
+ {
+  "n": 1078,
+  "verdict": "correct",
+  "note": "T_SHIME_KANRI定義9行目にSAKUSEI_SHA"
+ },
+ {
+  "n": 1079,
+  "verdict": "correct",
+  "note": "M_SHOHIN定義書30行目にKOSHIN_DATE"
+ },
+ {
+  "n": 1080,
+  "verdict": "correct",
+  "note": "10行目 . /opt/kikan/shell/common_func.sh"
+ },
+ {
+  "n": 1081,
+  "verdict": "correct",
+  "note": "9行目 . /opt/kikan/shell/kikan_env.sh"
+ },
+ {
+  "n": 1082,
+  "verdict": "correct",
+  "note": "9行目 . kikan_env.sh"
+ },
+ {
+  "n": 1083,
+  "verdict": "correct",
+  "note": "10行目 . common_func.sh"
+ },
+ {
+  "n": 1084,
+  "verdict": "correct",
+  "note": "9行目 . kikan_env.sh"
+ },
+ {
+  "n": 1085,
+  "verdict": "correct",
+  "note": "10行目 . common_func.sh"
+ },
+ {
+  "n": 1086,
+  "verdict": "correct",
+  "note": "9行目 . kikan_env.sh"
+ },
+ {
+  "n": 1087,
+  "verdict": "correct",
+  "note": "9行目 . kikan_env.sh"
+ },
+ {
+  "n": 1088,
+  "verdict": "correct",
+  "note": "WmsIdoShijiOutBatchでm.ido_suryo(T_ZAIKO_IDO_M)を出力"
+ },
+ {
+  "n": 1089,
+  "verdict": "correct",
+  "note": "WmsShohinOutBatchでm_shohin.shohin_kanaを出力"
+ },
+ {
+  "n": 1090,
+  "verdict": "correct",
+  "note": "V_WMS_SHUKKA_SHIJIのyubin_noはm_nonyu(n.yubin_no)由来"
+ },
+ {
+  "n": 1091,
+  "verdict": "correct",
+  "note": "WmsNyukaYoteiOutBatchでt_nyuka_yotei.shohin_cdを出力"
+ },
+ {
+  "n": 1092,
+  "verdict": "correct",
+  "note": "ビューのshiji_suryoはt_shukka_m(sm.shiji_suryo)由来"
+ },
+ {
+  "n": 1093,
+  "verdict": "correct",
+  "note": "ZAIB060 ctlでNYUKA_YOTEI_NOをT_WMS_NYUKA_WKへロード"
+ },
+ {
+  "n": 1094,
+  "verdict": "correct",
+  "note": "ビューのgyo_noはt_shukka_m(sm.gyo_no)由来"
+ },
+ {
+  "n": 1095,
+  "verdict": "partial",
+  "note": "ビューのshukka_yotei_dateはt_shukka_h(sh.)由来。t_juchu_hにも同名列はあるが別"
+ },
+ {
+  "n": 1096,
+  "verdict": "correct",
+  "note": "M_ZEIRITSUエンティティ tekiyoShuryoDate、DDLに列あり"
+ },
+ {
+  "n": 1097,
+  "verdict": "correct",
+  "note": "M_HANBAI_TANKAエンティティ torokuDate、DDLに列あり"
+ },
+ {
+  "n": 1098,
+  "verdict": "correct",
+  "note": "M_HANBAI_TANKAエンティティ tekiyoKaishiDate、DDLに列あり"
+ },
+ {
+  "n": 1099,
+  "verdict": "correct",
+  "note": "M_EDI_SHOHIN_HENKANエンティティ shohinCd、DDLに列あり"
+ },
+ {
+  "n": 1100,
+  "verdict": "correct",
+  "note": "M_EDI_TORIHIKISAKIエンティティ koshinSha、DDLに列あり"
+ },
+ {
+  "n": 1101,
+  "verdict": "correct",
+  "note": "M_KAMOKUエンティティ delFlg、DDLに列あり"
+ },
+ {
+  "n": 1102,
+  "verdict": "correct",
+  "note": "M_LOCATIONエンティティ sokoCd、DDLに列あり"
+ },
+ {
+  "n": 1103,
+  "verdict": "correct",
+  "note": "M_EDI_SHOHIN_HENKANエンティティ aiteShohinCd、DDLに列あり"
+ },
+ {
+  "n": 1104,
+  "verdict": "correct",
+  "note": "移行SQL 11行目 UPDATE T_JUCHU_M SET ZEIRITSU_KBN='1'（リテラル）"
+ },
+ {
+  "n": 1105,
+  "verdict": "correct",
+  "note": "DELETE後にリテラルINSERTで区分マスタ初期データ投入"
+ },
+ {
+  "n": 1106,
+  "verdict": "partial",
+  "note": "W_SHIIRE_TANKAへのUPDATEはバッチのチェック処理（ERR_MSG設定）で投入SQLではない。WRITESが妥当"
+ },
+ {
+  "n": 1107,
+  "verdict": "correct",
+  "note": "M_JISHAへリテラルINSERT"
+ },
+ {
+  "n": 1108,
+  "verdict": "correct",
+  "note": "移行SQL 4行目 UPDATE T_NYUKIN SET ...=0,'0'（リテラル）"
+ },
+ {
+  "n": 1109,
+  "verdict": "correct",
+  "note": "m_edi_torihikisakiへリテラルINSERT 6件"
+ },
+ {
+  "n": 1110,
+  "verdict": "correct",
+  "note": "DELETE後T_SAIBANへリテラルINSERT"
+ },
+ {
+  "n": 1111,
+  "verdict": "correct",
+  "note": "M_ZEIRITSUへリテラルINSERT/UPDATE"
+ },
+ {
+  "n": 1112,
+  "verdict": "correct",
+  "note": "コンストラクタ22行目 this.length = length"
+ },
+ {
+  "n": 1113,
+  "verdict": "correct",
+  "note": "getDelFlg()がdelFlgを返す"
+ },
+ {
+  "n": 1114,
+  "verdict": "correct",
+  "note": "80行目 new UriageDao(con)"
+ },
+ {
+  "n": 1115,
+  "verdict": "correct",
+  "note": "setZeiGakuでthis.zeiGakuに代入"
+ },
+ {
+  "n": 1116,
+  "verdict": "correct",
+  "note": "clearMeisai内 meisaiZeiGaku[i]=null"
+ },
+ {
+  "n": 1117,
+  "verdict": "correct",
+  "note": "calcZeiで定数ZEIRITSUを使用"
+ },
+ {
+  "n": 1118,
+  "verdict": "correct",
+  "note": "33行目 new EdiShohinHenkanService(session)"
+ },
+ {
+  "n": 1119,
+  "verdict": "correct",
+  "note": "getTantoCd()がtantoCdを返す"
+ },
+ {
+  "n": 1120,
+  "verdict": "correct",
+  "note": "ShiharaiMeisaishoReportでY.SHIME_DATE(T_SHIHARAI_YOTEI)をSHIME_DATE項目に設定"
+ },
+ {
+  "n": 1121,
+  "verdict": "correct",
+  "note": "web.xml 44行目 servlet-classにNyukaJissekiListServlet"
+ },
+ {
+  "n": 1122,
+  "verdict": "correct",
+  "note": "UriageNippoReportでH.ZEINUKI_KINGAKU(T_URIAGE_H)を設定"
+ },
+ {
+  "n": 1123,
+  "verdict": "correct",
+  "note": "web.xml 7行目 filter-classにEncodingFilter"
+ },
+ {
+  "n": 1124,
+  "verdict": "partial",
+  "note": "ShiireIchiranReportのZEI_GAKUはM.ZEI_GAKU(T_SHIIRE_M)由来。T_SHIIRE_Hの同名列ではない"
+ },
+ {
+  "n": 1125,
+  "verdict": "correct",
+  "note": "UrikakeZanListReportでZ.NYUKIN_GAKU(T_URIKAKE_ZAN)を設定"
+ },
+ {
+  "n": 1126,
+  "verdict": "partial",
+  "note": "R_HAN060(TokuiUriageGeppoReport)のTOKUI_CDはT_URIAGE_H由来。T_URIKAKE_ZANではない(それはR_HAN090)"
+ },
+ {
+  "n": 1127,
+  "verdict": "correct",
+  "note": "NohinshoReportでN.NONYU_NM(M_NONYU)を設定"
+ },
+ {
+  "n": 1128,
+  "verdict": "correct",
+  "note": "run_java jp.co.minato.kikan.edi.batch.AsnSakuseiBatch"
+ },
+ {
+  "n": 1129,
+  "verdict": "correct",
+  "note": "java ... master.batch.ShiireIchiranBatch"
+ },
+ {
+  "n": 1130,
+  "verdict": "correct",
+  "note": "run_java master.batch.TokuiIchiranBatch"
+ },
+ {
+  "n": 1131,
+  "verdict": "correct",
+  "note": "run_java zaiko.batch.WmsNyukaYoteiOutBatch"
+ },
+ {
+  "n": 1132,
+  "verdict": "correct",
+  "note": "run_java hanbai.batch.NohinshoBatch"
+ },
+ {
+  "n": 1133,
+  "verdict": "partial",
+  "note": "ctlはsqlldrの制御ファイルとして指定（起動対象はsqlldr）。RUNSではなく参照/実行に近い"
+ },
+ {
+  "n": 1134,
+  "verdict": "correct",
+  "note": "java ... master.batch.ShohinIchiranBatch"
+ },
+ {
+  "n": 1135,
+  "verdict": "correct",
+  "note": "java ... zaiko.batch.UkeharaihyoBatch"
+ },
+ {
+  "n": 1136,
+  "verdict": "correct",
+  "note": "StringUtil.padRight/zeroPadをテスト"
+ },
+ {
+  "n": 1137,
+  "verdict": "correct",
+  "note": "TaxCalcUtil.calcZeiをテスト"
+ },
+ {
+  "n": 1138,
+  "verdict": "correct",
+  "note": "DateUtil.getGetsumatsu等をテスト"
+ },
+ {
+  "n": 1139,
+  "verdict": "correct",
+  "note": "KobaiCheck.isShiireCd等をテスト"
+ },
+ {
+  "n": 1140,
+  "verdict": "correct",
+  "note": "new T03HanamaruJuchuConverter().convert()をテスト"
+ },
+ {
+  "n": 1141,
+  "verdict": "correct",
+  "note": "t_zaikoへINSERT...SELECT(t_zaiko_oldから移行)"
+ },
+ {
+  "n": 1142,
+  "verdict": "correct",
+  "note": "5行目等 UPDATE W_SHIIRE_TANKA SET ERR_MSG"
+ },
+ {
+  "n": 1143,
+  "verdict": "correct",
+  "note": "UPDATE T_SHIHARAI_YOTEI SET FB_SAKUSEI_FLG='0' WHERE ...='&1'"
+ },
+ {
+  "n": 1144,
+  "verdict": "correct",
+  "note": "UPDATE W_HANBAI_TANKA SET ERR_MSG"
+ },
+ {
+  "n": 1145,
+  "verdict": "correct",
+  "note": "6行目 UPDATE T_NYUKIN"
+ },
+ {
+  "n": 1146,
+  "verdict": "correct",
+  "note": "insert into t_tanaoroshi ... select from t_zaiko"
+ },
+ {
+  "n": 1147,
+  "verdict": "correct",
+  "note": "update t_shukka_h set wms_soshin_flg='0'"
+ },
+ {
+  "n": 1148,
+  "verdict": "correct",
+  "note": "8行目 update t_zaiko set nyuka_yotei_suryo"
+ }
+]

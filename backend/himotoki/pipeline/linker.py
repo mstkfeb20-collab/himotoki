@@ -625,6 +625,8 @@ class Linker:
     def _ns_sysid(self, v, props):
         """A screen / job / program / interface ID (HZK-G010, KOBB090, IF_ZAI_005) names the
         files and jobs that carry it in their name, whatever the spelling of separators."""
+        if "!" in str((props or {}).get("_src", "")).split("#", 1)[-1]:
+            return []          # a row of a sheet is about one item, not every file of the screen ID it repeats
         ids = system_ids(v)
         if len(ids) != 1:
             return []

@@ -132,7 +132,7 @@ def test_transfer_script_directions():
     for want in (("READS", "datafile:/data/out/a.csv"), ("WRITES", "datafile:/recv/b.csv"),
                  ("READS", "datafile:/send/c.csv"), ("WRITES", "datafile:/data/in/d.csv"),
                  ("READS", "datafile:/data/out/e.csv"), ("WRITES", "datafile:/recv/f.csv"),
-                 ("RUNS", "file:/app/x.ctl"), ("READS", "datafile:/data/in/g.csv")):
+                 ("EXECUTES", "file:/app/x.ctl"), ("READS", "datafile:/data/in/g.csv")):
         assert want in got, want
 
 

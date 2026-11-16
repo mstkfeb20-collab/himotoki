@@ -1,0 +1,372 @@
+[
+ {
+  "n": 1000,
+  "verdict": "correct",
+  "note": "doExecute内27行目で frm.getKeiyakuYmdM() を呼び出し"
+ },
+ {
+  "n": 1001,
+  "verdict": "correct",
+  "note": "henko内37行目で findKokyaku(dto.kokyakuId) を呼び出し"
+ },
+ {
+  "n": 1002,
+  "verdict": "correct",
+  "note": "execute のcatch内で e.getArgs() を呼び出し"
+ },
+ {
+  "n": 1003,
+  "verdict": "correct",
+  "note": "irai内で p.setAtena(s.getKeiyakushaNm()) を呼び出し"
+ },
+ {
+  "n": 1004,
+  "verdict": "correct",
+  "note": "callKaiyakuToroku内64行目で継承元BaseDaoの getConnection() を呼び出し"
+ },
+ {
+  "n": 1005,
+  "verdict": "correct",
+  "note": "torokuKeiyaku内64行目で dto.getHihokensha() を呼び出し"
+ },
+ {
+  "n": 1006,
+  "verdict": "correct",
+  "note": "insert内85行目で d.getMeiKana() を呼び出し"
+ },
+ {
+  "n": 1007,
+  "verdict": "correct",
+  "note": "search内52行目で form.getPageNo() を呼び出し"
+ },
+ {
+  "n": 1008,
+  "verdict": "wrong",
+  "note": "B36は「削除(lines[].delFlg)」行。旧アクションKyk0201ConfirmActionOldはdelFlgを扱わずこの行との関係なし"
+ },
+ {
+  "n": 1009,
+  "verdict": "correct",
+  "note": "画面一覧にKYK0901 応対履歴登録 /kyk0901/input があり、OtaiRirekiControllerのGET /inputに対応"
+ },
+ {
+  "n": 1010,
+  "verdict": "partial",
+  "note": "B7は契約番号(keiyakuNo)行。kyk0201_old.jspは未使用の旧画面で契約番号項目なし。対応は現行kyk0201.jsp"
+ },
+ {
+  "n": 1011,
+  "verdict": "wrong",
+  "note": "B20は払込方法(haraikomiHohoKbn/ラジオ)行。Kyk0201Helperは払込回数等のプルダウンリスト設定のみで払込方法を扱わない"
+ },
+ {
+  "n": 1012,
+  "verdict": "correct",
+  "note": "B11は姓カナ(seiKana)で、kyk0301.jspにhtml:text property=\"seiKana\"あり"
+ },
+ {
+  "n": 1013,
+  "verdict": "correct",
+  "note": "テーブル定義KYK_KEIYAKUの5行目(契約番号)でKYK_KEIYAKUを記述"
+ },
+ {
+  "n": 1014,
+  "verdict": "wrong",
+  "note": "B12は保険種別名(hokenShubetsuNm/隠し項目)。Kyk0201HelperはhokenShubetsuList等のコードリスト設定のみで該当項目なし"
+ },
+ {
+  "n": 1015,
+  "verdict": "correct",
+  "note": "B16は郵便番号上3桁(yubinNo1)で、kyk0301.jspにproperty=\"yubinNo1\"あり"
+ },
+ {
+  "n": 1016,
+  "verdict": "correct",
+  "note": "11行目 変更前内容 BEFORE_VAL VARCHAR2(400)"
+ },
+ {
+  "n": 1017,
+  "verdict": "correct",
+  "note": "20行目 登録ユーザID INS_USER_ID VARCHAR2(10)"
+ },
+ {
+  "n": 1018,
+  "verdict": "correct",
+  "note": "14行目 募集人コード BOSHU_NIN_CD VARCHAR2(6)"
+ },
+ {
+  "n": 1019,
+  "verdict": "correct",
+  "note": "7行目 契約番号 DB項目 KYK_IDO_RIREKI.KEIYAKU_NO 桁数12"
+ },
+ {
+  "n": 1020,
+  "verdict": "correct",
+  "note": "29行目 被保険者生年月日 DB項目 KYK_HIHOKENSHA.SEINENGAPPI 桁数10"
+ },
+ {
+  "n": 1021,
+  "verdict": "correct",
+  "note": "7行目 契約番号 DB項目 KYK_KEIYAKU.KEIYAKU_NO 桁数12"
+ },
+ {
+  "n": 1022,
+  "verdict": "correct",
+  "note": "10行目 異動理由 IDO_RIYU VARCHAR2(200)"
+ },
+ {
+  "n": 1023,
+  "verdict": "correct",
+  "note": "34行目 免責金額 DB項目 KYK_HOSHO_MEISAI.MENSEKI_GK 桁数9"
+ },
+ {
+  "n": 1024,
+  "verdict": "correct",
+  "note": "3行目 . /opt/kyk/shell/common/kyk_env.sh"
+ },
+ {
+  "n": 1025,
+  "verdict": "correct",
+  "note": "3行目 . /opt/kyk/shell/common/kyk_env.sh"
+ },
+ {
+  "n": 1026,
+  "verdict": "correct",
+  "note": "5行目 . /opt/kyk/shell/common/kyk_env.sh"
+ },
+ {
+  "n": 1027,
+  "verdict": "correct",
+  "note": "5行目 . /opt/kyk/shell/common/kyk_env.sh"
+ },
+ {
+  "n": 1028,
+  "verdict": "correct",
+  "note": "6行目 . /opt/kyk/shell/common/kyk_func.sh"
+ },
+ {
+  "n": 1029,
+  "verdict": "correct",
+  "note": "5行目 . /opt/kyk/shell/common/kyk_env.sh"
+ },
+ {
+  "n": 1030,
+  "verdict": "correct",
+  "note": "4行目 . /opt/kyk/shell/common/kyk_func.sh"
+ },
+ {
+  "n": 1031,
+  "verdict": "correct",
+  "note": "5行目 . /opt/kyk/shell/common/kyk_env.sh"
+ },
+ {
+  "n": 1032,
+  "verdict": "partial",
+  "note": "DELETE FROM KYK_SOSA_LOG（期限切れログ削除）でありデータ投入ではない。WRITESが妥当"
+ },
+ {
+  "n": 1033,
+  "verdict": "partial",
+  "note": "2WaySQLのバインド変数(/*dto.xxx*/)によるINSERTでありリテラル投入ではない。WRITESが妥当"
+ },
+ {
+  "n": 1034,
+  "verdict": "correct",
+  "note": "KYK_CODE_MSTへリテラル値のINSERT（初期データ）"
+ },
+ {
+  "n": 1035,
+  "verdict": "correct",
+  "note": "KYK_SAIBANへリテラル値のINSERT（初期データ）"
+ },
+ {
+  "n": 1036,
+  "verdict": "correct",
+  "note": "setHenkoRiyuで this.henkoRiyu = henkoRiyu"
+ },
+ {
+  "n": 1037,
+  "verdict": "correct",
+  "note": "setKeiyakuNoで this.keiyakuNo = keiyakuNo"
+ },
+ {
+  "n": 1038,
+  "verdict": "correct",
+  "note": "setShokenNoで this.shokenNo = shokenNo"
+ },
+ {
+  "n": 1039,
+  "verdict": "correct",
+  "note": "setKeiyakushaNmで this.keiyakushaNm = keiyakushaNm"
+ },
+ {
+  "n": 1040,
+  "verdict": "correct",
+  "note": "setShokenNoで this.shokenNo = shokenNo"
+ },
+ {
+  "n": 1041,
+  "verdict": "correct",
+  "note": "コンストラクタ14行目で this.name = name"
+ },
+ {
+  "n": 1042,
+  "verdict": "correct",
+  "note": "getHokenShubetsuCdで return hokenShubetsuCd"
+ },
+ {
+  "n": 1043,
+  "verdict": "correct",
+  "note": "getYubinNoで return yubinNo"
+ },
+ {
+  "n": 1044,
+  "verdict": "partial",
+  "note": "kyk-idoのweb.xmlが参照するのはorg.seasar.extension.filter.EncodingFilterで、jp.co.tsubame.fw.filter.EncodingFilterは同名の別クラス"
+ },
+ {
+  "n": 1045,
+  "verdict": "correct",
+  "note": "18行目 filter-class jp.co.tsubame.fw.filter.TransactionFilter"
+ },
+ {
+  "n": 1046,
+  "verdict": "correct",
+  "note": "36行目 servlet-class jp.co.tsubame.kyk.online.servlet.LoginServlet"
+ },
+ {
+  "n": 1047,
+  "verdict": "correct",
+  "note": "13行目 filter-class jp.co.tsubame.fw.filter.EncodingFilter"
+ },
+ {
+  "n": 1048,
+  "verdict": "correct",
+  "note": "40行目 servlet-class jp.co.tsubame.kyk.online.servlet.CodeInitServlet"
+ },
+ {
+  "n": 1049,
+  "verdict": "correct",
+  "note": "9行目 run_java jp.co.tsubame.kyk.batch.KYKB020NyukinKeshikomi（run_javaはjava起動関数）"
+ },
+ {
+  "n": 1050,
+  "verdict": "correct",
+  "note": "6行目 run_java jp.co.tsubame.kyk.batch.KYKB999OldKeiyakuIko"
+ },
+ {
+  "n": 1051,
+  "verdict": "correct",
+  "note": "9行目 run_java jp.co.tsubame.kyk.batch.KYKB010SeikyuSakusei"
+ },
+ {
+  "n": 1052,
+  "verdict": "correct",
+  "note": "9行目 run_java jp.co.tsubame.kyk.batch.KYKB110TesuryoKeisan"
+ },
+ {
+  "n": 1053,
+  "verdict": "correct",
+  "note": "9行目 run_java jp.co.tsubame.kyk.batch.KYKB040ShokenHakko"
+ },
+ {
+  "n": 1054,
+  "verdict": "correct",
+  "note": "INSERT INTO KYK_DAIRITEN（バインド変数付き登録SQL）"
+ },
+ {
+  "n": 1055,
+  "verdict": "correct",
+  "note": "UPDATE KYK_SHARYO SET ..."
+ },
+ {
+  "n": 1056,
+  "verdict": "correct",
+  "note": "convert内32行目で new FixedLengthReader(f.getPath(), 128, false)"
+ },
+ {
+  "n": 1057,
+  "verdict": "correct",
+  "note": "selectMeisaiのfinallyで DBUtil.close(rs, ps)"
+ },
+ {
+  "n": 1058,
+  "verdict": "correct",
+  "note": "execute内31行目で wr.getFileName(ymd) を呼び出し（実シグネチャはexecute(String[])）"
+ },
+ {
+  "n": 1059,
+  "verdict": "correct",
+  "note": "validateInput内103行目で f.getGinkoKana() を呼び出し"
+ },
+ {
+  "n": 1060,
+  "verdict": "correct",
+  "note": "search内67行目で継承元BaseDaoの setParams(ps, params) を呼び出し"
+ },
+ {
+  "n": 1061,
+  "verdict": "correct",
+  "note": "doExecute内で new LocationZaikoListDao(con).search(f) を呼び出し"
+ },
+ {
+  "n": 1062,
+  "verdict": "correct",
+  "note": "doExecute内53行目で service.update(f, user) を呼び出し"
+ },
+ {
+  "n": 1063,
+  "verdict": "correct",
+  "note": "search内61行目で継承元BaseDaoの debugSql(sql, params) を呼び出し"
+ },
+ {
+  "n": 1064,
+  "verdict": "correct",
+  "note": "A4 EDIB010_T01 丸栄ストア受注の入力にIF-EDI-T01を記載。該当IF定義ファイルが存在"
+ },
+ {
+  "n": 1065,
+  "verdict": "correct",
+  "note": "A9 ZAIB060の出力に T_NYUKA_H, T_NYUKA_M を記載"
+ },
+ {
+  "n": 1066,
+  "verdict": "correct",
+  "note": "A14 HANB120のジョブネットにHAN_ASAを記載。HAN_ASA.ajsにHANB120あり"
+ },
+ {
+  "n": 1067,
+  "verdict": "partial",
+  "note": "B53はテーブルT_HIKIATE(引当)の行。対象はシノニムT_HIKIATEで、テーブル本体とは厳密には別オブジェクト"
+ },
+ {
+  "n": 1068,
+  "verdict": "correct",
+  "note": "2.業務フローの節に「WMS出荷指示(ZAIB030)」の記載あり。HAN_YAKAN.ajsにZAIB030ユニットあり"
+ },
+ {
+  "n": 1069,
+  "verdict": "correct",
+  "note": "A9 HANB100 自動消込の出力に T_KESHIKOMI を記載"
+ },
+ {
+  "n": 1070,
+  "verdict": "correct",
+  "note": "A6 ZAIB030の入力に V_WMS_SHUKKA_SHIJI を記載"
+ },
+ {
+  "n": 1071,
+  "verdict": "correct",
+  "note": "A10 HANB110の入力に T_NYUKIN を記載"
+ },
+ {
+  "n": 1072,
+  "verdict": "correct",
+  "note": "19行目 更新日時 UPD_DT DATE"
+ },
+ {
+  "n": 1073,
+  "verdict": "correct",
+  "note": "9行目 評価単価 HYOKA_TANKA NUMBER(11,2)"
+ }
+]

@@ -44,7 +44,7 @@ text:
       # any other data file named on a command line: connected, direction unknown
       - {regex: '(?m)^[ \t]*[^#\n]*?[\s"''=/]([\w.${}\-]+\.(?:dat|csv|tsv|fix|gz|zip|lst|prn|seq))\b', key: "datafile:{1}", rel: REFERENCES, conf: 0.6, fallback: true}
       # SQL*Loader: control file and data file
-      - {regex: '\bsqlldr\b[^\n]*\bcontrol=([\w./${}\-]+)', key: "file:{1}", rel: RUNS, conf: 0.9}
+      - {regex: '\bsqlldr\b[^\n]*\bcontrol=([\w./${}\-]+)', key: "file:{1}", rel: EXECUTES, conf: 0.9}
       - {regex: '\bsqlldr\b[^\n]*\bdata=([\w./${}\-]+)', key: "datafile:{1}", rel: READS, conf: 0.9}
   - name: sqlldr-control
     files: ["**/*.ctl"]

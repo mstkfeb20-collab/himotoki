@@ -1,0 +1,3674 @@
+[
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "CALLS",
+  "via": "parser",
+  "group_size": 630,
+  "from": {
+   "id": "java:jp.co.tsubame.kyk.online.action.Kyk0201ConfirmActionOld#doExecute(ActionMapping,ActionForm,HttpServletRequest,HttpServletResponse)",
+   "kind": "Method",
+   "name": "Kyk0201ConfirmActionOld.doExecute()",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/action/Kyk0201ConfirmActionOld.java",
+   "line": 22
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.online.form.KeiyakuTorokuForm#getKeiyakuYmdM()",
+   "kind": "Method",
+   "name": "KeiyakuTorokuForm.getKeiyakuYmdM()",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/form/KeiyakuTorokuForm.java",
+   "line": 120
+  },
+  "edge_line": 27,
+  "props": {},
+  "n": 1000
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "CALLS",
+  "via": "parser",
+  "group_size": 630,
+  "from": {
+   "id": "java:jp.co.tsubame.kyk.ido.service.JushoHenkoService#henko(JushoHenkoDto)",
+   "kind": "Method",
+   "name": "JushoHenkoService.henko()",
+   "file": "kyk-ido/src/main/java/jp/co/tsubame/kyk/ido/service/JushoHenkoService.java",
+   "line": 35
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.ido.service.JushoHenkoService#findKokyaku(String)",
+   "kind": "Method",
+   "name": "JushoHenkoService.findKokyaku()",
+   "file": "kyk-ido/src/main/java/jp/co/tsubame/kyk/ido/service/JushoHenkoService.java",
+   "line": 28
+  },
+  "edge_line": 37,
+  "props": {},
+  "n": 1001
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "CALLS",
+  "via": "parser",
+  "group_size": 630,
+  "from": {
+   "id": "java:jp.co.tsubame.fw.struts.AbstractAction#execute(ActionMapping,ActionForm,HttpServletRequest,HttpServletResponse)",
+   "kind": "Method",
+   "name": "AbstractAction.execute()",
+   "file": "kyk-common/src/jp/co/tsubame/fw/struts/AbstractAction.java",
+   "line": 34
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.fw.exception.BusinessException#getArgs()",
+   "kind": "Method",
+   "name": "BusinessException.getArgs()",
+   "file": "kyk-common/src/jp/co/tsubame/fw/exception/BusinessException.java",
+   "line": 29
+  },
+  "edge_line": 43,
+  "props": {},
+  "n": 1002
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "CALLS",
+  "via": "parser",
+  "group_size": 630,
+  "from": {
+   "id": "java:jp.co.tsubame.kyk.web2.service.impl.ShokenHakkoServiceImpl#irai(ShokenHakkoParam)",
+   "kind": "Method",
+   "name": "ShokenHakkoServiceImpl.irai()",
+   "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/service/impl/ShokenHakkoServiceImpl.java",
+   "line": 28
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.web2.model.ShokenHakkoParam#setAtena(String)",
+   "kind": "Method",
+   "name": "ShokenHakkoParam.setAtena()",
+   "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/model/ShokenHakkoParam.java",
+   "line": 121
+  },
+  "edge_line": 37,
+  "props": {},
+  "n": 1003
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "CALLS",
+  "via": "parser",
+  "group_size": 630,
+  "from": {
+   "id": "java:jp.co.tsubame.kyk.online.dao.KaiyakuDao#callKaiyakuToroku(Map)",
+   "kind": "Method",
+   "name": "KaiyakuDao.callKaiyakuToroku()",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/dao/KaiyakuDao.java",
+   "line": 60
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.fw.dao.BaseDao#getConnection()",
+   "kind": "Method",
+   "name": "BaseDao.getConnection()",
+   "file": "kyk-common/src/jp/co/tsubame/fw/dao/BaseDao.java",
+   "line": 40
+  },
+  "edge_line": 64,
+  "props": {},
+  "n": 1004
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "CALLS",
+  "via": "parser",
+  "group_size": 630,
+  "from": {
+   "id": "java:jp.co.tsubame.kyk.online.service.impl.KeiyakuServiceImpl#torokuKeiyaku(KeiyakuTorokuDto)",
+   "kind": "Method",
+   "name": "KeiyakuServiceImpl.torokuKeiyaku()",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/service/impl/KeiyakuServiceImpl.java",
+   "line": 39
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.online.dto.KeiyakuTorokuDto#getHihokensha()",
+   "kind": "Method",
+   "name": "KeiyakuTorokuDto.getHihokensha()",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/dto/KeiyakuTorokuDto.java",
+   "line": 262
+  },
+  "edge_line": 64,
+  "props": {},
+  "n": 1005
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "CALLS",
+  "via": "parser",
+  "group_size": 630,
+  "from": {
+   "id": "java:jp.co.tsubame.kyk.online.dao.KokyakuDao#insert(KokyakuDto)",
+   "kind": "Method",
+   "name": "KokyakuDao.insert()",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/dao/KokyakuDao.java",
+   "line": 73
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.online.dto.KokyakuDto#getMeiKana()",
+   "kind": "Method",
+   "name": "KokyakuDto.getMeiKana()",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/dto/KokyakuDto.java",
+   "line": 137
+  },
+  "edge_line": 85,
+  "props": {},
+  "n": 1006
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "CALLS",
+  "via": "parser",
+  "group_size": 630,
+  "from": {
+   "id": "java:jp.co.tsubame.kyk.web2.controller.SeikyuShokaiController#search(SeikyuShokaiForm,BindingResult,HttpServletRequest,Model)",
+   "kind": "Method",
+   "name": "SeikyuShokaiController.search()",
+   "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/controller/SeikyuShokaiController.java",
+   "line": 39
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.web2.command.SeikyuShokaiForm#getPageNo()",
+   "kind": "Method",
+   "name": "SeikyuShokaiForm.getPageNo()",
+   "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/command/SeikyuShokaiForm.java",
+   "line": 113
+  },
+  "edge_line": 52,
+  "props": {},
+  "n": 1007
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "DESCRIBES",
+  "via": "mention",
+  "group_size": 602,
+  "from": {
+   "id": "doc:doc/画面設計/KYK0201_契約登録入力_画面項目定義.xlsx#画面項目定義!B36",
+   "kind": "DocEntity",
+   "name": "画面項目定義: lines[].delFlg",
+   "file": "doc/画面設計/KYK0201_契約登録入力_画面項目定義.xlsx",
+   "line": 36
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.online.action.Kyk0201ConfirmActionOld",
+   "kind": "Class",
+   "name": "Kyk0201ConfirmActionOld",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/action/Kyk0201ConfirmActionOld.java",
+   "line": 20
+  },
+  "edge_line": 36,
+  "props": {},
+  "n": 1008
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "DESCRIBES",
+  "via": "mention",
+  "group_size": 602,
+  "from": {
+   "id": "doc:doc/画面一覧.csv#sheet",
+   "kind": "DocSection",
+   "name": "画面一覧",
+   "file": "doc/画面一覧.csv",
+   "line": 1
+  },
+  "to": {
+   "id": "ep:GET /kyk0901/input",
+   "kind": "Endpoint",
+   "name": "GET /kyk0901/input",
+   "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/controller/OtaiRirekiController.java",
+   "line": 42
+  },
+  "edge_line": 1,
+  "props": {},
+  "n": 1009
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "DESCRIBES",
+  "via": "mention",
+  "group_size": 602,
+  "from": {
+   "id": "doc:doc/画面設計/KYK0201_契約登録入力_画面項目定義.xlsx#画面項目定義!B7",
+   "kind": "DocEntity",
+   "name": "画面項目定義: KYK_KEIYAKU.KEIYAKU_NO",
+   "file": "doc/画面設計/KYK0201_契約登録入力_画面項目定義.xlsx",
+   "line": 7
+  },
+  "to": {
+   "id": "file:kyk-online/WebContent/jsp/kyk02/kyk0201_old.jsp",
+   "kind": "Template",
+   "name": "kyk0201_old.jsp",
+   "file": "kyk-online/WebContent/jsp/kyk02/kyk0201_old.jsp",
+   "line": 1
+  },
+  "edge_line": 7,
+  "props": {},
+  "n": 1010
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "DESCRIBES",
+  "via": "mention",
+  "group_size": 602,
+  "from": {
+   "id": "doc:doc/画面設計/KYK0201_契約登録入力_画面項目定義.xlsx#画面項目定義!B20",
+   "kind": "DocEntity",
+   "name": "画面項目定義: KYK_KEIYAKU.HARAIKOMI_HOHO_KBN",
+   "file": "doc/画面設計/KYK0201_契約登録入力_画面項目定義.xlsx",
+   "line": 20
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.online.action.Kyk0201Helper",
+   "kind": "Class",
+   "name": "Kyk0201Helper",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/action/Kyk0201Helper.java",
+   "line": 16
+  },
+  "edge_line": 20,
+  "props": {},
+  "n": 1011
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "DESCRIBES",
+  "via": "mention",
+  "group_size": 602,
+  "from": {
+   "id": "doc:doc/画面設計/KYK0301_顧客登録変更_画面項目定義.csv#KYK0301_顧客登録変更_画面項目定義!B11",
+   "kind": "DocEntity",
+   "name": "KYK0301_顧客登録変更_画面項目定義: KYK_KOKYAKU.SEI_KANA",
+   "file": "doc/画面設計/KYK0301_顧客登録変更_画面項目定義.csv",
+   "line": 11
+  },
+  "to": {
+   "id": "file:kyk-online/WebContent/jsp/kyk03/kyk0301.jsp",
+   "kind": "Template",
+   "name": "kyk0301.jsp",
+   "file": "kyk-online/WebContent/jsp/kyk03/kyk0301.jsp",
+   "line": 1
+  },
+  "edge_line": 11,
+  "props": {},
+  "n": 1012
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "DESCRIBES",
+  "via": "mention",
+  "group_size": 602,
+  "from": {
+   "id": "doc:doc/テーブル定義/KYK_KEIYAKU_契約.csv#KYK_KEIYAKU_契約!B5",
+   "kind": "DocEntity",
+   "name": "KYK_KEIYAKU_契約: KYK_KEIYAKU.KEIYAKU_NO",
+   "file": "doc/テーブル定義/KYK_KEIYAKU_契約.csv",
+   "line": 5
+  },
+  "to": {
+   "id": "table:kyk_keiyaku",
+   "kind": "Table",
+   "name": "kyk_keiyaku",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 5,
+  "props": {},
+  "n": 1013
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "DESCRIBES",
+  "via": "mention",
+  "group_size": 602,
+  "from": {
+   "id": "doc:doc/画面設計/KYK0201_契約登録入力_画面項目定義.xlsx#画面項目定義!B12",
+   "kind": "DocEntity",
+   "name": "画面項目定義: hokenShubetsuNm",
+   "file": "doc/画面設計/KYK0201_契約登録入力_画面項目定義.xlsx",
+   "line": 12
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.online.action.Kyk0201Helper",
+   "kind": "Class",
+   "name": "Kyk0201Helper",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/action/Kyk0201Helper.java",
+   "line": 16
+  },
+  "edge_line": 12,
+  "props": {},
+  "n": 1014
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "DESCRIBES",
+  "via": "mention",
+  "group_size": 602,
+  "from": {
+   "id": "doc:doc/画面設計/KYK0301_顧客登録変更_画面項目定義.csv#KYK0301_顧客登録変更_画面項目定義!B16",
+   "kind": "DocEntity",
+   "name": "KYK0301_顧客登録変更_画面項目定義: KYK_KOKYAKU.YUBIN_NO",
+   "file": "doc/画面設計/KYK0301_顧客登録変更_画面項目定義.csv",
+   "line": 16
+  },
+  "to": {
+   "id": "file:kyk-online/WebContent/jsp/kyk03/kyk0301.jsp",
+   "kind": "Template",
+   "name": "kyk0301.jsp",
+   "file": "kyk-online/WebContent/jsp/kyk03/kyk0301.jsp",
+   "line": 1
+  },
+  "edge_line": 16,
+  "props": {},
+  "n": 1015
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "DESCRIBES",
+  "via": "office-table",
+  "group_size": 227,
+  "from": {
+   "id": "doc:doc/テーブル定義/KYK_IDO_RIREKI_異動履歴.csv#KYK_IDO_RIREKI_異動履歴!B11",
+   "kind": "DocEntity",
+   "name": "KYK_IDO_RIREKI_異動履歴: KYK_IDO_RIREKI.BEFORE_VAL",
+   "file": "doc/テーブル定義/KYK_IDO_RIREKI_異動履歴.csv",
+   "line": 11
+  },
+  "to": {
+   "id": "col:kyk_ido_rireki.before_val",
+   "kind": "Column",
+   "name": "kyk_ido_rireki.before_val",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 11,
+  "props": {
+   "length": "400"
+  },
+  "n": 1016
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "DESCRIBES",
+  "via": "office-table",
+  "group_size": 227,
+  "from": {
+   "id": "doc:doc/テーブル定義/KYK_KEIYAKU_契約.csv#KYK_KEIYAKU_契約!B20",
+   "kind": "DocEntity",
+   "name": "KYK_KEIYAKU_契約: KYK_KEIYAKU.INS_USER_ID",
+   "file": "doc/テーブル定義/KYK_KEIYAKU_契約.csv",
+   "line": 20
+  },
+  "to": {
+   "id": "col:kyk_keiyaku.ins_user_id",
+   "kind": "Column",
+   "name": "kyk_keiyaku.ins_user_id",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 20,
+  "props": {
+   "length": "10"
+  },
+  "n": 1017
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "DESCRIBES",
+  "via": "office-table",
+  "group_size": 227,
+  "from": {
+   "id": "doc:doc/テーブル定義/KYK_KEIYAKU_契約.csv#KYK_KEIYAKU_契約!B14",
+   "kind": "DocEntity",
+   "name": "KYK_KEIYAKU_契約: KYK_KEIYAKU.BOSHU_NIN_CD",
+   "file": "doc/テーブル定義/KYK_KEIYAKU_契約.csv",
+   "line": 14
+  },
+  "to": {
+   "id": "col:kyk_keiyaku.boshu_nin_cd",
+   "kind": "Column",
+   "name": "kyk_keiyaku.boshu_nin_cd",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 14,
+  "props": {
+   "length": "6"
+  },
+  "n": 1018
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "DESCRIBES",
+  "via": "office-table",
+  "group_size": 227,
+  "from": {
+   "id": "doc:doc/画面設計/KYK0601_車両入替異動_画面項目定義.csv#KYK0601_車両入替異動_画面項目定義!B7",
+   "kind": "DocEntity",
+   "name": "KYK0601_車両入替異動_画面項目定義: KYK_IDO_RIREKI.KEIYAKU_NO",
+   "file": "doc/画面設計/KYK0601_車両入替異動_画面項目定義.csv",
+   "line": 7
+  },
+  "to": {
+   "id": "col:kyk_ido_rireki.keiyaku_no",
+   "kind": "Column",
+   "name": "kyk_ido_rireki.keiyaku_no",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 7,
+  "props": {
+   "length": "12"
+  },
+  "n": 1019
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "DESCRIBES",
+  "via": "office-table",
+  "group_size": 227,
+  "from": {
+   "id": "doc:doc/画面設計/KYK0201_契約登録入力_画面項目定義.xlsx#画面項目定義!B29",
+   "kind": "DocEntity",
+   "name": "画面項目定義: KYK_HIHOKENSHA.SEINENGAPPI",
+   "file": "doc/画面設計/KYK0201_契約登録入力_画面項目定義.xlsx",
+   "line": 29
+  },
+  "to": {
+   "id": "col:kyk_hihokensha.seinengappi",
+   "kind": "Column",
+   "name": "kyk_hihokensha.seinengappi",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 29,
+  "props": {
+   "length": "10"
+  },
+  "n": 1020
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "DESCRIBES",
+  "via": "office-table",
+  "group_size": 227,
+  "from": {
+   "id": "doc:doc/画面設計/KYK0201_契約登録入力_画面項目定義.xlsx#画面項目定義!B7",
+   "kind": "DocEntity",
+   "name": "画面項目定義: KYK_KEIYAKU.KEIYAKU_NO",
+   "file": "doc/画面設計/KYK0201_契約登録入力_画面項目定義.xlsx",
+   "line": 7
+  },
+  "to": {
+   "id": "col:kyk_keiyaku.keiyaku_no",
+   "kind": "Column",
+   "name": "kyk_keiyaku.keiyaku_no",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 7,
+  "props": {
+   "length": "12"
+  },
+  "n": 1021
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "DESCRIBES",
+  "via": "office-table",
+  "group_size": 227,
+  "from": {
+   "id": "doc:doc/テーブル定義/KYK_IDO_RIREKI_異動履歴.csv#KYK_IDO_RIREKI_異動履歴!B10",
+   "kind": "DocEntity",
+   "name": "KYK_IDO_RIREKI_異動履歴: KYK_IDO_RIREKI.IDO_RIYU",
+   "file": "doc/テーブル定義/KYK_IDO_RIREKI_異動履歴.csv",
+   "line": 10
+  },
+  "to": {
+   "id": "col:kyk_ido_rireki.ido_riyu",
+   "kind": "Column",
+   "name": "kyk_ido_rireki.ido_riyu",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 10,
+  "props": {
+   "length": "200"
+  },
+  "n": 1022
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "DESCRIBES",
+  "via": "office-table",
+  "group_size": 227,
+  "from": {
+   "id": "doc:doc/画面設計/KYK0201_契約登録入力_画面項目定義.xlsx#画面項目定義!B34",
+   "kind": "DocEntity",
+   "name": "画面項目定義: KYK_HOSHO_MEISAI.MENSEKI_GK",
+   "file": "doc/画面設計/KYK0201_契約登録入力_画面項目定義.xlsx",
+   "line": 34
+  },
+  "to": {
+   "id": "col:kyk_hosho_meisai.menseki_gk",
+   "kind": "Column",
+   "name": "kyk_hosho_meisai.menseki_gk",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 34,
+  "props": {
+   "length": "9"
+  },
+  "n": 1023
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "INCLUDES",
+  "via": "shell",
+  "group_size": 13,
+  "from": {
+   "id": "file:kyk-batch/shell/KYKB900_log_purge.sh",
+   "kind": "Script",
+   "name": "KYKB900_log_purge.sh",
+   "file": "kyk-batch/shell/KYKB900_log_purge.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "file:kyk-batch/shell/common/kyk_env.sh",
+   "kind": "Script",
+   "name": "kyk_env.sh",
+   "file": "kyk-batch/shell/common/kyk_env.sh",
+   "line": 1
+  },
+  "edge_line": 3,
+  "props": {},
+  "n": 1024
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "INCLUDES",
+  "via": "shell",
+  "group_size": 13,
+  "from": {
+   "id": "file:kyk-batch/shell/KYKB999_old_iko.sh",
+   "kind": "Script",
+   "name": "KYKB999_old_iko.sh",
+   "file": "kyk-batch/shell/KYKB999_old_iko.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "file:kyk-batch/shell/common/kyk_env.sh",
+   "kind": "Script",
+   "name": "kyk_env.sh",
+   "file": "kyk-batch/shell/common/kyk_env.sh",
+   "line": 1
+  },
+  "edge_line": 3,
+  "props": {},
+  "n": 1025
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "INCLUDES",
+  "via": "shell",
+  "group_size": 13,
+  "from": {
+   "id": "file:kyk-batch/shell/KYKB040.sh",
+   "kind": "Script",
+   "name": "KYKB040.sh",
+   "file": "kyk-batch/shell/KYKB040.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "file:kyk-batch/shell/common/kyk_env.sh",
+   "kind": "Script",
+   "name": "kyk_env.sh",
+   "file": "kyk-batch/shell/common/kyk_env.sh",
+   "line": 1
+  },
+  "edge_line": 5,
+  "props": {},
+  "n": 1026
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "INCLUDES",
+  "via": "shell",
+  "group_size": 13,
+  "from": {
+   "id": "file:kyk-batch/shell/KYKB030.sh",
+   "kind": "Script",
+   "name": "KYKB030.sh",
+   "file": "kyk-batch/shell/KYKB030.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "file:kyk-batch/shell/common/kyk_env.sh",
+   "kind": "Script",
+   "name": "kyk_env.sh",
+   "file": "kyk-batch/shell/common/kyk_env.sh",
+   "line": 1
+  },
+  "edge_line": 5,
+  "props": {},
+  "n": 1027
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "INCLUDES",
+  "via": "shell",
+  "group_size": 13,
+  "from": {
+   "id": "file:kyk-batch/shell/KYKB010.sh",
+   "kind": "Script",
+   "name": "KYKB010.sh",
+   "file": "kyk-batch/shell/KYKB010.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "file:kyk-batch/shell/common/kyk_func.sh",
+   "kind": "Script",
+   "name": "kyk_func.sh",
+   "file": "kyk-batch/shell/common/kyk_func.sh",
+   "line": 1
+  },
+  "edge_line": 6,
+  "props": {},
+  "n": 1028
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "INCLUDES",
+  "via": "shell",
+  "group_size": 13,
+  "from": {
+   "id": "file:kyk-batch/shell/KYKB020.sh",
+   "kind": "Script",
+   "name": "KYKB020.sh",
+   "file": "kyk-batch/shell/KYKB020.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "file:kyk-batch/shell/common/kyk_env.sh",
+   "kind": "Script",
+   "name": "kyk_env.sh",
+   "file": "kyk-batch/shell/common/kyk_env.sh",
+   "line": 1
+  },
+  "edge_line": 5,
+  "props": {},
+  "n": 1029
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "INCLUDES",
+  "via": "shell",
+  "group_size": 13,
+  "from": {
+   "id": "file:kyk-batch/shell/KYKB999_old_iko.sh",
+   "kind": "Script",
+   "name": "KYKB999_old_iko.sh",
+   "file": "kyk-batch/shell/KYKB999_old_iko.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "file:kyk-batch/shell/common/kyk_func.sh",
+   "kind": "Script",
+   "name": "kyk_func.sh",
+   "file": "kyk-batch/shell/common/kyk_func.sh",
+   "line": 1
+  },
+  "edge_line": 4,
+  "props": {},
+  "n": 1030
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "INCLUDES",
+  "via": "shell",
+  "group_size": 13,
+  "from": {
+   "id": "file:kyk-batch/shell/KYKB110.sh",
+   "kind": "Script",
+   "name": "KYKB110.sh",
+   "file": "kyk-batch/shell/KYKB110.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "file:kyk-batch/shell/common/kyk_env.sh",
+   "kind": "Script",
+   "name": "kyk_env.sh",
+   "file": "kyk-batch/shell/common/kyk_env.sh",
+   "line": 1
+  },
+  "edge_line": 5,
+  "props": {},
+  "n": 1031
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "POPULATES",
+  "via": "dml",
+  "group_size": 4,
+  "from": {
+   "id": "file:kyk-batch/sql/KYKB900_purge.sql",
+   "kind": "SqlFile",
+   "name": "KYKB900_purge.sql",
+   "file": "kyk-batch/sql/KYKB900_purge.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:kyk_sosa_log",
+   "kind": "Table",
+   "name": "kyk_sosa_log",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 2,
+  "props": {
+   "ops": "DR"
+  },
+  "n": 1032
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "POPULATES",
+  "via": "dml",
+  "group_size": 4,
+  "from": {
+   "id": "file:kyk-ido/src/main/resources/jp/co/tsubame/kyk/ido/dao/KykIdoRirekiDao_insertIdoRireki.sql",
+   "kind": "SqlFile",
+   "name": "KykIdoRirekiDao_insertIdoRireki.sql",
+   "file": "kyk-ido/src/main/resources/jp/co/tsubame/kyk/ido/dao/KykIdoRirekiDao_insertIdoRireki.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:kyk_ido_rireki",
+   "kind": "Table",
+   "name": "kyk_ido_rireki",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 1,
+  "props": {
+   "ops": "CR"
+  },
+  "n": 1033
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "POPULATES",
+  "via": "dml",
+  "group_size": 4,
+  "from": {
+   "id": "file:db/data/KYK_CODE_MST.sql",
+   "kind": "SqlFile",
+   "name": "KYK_CODE_MST.sql",
+   "file": "db/data/KYK_CODE_MST.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:kyk_code_mst",
+   "kind": "Table",
+   "name": "kyk_code_mst",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 1,
+  "props": {
+   "ops": "CR"
+  },
+  "n": 1034
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "POPULATES",
+  "via": "dml",
+  "group_size": 4,
+  "from": {
+   "id": "file:db/data/KYK_SAIBAN.sql",
+   "kind": "SqlFile",
+   "name": "KYK_SAIBAN.sql",
+   "file": "db/data/KYK_SAIBAN.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:kyk_saiban",
+   "kind": "Table",
+   "name": "kyk_saiban",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 1,
+  "props": {
+   "ops": "CR"
+  },
+  "n": 1035
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "REFERENCES",
+  "via": "parser",
+  "group_size": 684,
+  "from": {
+   "id": "java:jp.co.tsubame.kyk.online.form.KeiyakuHenkoForm#setHenkoRiyu(String)",
+   "kind": "Method",
+   "name": "KeiyakuHenkoForm.setHenkoRiyu()",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/form/KeiyakuHenkoForm.java",
+   "line": 20
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.online.form.KeiyakuHenkoForm.henkoRiyu",
+   "kind": "Field",
+   "name": "KeiyakuHenkoForm.henkoRiyu",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/form/KeiyakuHenkoForm.java",
+   "line": 11
+  },
+  "edge_line": 21,
+  "props": {},
+  "n": 1036
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "REFERENCES",
+  "via": "parser",
+  "group_size": 684,
+  "from": {
+   "id": "java:jp.co.tsubame.kyk.web2.model.KeiyakuSummary#setKeiyakuNo(String)",
+   "kind": "Method",
+   "name": "KeiyakuSummary.setKeiyakuNo()",
+   "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/model/KeiyakuSummary.java",
+   "line": 37
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.web2.model.KeiyakuSummary.keiyakuNo",
+   "kind": "Field",
+   "name": "KeiyakuSummary.keiyakuNo",
+   "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/model/KeiyakuSummary.java",
+   "line": 13
+  },
+  "edge_line": 38,
+  "props": {},
+  "n": 1037
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "REFERENCES",
+  "via": "parser",
+  "group_size": 684,
+  "from": {
+   "id": "java:jp.co.tsubame.kyk.online.form.KeiyakuKensakuForm#setShokenNo(String)",
+   "kind": "Method",
+   "name": "KeiyakuKensakuForm.setShokenNo()",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/form/KeiyakuKensakuForm.java",
+   "line": 69
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.online.form.KeiyakuKensakuForm.shokenNo",
+   "kind": "Field",
+   "name": "KeiyakuKensakuForm.shokenNo",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/form/KeiyakuKensakuForm.java",
+   "line": 19
+  },
+  "edge_line": 70,
+  "props": {},
+  "n": 1038
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "REFERENCES",
+  "via": "parser",
+  "group_size": 684,
+  "from": {
+   "id": "java:jp.co.tsubame.kyk.web2.model.KeiyakuSummary#setKeiyakushaNm(String)",
+   "kind": "Method",
+   "name": "KeiyakuSummary.setKeiyakushaNm()",
+   "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/model/KeiyakuSummary.java",
+   "line": 85
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.web2.model.KeiyakuSummary.keiyakushaNm",
+   "kind": "Field",
+   "name": "KeiyakuSummary.keiyakushaNm",
+   "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/model/KeiyakuSummary.java",
+   "line": 19
+  },
+  "edge_line": 86,
+  "props": {},
+  "n": 1039
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "REFERENCES",
+  "via": "parser",
+  "group_size": 684,
+  "from": {
+   "id": "java:jp.co.tsubame.kyk.online.entity.KeiyakuEntity#setShokenNo(String)",
+   "kind": "Method",
+   "name": "KeiyakuEntity.setShokenNo()",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/entity/KeiyakuEntity.java",
+   "line": 75
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.online.entity.KeiyakuEntity.shokenNo",
+   "kind": "Field",
+   "name": "KeiyakuEntity.shokenNo",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/entity/KeiyakuEntity.java",
+   "line": 15
+  },
+  "edge_line": 76,
+  "props": {},
+  "n": 1040
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "REFERENCES",
+  "via": "parser",
+  "group_size": 684,
+  "from": {
+   "id": "java:jp.co.tsubame.kyk.web2.support.CodeItem#CodeItem(String,String)",
+   "kind": "Method",
+   "name": "CodeItem()",
+   "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/support/CodeItem.java",
+   "line": 12
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.web2.support.CodeItem.name",
+   "kind": "Field",
+   "name": "CodeItem.name",
+   "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/support/CodeItem.java",
+   "line": 10
+  },
+  "edge_line": 14,
+  "props": {},
+  "n": 1041
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "REFERENCES",
+  "via": "parser",
+  "group_size": 684,
+  "from": {
+   "id": "java:jp.co.tsubame.kyk.online.form.BaseKeiyakuForm#getHokenShubetsuCd()",
+   "kind": "Method",
+   "name": "BaseKeiyakuForm.getHokenShubetsuCd()",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/form/BaseKeiyakuForm.java",
+   "line": 48
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.online.form.BaseKeiyakuForm.hokenShubetsuCd",
+   "kind": "Field",
+   "name": "BaseKeiyakuForm.hokenShubetsuCd",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/form/BaseKeiyakuForm.java",
+   "line": 20
+  },
+  "edge_line": 49,
+  "props": {},
+  "n": 1042
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "REFERENCES",
+  "via": "parser",
+  "group_size": 684,
+  "from": {
+   "id": "java:jp.co.tsubame.kyk.web2.model.KeiyakuSummary#getYubinNo()",
+   "kind": "Method",
+   "name": "KeiyakuSummary.getYubinNo()",
+   "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/model/KeiyakuSummary.java",
+   "line": 93
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.web2.model.KeiyakuSummary.yubinNo",
+   "kind": "Field",
+   "name": "KeiyakuSummary.yubinNo",
+   "file": "kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/model/KeiyakuSummary.java",
+   "line": 21
+  },
+  "edge_line": 94,
+  "props": {},
+  "n": 1043
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "REFERENCES",
+  "via": "xml-generic",
+  "group_size": 5,
+  "from": {
+   "id": "file:kyk-ido/src/main/webapp/WEB-INF/web.xml",
+   "kind": "ConfigFile",
+   "name": "web.xml",
+   "file": "kyk-ido/src/main/webapp/WEB-INF/web.xml",
+   "line": 1
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.fw.filter.EncodingFilter",
+   "kind": "Class",
+   "name": "EncodingFilter",
+   "file": "kyk-common/src/jp/co/tsubame/fw/filter/EncodingFilter.java",
+   "line": 15
+  },
+  "edge_line": 5,
+  "props": {},
+  "n": 1044
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "REFERENCES",
+  "via": "xml-generic",
+  "group_size": 5,
+  "from": {
+   "id": "file:kyk-online/WebContent/WEB-INF/web.xml",
+   "kind": "ConfigFile",
+   "name": "web.xml",
+   "file": "kyk-online/WebContent/WEB-INF/web.xml",
+   "line": 1
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.fw.filter.TransactionFilter",
+   "kind": "Class",
+   "name": "TransactionFilter",
+   "file": "kyk-common/src/jp/co/tsubame/fw/filter/TransactionFilter.java",
+   "line": 20
+  },
+  "edge_line": 18,
+  "props": {},
+  "n": 1045
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "REFERENCES",
+  "via": "xml-generic",
+  "group_size": 5,
+  "from": {
+   "id": "file:kyk-online/WebContent/WEB-INF/web.xml",
+   "kind": "ConfigFile",
+   "name": "web.xml",
+   "file": "kyk-online/WebContent/WEB-INF/web.xml",
+   "line": 1
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.online.servlet.LoginServlet",
+   "kind": "Class",
+   "name": "LoginServlet",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/servlet/LoginServlet.java",
+   "line": 22
+  },
+  "edge_line": 36,
+  "props": {},
+  "n": 1046
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "REFERENCES",
+  "via": "xml-generic",
+  "group_size": 5,
+  "from": {
+   "id": "file:kyk-online/WebContent/WEB-INF/web.xml",
+   "kind": "ConfigFile",
+   "name": "web.xml",
+   "file": "kyk-online/WebContent/WEB-INF/web.xml",
+   "line": 1
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.fw.filter.EncodingFilter",
+   "kind": "Class",
+   "name": "EncodingFilter",
+   "file": "kyk-common/src/jp/co/tsubame/fw/filter/EncodingFilter.java",
+   "line": 15
+  },
+  "edge_line": 13,
+  "props": {},
+  "n": 1047
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "REFERENCES",
+  "via": "xml-generic",
+  "group_size": 5,
+  "from": {
+   "id": "file:kyk-online/WebContent/WEB-INF/web.xml",
+   "kind": "ConfigFile",
+   "name": "web.xml",
+   "file": "kyk-online/WebContent/WEB-INF/web.xml",
+   "line": 1
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.online.servlet.CodeInitServlet",
+   "kind": "Class",
+   "name": "CodeInitServlet",
+   "file": "kyk-online/src/jp/co/tsubame/kyk/online/servlet/CodeInitServlet.java",
+   "line": 11
+  },
+  "edge_line": 40,
+  "props": {},
+  "n": 1048
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "RUNS",
+  "via": "shell",
+  "group_size": 5,
+  "from": {
+   "id": "file:kyk-batch/shell/KYKB020.sh",
+   "kind": "Script",
+   "name": "KYKB020.sh",
+   "file": "kyk-batch/shell/KYKB020.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.batch.KYKB020NyukinKeshikomi",
+   "kind": "Class",
+   "name": "KYKB020NyukinKeshikomi",
+   "file": "kyk-batch/src/jp/co/tsubame/kyk/batch/KYKB020NyukinKeshikomi.java",
+   "line": 14
+  },
+  "edge_line": 9,
+  "props": {},
+  "n": 1049
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "RUNS",
+  "via": "shell",
+  "group_size": 5,
+  "from": {
+   "id": "file:kyk-batch/shell/KYKB999_old_iko.sh",
+   "kind": "Script",
+   "name": "KYKB999_old_iko.sh",
+   "file": "kyk-batch/shell/KYKB999_old_iko.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.batch.KYKB999OldKeiyakuIko",
+   "kind": "Class",
+   "name": "KYKB999OldKeiyakuIko",
+   "file": "kyk-batch/src/jp/co/tsubame/kyk/batch/KYKB999OldKeiyakuIko.java",
+   "line": 7
+  },
+  "edge_line": 6,
+  "props": {},
+  "n": 1050
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "RUNS",
+  "via": "shell",
+  "group_size": 5,
+  "from": {
+   "id": "file:kyk-batch/shell/KYKB010.sh",
+   "kind": "Script",
+   "name": "KYKB010.sh",
+   "file": "kyk-batch/shell/KYKB010.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.batch.KYKB010SeikyuSakusei",
+   "kind": "Class",
+   "name": "KYKB010SeikyuSakusei",
+   "file": "kyk-batch/src/jp/co/tsubame/kyk/batch/KYKB010SeikyuSakusei.java",
+   "line": 13
+  },
+  "edge_line": 9,
+  "props": {},
+  "n": 1051
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "RUNS",
+  "via": "shell",
+  "group_size": 5,
+  "from": {
+   "id": "file:kyk-batch/shell/KYKB110.sh",
+   "kind": "Script",
+   "name": "KYKB110.sh",
+   "file": "kyk-batch/shell/KYKB110.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.batch.KYKB110TesuryoKeisan",
+   "kind": "Class",
+   "name": "KYKB110TesuryoKeisan",
+   "file": "kyk-batch/src/jp/co/tsubame/kyk/batch/KYKB110TesuryoKeisan.java",
+   "line": 11
+  },
+  "edge_line": 9,
+  "props": {},
+  "n": 1052
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "RUNS",
+  "via": "shell",
+  "group_size": 5,
+  "from": {
+   "id": "file:kyk-batch/shell/KYKB040.sh",
+   "kind": "Script",
+   "name": "KYKB040.sh",
+   "file": "kyk-batch/shell/KYKB040.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "java:jp.co.tsubame.kyk.batch.KYKB040ShokenHakko",
+   "kind": "Class",
+   "name": "KYKB040ShokenHakko",
+   "file": "kyk-batch/src/jp/co/tsubame/kyk/batch/KYKB040ShokenHakko.java",
+   "line": 14
+  },
+  "edge_line": 9,
+  "props": {},
+  "n": 1053
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "WRITES",
+  "via": "dml",
+  "group_size": 2,
+  "from": {
+   "id": "file:kyk-ido/src/main/resources/META-INF/sql/jp/co/tsubame/kyk/ido/service/DairitenService/insertDairiten.sql",
+   "kind": "SqlFile",
+   "name": "insertDairiten.sql",
+   "file": "kyk-ido/src/main/resources/META-INF/sql/jp/co/tsubame/kyk/ido/service/DairitenService/insertDairiten.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:kyk_dairiten",
+   "kind": "Table",
+   "name": "kyk_dairiten",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 1,
+  "props": {
+   "ops": "CR"
+  },
+  "n": 1054
+ },
+ {
+  "bench": "g",
+  "root": "/home/claude/work/sor-bench-g-cr",
+  "rel": "WRITES",
+  "via": "dml",
+  "group_size": 2,
+  "from": {
+   "id": "file:kyk-ido/src/main/resources/jp/co/tsubame/kyk/ido/dao/KykSharyoDao_updateSharyo.sql",
+   "kind": "SqlFile",
+   "name": "KykSharyoDao_updateSharyo.sql",
+   "file": "kyk-ido/src/main/resources/jp/co/tsubame/kyk/ido/dao/KykSharyoDao_updateSharyo.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:kyk_sharyo",
+   "kind": "Table",
+   "name": "kyk_sharyo",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 1,
+  "props": {
+   "ops": "RU"
+  },
+  "n": 1055
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "CALLS",
+  "via": "parser",
+  "group_size": 3961,
+  "from": {
+   "id": "java:jp.co.minato.kikan.edi.partner.T02HokuyoJuchuConverter#convert(File)",
+   "kind": "Method",
+   "name": "T02HokuyoJuchuConverter.convert()",
+   "file": "edi/src/main/java/jp/co/minato/kikan/edi/partner/T02HokuyoJuchuConverter.java",
+   "line": 28
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.common.fileio.FixedLengthReader#FixedLengthReader(String,int,boolean)",
+   "kind": "Method",
+   "name": "FixedLengthReader()",
+   "file": "common/src/main/java/jp/co/minato/kikan/common/fileio/FixedLengthReader.java",
+   "line": 18
+  },
+  "edge_line": 32,
+  "props": {},
+  "n": 1056
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "CALLS",
+  "via": "parser",
+  "group_size": 3961,
+  "from": {
+   "id": "java:jp.co.minato.kikan.kobai.dao.HacchuDAO#selectMeisai(String)",
+   "kind": "Method",
+   "name": "HacchuDAO.selectMeisai()",
+   "file": "kobai/src/main/java/jp/co/minato/kikan/kobai/dao/HacchuDAO.java",
+   "line": 109
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.common.db.DBUtil#close(ResultSet,Statement)",
+   "kind": "Method",
+   "name": "DBUtil.close()",
+   "file": "common/src/main/java/jp/co/minato/kikan/common/db/DBUtil.java",
+   "line": 63
+  },
+  "edge_line": 131,
+  "props": {},
+  "n": 1057
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "CALLS",
+  "via": "parser",
+  "group_size": 3961,
+  "from": {
+   "id": "java:jp.co.minato.kikan.edi.batch.EdiHacchuSoshinBatch#execute(String)",
+   "kind": "Method",
+   "name": "EdiHacchuSoshinBatch.execute()",
+   "file": "edi/src/main/java/jp/co/minato/kikan/edi/batch/EdiHacchuSoshinBatch.java",
+   "line": 26
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.edi.common.EdiHacchuWriter#getFileName(String)",
+   "kind": "Method",
+   "name": "EdiHacchuWriter.getFileName()",
+   "file": "edi/src/main/java/jp/co/minato/kikan/edi/common/EdiHacchuWriter.java",
+   "line": 18
+  },
+  "edge_line": 31,
+  "props": {},
+  "n": 1058
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "CALLS",
+  "via": "parser",
+  "group_size": 3961,
+  "from": {
+   "id": "java:jp.co.minato.kikan.master.ginko.GinkoEditAction#validateInput(GinkoForm,HttpServletRequest,Connection)",
+   "kind": "Method",
+   "name": "GinkoEditAction.validateInput()",
+   "file": "master/src/main/java/jp/co/minato/kikan/master/ginko/GinkoEditAction.java",
+   "line": 82
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.master.ginko.GinkoForm#getGinkoKana()",
+   "kind": "Method",
+   "name": "GinkoForm.getGinkoKana()",
+   "file": "master/src/main/java/jp/co/minato/kikan/master/ginko/GinkoForm.java",
+   "line": 65
+  },
+  "edge_line": 103,
+  "props": {},
+  "n": 1059
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "CALLS",
+  "via": "parser",
+  "group_size": 3961,
+  "from": {
+   "id": "java:jp.co.minato.kikan.hanbai.seikyu.SeikyuListDao#search(SeikyuListForm)",
+   "kind": "Method",
+   "name": "SeikyuListDao.search()",
+   "file": "hanbai/src/main/java/jp/co/minato/kikan/hanbai/seikyu/SeikyuListDao.java",
+   "line": 32
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.common.db.BaseDao#setParams(PreparedStatement,List)",
+   "kind": "Method",
+   "name": "BaseDao.setParams()",
+   "file": "common/src/main/java/jp/co/minato/kikan/common/db/BaseDao.java",
+   "line": 28
+  },
+  "edge_line": 67,
+  "props": {},
+  "n": 1060
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "CALLS",
+  "via": "parser",
+  "group_size": 3961,
+  "from": {
+   "id": "java:jp.co.minato.kikan.zaiko.locationzaiko.LocationZaikoListAction#doExecute(ActionMapping,ActionForm,HttpServletRequest,HttpServletResponse)",
+   "kind": "Method",
+   "name": "LocationZaikoListAction.doExecute()",
+   "file": "zaiko/src/main/java/jp/co/minato/kikan/zaiko/locationzaiko/LocationZaikoListAction.java",
+   "line": 27
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.zaiko.locationzaiko.LocationZaikoListDao#search(LocationZaikoListForm)",
+   "kind": "Method",
+   "name": "LocationZaikoListDao.search()",
+   "file": "zaiko/src/main/java/jp/co/minato/kikan/zaiko/locationzaiko/LocationZaikoListDao.java",
+   "line": 31
+  },
+  "edge_line": 35,
+  "props": {},
+  "n": 1061
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "CALLS",
+  "via": "parser",
+  "group_size": 3961,
+  "from": {
+   "id": "java:jp.co.minato.kikan.master.hanbaitanka.HanbaiTankaEditAction#doExecute(ActionMapping,ActionForm,HttpServletRequest,HttpServletResponse)",
+   "kind": "Method",
+   "name": "HanbaiTankaEditAction.doExecute()",
+   "file": "master/src/main/java/jp/co/minato/kikan/master/hanbaitanka/HanbaiTankaEditAction.java",
+   "line": 26
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.master.hanbaitanka.HanbaiTankaService#update(HanbaiTankaForm,String)",
+   "kind": "Method",
+   "name": "HanbaiTankaService.update()",
+   "file": "master/src/main/java/jp/co/minato/kikan/master/hanbaitanka/HanbaiTankaService.java",
+   "line": 54
+  },
+  "edge_line": 53,
+  "props": {},
+  "n": 1062
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "CALLS",
+  "via": "parser",
+  "group_size": 3961,
+  "from": {
+   "id": "java:jp.co.minato.kikan.hanbai.shohinuriage.ShohinUriageListDao#search(ShohinUriageListForm)",
+   "kind": "Method",
+   "name": "ShohinUriageListDao.search()",
+   "file": "hanbai/src/main/java/jp/co/minato/kikan/hanbai/shohinuriage/ShohinUriageListDao.java",
+   "line": 32
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.common.db.BaseDao#debugSql(String,List)",
+   "kind": "Method",
+   "name": "BaseDao.debugSql()",
+   "file": "common/src/main/java/jp/co/minato/kikan/common/db/BaseDao.java",
+   "line": 51
+  },
+  "edge_line": 61,
+  "props": {},
+  "n": 1063
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "DESCRIBES",
+  "via": "mention",
+  "group_size": 457,
+  "from": {
+   "id": "doc:docs/06_EDI/バッチ処理定義書_EDI.xlsx#ジョブ一覧!A4",
+   "kind": "DocEntity",
+   "name": "ジョブ一覧: EDIB010_T01",
+   "file": "docs/06_EDI/バッチ処理定義書_EDI.xlsx",
+   "line": 4
+  },
+  "to": {
+   "id": "file:docs/06_EDI/IF定義/IF-EDI-T01_丸栄ストア受注(流通BMS).xlsx",
+   "kind": "ConfigFile",
+   "name": "IF-EDI-T01_丸栄ストア受注(流通BMS).xlsx",
+   "file": "docs/06_EDI/IF定義/IF-EDI-T01_丸栄ストア受注(流通BMS).xlsx",
+   "line": 1
+  },
+  "edge_line": 4,
+  "props": {},
+  "n": 1064
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "DESCRIBES",
+  "via": "mention",
+  "group_size": 457,
+  "from": {
+   "id": "doc:docs/04_在庫物流/バッチ処理定義書_在庫物流.xlsx#ジョブ一覧!A9",
+   "kind": "DocEntity",
+   "name": "ジョブ一覧: ZAIB060",
+   "file": "docs/04_在庫物流/バッチ処理定義書_在庫物流.xlsx",
+   "line": 9
+  },
+  "to": {
+   "id": "table:t_nyuka_m",
+   "kind": "Table",
+   "name": "t_nyuka_m",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 9,
+  "props": {},
+  "n": 1065
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "DESCRIBES",
+  "via": "mention",
+  "group_size": 457,
+  "from": {
+   "id": "doc:docs/02_販売管理/バッチ処理定義書_販売管理.xlsx#ジョブ一覧!A14",
+   "kind": "DocEntity",
+   "name": "ジョブ一覧: HANB120",
+   "file": "docs/02_販売管理/バッチ処理定義書_販売管理.xlsx",
+   "line": 14
+  },
+  "to": {
+   "id": "job:/KIKAN/HAN_ASA",
+   "kind": "JobNet",
+   "name": "/KIKAN/HAN_ASA",
+   "file": "jobs/jp1/HAN_ASA.ajs",
+   "line": 1
+  },
+  "edge_line": 14,
+  "props": {},
+  "n": 1066
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "DESCRIBES",
+  "via": "mention",
+  "group_size": 457,
+  "from": {
+   "id": "doc:docs/00_共通/テーブル一覧.xlsx#テーブル一覧!B53",
+   "kind": "DocEntity",
+   "name": "テーブル一覧: T_HIKIATE",
+   "file": "docs/00_共通/テーブル一覧.xlsx",
+   "line": 53
+  },
+  "to": {
+   "id": "dbobj:synonym:t_hikiate",
+   "kind": "DbObject",
+   "name": "synonym t_hikiate",
+   "file": "db/synonym/create_synonym.sql",
+   "line": 66
+  },
+  "edge_line": 53,
+  "props": {},
+  "n": 1067
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "DESCRIBES",
+  "via": "mention",
+  "group_size": 457,
+  "from": {
+   "id": "doc:docs/02_販売管理/基本設計書_販売管理.docx#s4",
+   "kind": "DocSection",
+   "name": "2. 業務フロー",
+   "file": "docs/02_販売管理/基本設計書_販売管理.docx",
+   "line": 5
+  },
+  "to": {
+   "id": "job:/KIKAN/HAN_YAKAN/ZAIB030",
+   "kind": "Job",
+   "name": "/KIKAN/HAN_YAKAN/ZAIB030",
+   "file": "jobs/jp1/HAN_YAKAN.ajs",
+   "line": 62
+  },
+  "edge_line": null,
+  "props": {},
+  "n": 1068
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "DESCRIBES",
+  "via": "mention",
+  "group_size": 457,
+  "from": {
+   "id": "doc:docs/02_販売管理/バッチ処理定義書_販売管理.xlsx#ジョブ一覧!A9",
+   "kind": "DocEntity",
+   "name": "ジョブ一覧: HANB100",
+   "file": "docs/02_販売管理/バッチ処理定義書_販売管理.xlsx",
+   "line": 9
+  },
+  "to": {
+   "id": "table:t_keshikomi",
+   "kind": "Table",
+   "name": "t_keshikomi",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 9,
+  "props": {},
+  "n": 1069
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "DESCRIBES",
+  "via": "mention",
+  "group_size": 457,
+  "from": {
+   "id": "doc:docs/04_在庫物流/バッチ処理定義書_在庫物流.xlsx#ジョブ一覧!A6",
+   "kind": "DocEntity",
+   "name": "ジョブ一覧: ZAIB030",
+   "file": "docs/04_在庫物流/バッチ処理定義書_在庫物流.xlsx",
+   "line": 6
+  },
+  "to": {
+   "id": "dbobj:view:v_wms_shukka_shiji",
+   "kind": "DbObject",
+   "name": "view v_wms_shukka_shiji",
+   "file": "zaiko/sql/view/V_WMS_SHUKKA_SHIJI.sql",
+   "line": 1
+  },
+  "edge_line": 6,
+  "props": {},
+  "n": 1070
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "DESCRIBES",
+  "via": "mention",
+  "group_size": 457,
+  "from": {
+   "id": "doc:docs/02_販売管理/バッチ処理定義書_販売管理.xlsx#ジョブ一覧!A10",
+   "kind": "DocEntity",
+   "name": "ジョブ一覧: HANB110",
+   "file": "docs/02_販売管理/バッチ処理定義書_販売管理.xlsx",
+   "line": 10
+  },
+  "to": {
+   "id": "table:t_nyukin",
+   "kind": "Table",
+   "name": "t_nyukin",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 10,
+  "props": {},
+  "n": 1071
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "DESCRIBES",
+  "via": "office-table",
+  "group_size": 1422,
+  "from": {
+   "id": "doc:docs/03_購買管理/テーブル仕様書/テーブル仕様書_T_SHIIRE_M.xlsx#T_SHIIRE_M!A19",
+   "kind": "DocEntity",
+   "name": "T_SHIIRE_M: T_SHIIRE_M.UPD_DT",
+   "file": "docs/03_購買管理/テーブル仕様書/テーブル仕様書_T_SHIIRE_M.xlsx",
+   "line": 19
+  },
+  "to": {
+   "id": "col:t_shiire_m.upd_dt",
+   "kind": "Column",
+   "name": "t_shiire_m.upd_dt",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 19,
+  "props": {},
+  "n": 1072
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "DESCRIBES",
+  "via": "office-table",
+  "group_size": 1422,
+  "from": {
+   "id": "doc:docs/04_在庫物流/table/T_ZAIKO.xlsx#定義!B9",
+   "kind": "DocEntity",
+   "name": "定義: HYOKA_TANKA",
+   "file": "docs/04_在庫物流/table/T_ZAIKO.xlsx",
+   "line": 9
+  },
+  "to": {
+   "id": "col:t_zaiko.hyoka_tanka",
+   "kind": "Column",
+   "name": "t_zaiko.hyoka_tanka",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 9,
+  "props": {},
+  "n": 1073
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "DESCRIBES",
+  "via": "office-table",
+  "group_size": 1422,
+  "from": {
+   "id": "doc:docs/01_マスタ管理/画面設計書/MST130_税率マスタメンテナンス.xlsx#一覧!A4",
+   "kind": "DocEntity",
+   "name": "一覧: ZEIRITSU_KBN",
+   "file": "docs/01_マスタ管理/画面設計書/MST130_税率マスタメンテナンス.xlsx",
+   "line": 4
+  },
+  "to": {
+   "id": "col:m_zeiritsu.zeiritsu_kbn",
+   "kind": "Column",
+   "name": "m_zeiritsu.zeiritsu_kbn",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 4,
+  "props": {
+   "length": "1"
+  },
+  "n": 1074
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "DESCRIBES",
+  "via": "office-table",
+  "group_size": 1422,
+  "from": {
+   "id": "doc:docs/02_販売管理/テーブル定義書/T_MITSUMORI_H_見積ヘッダ.xlsx#テーブル定義!A11",
+   "kind": "DocEntity",
+   "name": "テーブル定義: MITSU_DATE",
+   "file": "docs/02_販売管理/テーブル定義書/T_MITSUMORI_H_見積ヘッダ.xlsx",
+   "line": 11
+  },
+  "to": {
+   "id": "col:t_mitsumori_h.mitsu_date",
+   "kind": "Column",
+   "name": "t_mitsumori_h.mitsu_date",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 11,
+  "props": {
+   "length": "8"
+  },
+  "n": 1075
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "DESCRIBES",
+  "via": "office-table",
+  "group_size": 1422,
+  "from": {
+   "id": "doc:docs/01_マスタ管理/テーブル定義書/M_ZEIRITSU_税率マスタ.xlsx#テーブル定義!A18",
+   "kind": "DocEntity",
+   "name": "テーブル定義: KOSHIN_PG",
+   "file": "docs/01_マスタ管理/テーブル定義書/M_ZEIRITSU_税率マスタ.xlsx",
+   "line": 18
+  },
+  "to": {
+   "id": "col:m_zeiritsu.koshin_pg",
+   "kind": "Column",
+   "name": "m_zeiritsu.koshin_pg",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 18,
+  "props": {
+   "length": "30"
+  },
+  "n": 1076
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "DESCRIBES",
+  "via": "office-table",
+  "group_size": 1422,
+  "from": {
+   "id": "doc:docs/01_マスタ管理/テーブル定義書/M_SHIIRE_仕入先マスタ.xlsx#テーブル定義!A36",
+   "kind": "DocEntity",
+   "name": "テーブル定義: KOSHIN_USER",
+   "file": "docs/01_マスタ管理/テーブル定義書/M_SHIIRE_仕入先マスタ.xlsx",
+   "line": 36
+  },
+  "to": {
+   "id": "col:m_shiire.koshin_user",
+   "kind": "Column",
+   "name": "m_shiire.koshin_user",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 36,
+  "props": {
+   "length": "10"
+  },
+  "n": 1077
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "DESCRIBES",
+  "via": "office-table",
+  "group_size": 1422,
+  "from": {
+   "id": "doc:docs/05_会計連携/table/T_SHIME_KANRI.xlsx#定義!B9",
+   "kind": "DocEntity",
+   "name": "定義: SAKUSEI_SHA",
+   "file": "docs/05_会計連携/table/T_SHIME_KANRI.xlsx",
+   "line": 9
+  },
+  "to": {
+   "id": "col:t_shime_kanri.sakusei_sha",
+   "kind": "Column",
+   "name": "t_shime_kanri.sakusei_sha",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 9,
+  "props": {},
+  "n": 1078
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "DESCRIBES",
+  "via": "office-table",
+  "group_size": 1422,
+  "from": {
+   "id": "doc:docs/01_マスタ管理/テーブル定義書/M_SHOHIN_商品マスタ.xlsx#テーブル定義!A30",
+   "kind": "DocEntity",
+   "name": "テーブル定義: KOSHIN_DATE",
+   "file": "docs/01_マスタ管理/テーブル定義書/M_SHOHIN_商品マスタ.xlsx",
+   "line": 30
+  },
+  "to": {
+   "id": "col:m_shohin.koshin_date",
+   "kind": "Column",
+   "name": "m_shohin.koshin_date",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 30,
+  "props": {},
+  "n": 1079
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "INCLUDES",
+  "via": "shell",
+  "group_size": 112,
+  "from": {
+   "id": "file:zaiko/batch/shell/ZAIB030.sh",
+   "kind": "Script",
+   "name": "ZAIB030.sh",
+   "file": "zaiko/batch/shell/ZAIB030.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "file:common/shell/common_func.sh",
+   "kind": "Script",
+   "name": "common_func.sh",
+   "file": "common/shell/common_func.sh",
+   "line": 1
+  },
+  "edge_line": 10,
+  "props": {},
+  "n": 1080
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "INCLUDES",
+  "via": "shell",
+  "group_size": 112,
+  "from": {
+   "id": "file:zaiko/batch/shell/ZAIB090.sh",
+   "kind": "Script",
+   "name": "ZAIB090.sh",
+   "file": "zaiko/batch/shell/ZAIB090.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "file:common/shell/kikan_env.sh",
+   "kind": "Script",
+   "name": "kikan_env.sh",
+   "file": "common/shell/kikan_env.sh",
+   "line": 1
+  },
+  "edge_line": 9,
+  "props": {},
+  "n": 1081
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "INCLUDES",
+  "via": "shell",
+  "group_size": 112,
+  "from": {
+   "id": "file:zaiko/batch/shell/ZAIB120.sh",
+   "kind": "Script",
+   "name": "ZAIB120.sh",
+   "file": "zaiko/batch/shell/ZAIB120.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "file:common/shell/kikan_env.sh",
+   "kind": "Script",
+   "name": "kikan_env.sh",
+   "file": "common/shell/kikan_env.sh",
+   "line": 1
+  },
+  "edge_line": 9,
+  "props": {},
+  "n": 1082
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "INCLUDES",
+  "via": "shell",
+  "group_size": 112,
+  "from": {
+   "id": "file:kobai/batch/shell/KOBB060.sh",
+   "kind": "Script",
+   "name": "KOBB060.sh",
+   "file": "kobai/batch/shell/KOBB060.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "file:common/shell/common_func.sh",
+   "kind": "Script",
+   "name": "common_func.sh",
+   "file": "common/shell/common_func.sh",
+   "line": 1
+  },
+  "edge_line": 10,
+  "props": {},
+  "n": 1083
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "INCLUDES",
+  "via": "shell",
+  "group_size": 112,
+  "from": {
+   "id": "file:hanbai/batch/shell/HANB100.sh",
+   "kind": "Script",
+   "name": "HANB100.sh",
+   "file": "hanbai/batch/shell/HANB100.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "file:common/shell/kikan_env.sh",
+   "kind": "Script",
+   "name": "kikan_env.sh",
+   "file": "common/shell/kikan_env.sh",
+   "line": 1
+  },
+  "edge_line": 9,
+  "props": {},
+  "n": 1084
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "INCLUDES",
+  "via": "shell",
+  "group_size": 112,
+  "from": {
+   "id": "file:kaikei/batch/shell/KAIB020.sh",
+   "kind": "Script",
+   "name": "KAIB020.sh",
+   "file": "kaikei/batch/shell/KAIB020.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "file:common/shell/common_func.sh",
+   "kind": "Script",
+   "name": "common_func.sh",
+   "file": "common/shell/common_func.sh",
+   "line": 1
+  },
+  "edge_line": 10,
+  "props": {},
+  "n": 1085
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "INCLUDES",
+  "via": "shell",
+  "group_size": 112,
+  "from": {
+   "id": "file:kobai/batch/shell/KOBB090.sh",
+   "kind": "Script",
+   "name": "KOBB090.sh",
+   "file": "kobai/batch/shell/KOBB090.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "file:common/shell/kikan_env.sh",
+   "kind": "Script",
+   "name": "kikan_env.sh",
+   "file": "common/shell/kikan_env.sh",
+   "line": 1
+  },
+  "edge_line": 9,
+  "props": {},
+  "n": 1086
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "INCLUDES",
+  "via": "shell",
+  "group_size": 112,
+  "from": {
+   "id": "file:hanbai/batch/shell/HANB030.sh",
+   "kind": "Script",
+   "name": "HANB030.sh",
+   "file": "hanbai/batch/shell/HANB030.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "file:common/shell/kikan_env.sh",
+   "kind": "Script",
+   "name": "kikan_env.sh",
+   "file": "common/shell/kikan_env.sh",
+   "line": 1
+  },
+  "edge_line": 9,
+  "props": {},
+  "n": 1087
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "MAPS_TO",
+  "via": "layout",
+  "group_size": 48,
+  "from": {
+   "id": "layout:zaiko/interface/layout/IF-ZAI-007_WMS移動指示.txt#IDO_SURYO",
+   "kind": "LayoutField",
+   "name": "IDO_SURYO",
+   "file": "zaiko/interface/layout/IF-ZAI-007_WMS移動指示.txt",
+   "line": 17
+  },
+  "to": {
+   "id": "col:t_zaiko_ido_m.ido_suryo",
+   "kind": "Column",
+   "name": "t_zaiko_ido_m.ido_suryo",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 17,
+  "props": {
+   "length": "9"
+  },
+  "n": 1088
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "MAPS_TO",
+  "via": "layout",
+  "group_size": 48,
+  "from": {
+   "id": "layout:zaiko/interface/layout/IF-ZAI-005_WMS商品マスタ.txt#SHOHIN_KANA",
+   "kind": "LayoutField",
+   "name": "SHOHIN_KANA",
+   "file": "zaiko/interface/layout/IF-ZAI-005_WMS商品マスタ.txt",
+   "line": 14
+  },
+  "to": {
+   "id": "col:m_shohin.shohin_kana",
+   "kind": "Column",
+   "name": "m_shohin.shohin_kana",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 14,
+  "props": {
+   "length": "40"
+  },
+  "n": 1089
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "MAPS_TO",
+  "via": "layout",
+  "group_size": 48,
+  "from": {
+   "id": "layout:zaiko/interface/layout/IF-ZAI-001_WMS出荷指示.txt#YUBIN_NO",
+   "kind": "LayoutField",
+   "name": "YUBIN_NO",
+   "file": "zaiko/interface/layout/IF-ZAI-001_WMS出荷指示.txt",
+   "line": 17
+  },
+  "to": {
+   "id": "col:m_nonyu.yubin_no",
+   "kind": "Column",
+   "name": "m_nonyu.yubin_no",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 17,
+  "props": {
+   "length": "8"
+  },
+  "n": 1090
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "MAPS_TO",
+  "via": "layout",
+  "group_size": 48,
+  "from": {
+   "id": "layout:zaiko/interface/layout/IF-ZAI-003_WMS入荷予定.txt#SHOHIN_CD",
+   "kind": "LayoutField",
+   "name": "SHOHIN_CD",
+   "file": "zaiko/interface/layout/IF-ZAI-003_WMS入荷予定.txt",
+   "line": 16
+  },
+  "to": {
+   "id": "col:t_nyuka_yotei.shohin_cd",
+   "kind": "Column",
+   "name": "t_nyuka_yotei.shohin_cd",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 16,
+  "props": {
+   "length": "8"
+  },
+  "n": 1091
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "MAPS_TO",
+  "via": "layout",
+  "group_size": 48,
+  "from": {
+   "id": "layout:zaiko/interface/layout/IF-ZAI-001_WMS出荷指示.txt#SHIJI_SURYO",
+   "kind": "LayoutField",
+   "name": "SHIJI_SURYO",
+   "file": "zaiko/interface/layout/IF-ZAI-001_WMS出荷指示.txt",
+   "line": 22
+  },
+  "to": {
+   "id": "col:t_shukka_m.shiji_suryo",
+   "kind": "Column",
+   "name": "t_shukka_m.shiji_suryo",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 22,
+  "props": {
+   "length": "9"
+  },
+  "n": 1092
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "MAPS_TO",
+  "via": "layout",
+  "group_size": 48,
+  "from": {
+   "id": "layout:zaiko/interface/layout/IF-ZAI-004_WMS入荷実績.txt#NYUKA_YOTEI_NO",
+   "kind": "LayoutField",
+   "name": "NYUKA_YOTEI_NO",
+   "file": "zaiko/interface/layout/IF-ZAI-004_WMS入荷実績.txt",
+   "line": 12
+  },
+  "to": {
+   "id": "col:t_wms_nyuka_wk.nyuka_yotei_no",
+   "kind": "Column",
+   "name": "t_wms_nyuka_wk.nyuka_yotei_no",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 12,
+  "props": {
+   "length": "12"
+  },
+  "n": 1093
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "MAPS_TO",
+  "via": "layout",
+  "group_size": 48,
+  "from": {
+   "id": "layout:zaiko/interface/layout/IF-ZAI-001_WMS出荷指示.txt#GYO_NO",
+   "kind": "LayoutField",
+   "name": "GYO_NO",
+   "file": "zaiko/interface/layout/IF-ZAI-001_WMS出荷指示.txt",
+   "line": 13
+  },
+  "to": {
+   "id": "col:t_shukka_m.gyo_no",
+   "kind": "Column",
+   "name": "t_shukka_m.gyo_no",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 13,
+  "props": {
+   "length": "3"
+  },
+  "n": 1094
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "MAPS_TO",
+  "via": "layout",
+  "group_size": 48,
+  "from": {
+   "id": "layout:zaiko/interface/layout/IF-ZAI-001_WMS出荷指示.txt#SHUKKA_YOTEI_DATE",
+   "kind": "LayoutField",
+   "name": "SHUKKA_YOTEI_DATE",
+   "file": "zaiko/interface/layout/IF-ZAI-001_WMS出荷指示.txt",
+   "line": 14
+  },
+  "to": {
+   "id": "col:t_juchu_h.shukka_yotei_date",
+   "kind": "Column",
+   "name": "t_juchu_h.shukka_yotei_date",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 14,
+  "props": {
+   "length": "8"
+  },
+  "n": 1095
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "MAPS_TO",
+  "via": "resultmap",
+  "group_size": 97,
+  "from": {
+   "id": "java:jp.co.minato.kikan.master.entity.ZeiritsuEntity.tekiyoShuryoDate",
+   "kind": "Field",
+   "name": "ZeiritsuEntity.tekiyoShuryoDate",
+   "file": "master/src/main/java/jp/co/minato/kikan/master/entity/ZeiritsuEntity.java",
+   "line": 19
+  },
+  "to": {
+   "id": "col:m_zeiritsu.tekiyo_shuryo_date",
+   "kind": "Column",
+   "name": "m_zeiritsu.tekiyo_shuryo_date",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 9,
+  "props": {},
+  "n": 1096
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "MAPS_TO",
+  "via": "resultmap",
+  "group_size": 97,
+  "from": {
+   "id": "java:jp.co.minato.kikan.master.entity.HanbaiTankaEntity.torokuDate",
+   "kind": "Field",
+   "name": "HanbaiTankaEntity.torokuDate",
+   "file": "master/src/main/java/jp/co/minato/kikan/master/entity/HanbaiTankaEntity.java",
+   "line": 28
+  },
+  "to": {
+   "id": "col:m_hanbai_tanka.toroku_date",
+   "kind": "Column",
+   "name": "m_hanbai_tanka.toroku_date",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 12,
+  "props": {},
+  "n": 1097
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "MAPS_TO",
+  "via": "resultmap",
+  "group_size": 97,
+  "from": {
+   "id": "java:jp.co.minato.kikan.master.entity.HanbaiTankaEntity.tekiyoKaishiDate",
+   "kind": "Field",
+   "name": "HanbaiTankaEntity.tekiyoKaishiDate",
+   "file": "master/src/main/java/jp/co/minato/kikan/master/entity/HanbaiTankaEntity.java",
+   "line": 19
+  },
+  "to": {
+   "id": "col:m_hanbai_tanka.tekiyo_kaishi_date",
+   "kind": "Column",
+   "name": "m_hanbai_tanka.tekiyo_kaishi_date",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 9,
+  "props": {},
+  "n": 1098
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "MAPS_TO",
+  "via": "resultmap",
+  "group_size": 97,
+  "from": {
+   "id": "java:jp.co.minato.kikan.edi.entity.EdiShohinHenkanEntity.shohinCd",
+   "kind": "Field",
+   "name": "EdiShohinHenkanEntity.shohinCd",
+   "file": "edi/src/main/java/jp/co/minato/kikan/edi/entity/EdiShohinHenkanEntity.java",
+   "line": 19
+  },
+  "to": {
+   "id": "col:m_edi_shohin_henkan.shohin_cd",
+   "kind": "Column",
+   "name": "m_edi_shohin_henkan.shohin_cd",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 9,
+  "props": {},
+  "n": 1099
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "MAPS_TO",
+  "via": "resultmap",
+  "group_size": 97,
+  "from": {
+   "id": "java:jp.co.minato.kikan.edi.entity.EdiTorihikisakiEntity.koshinSha",
+   "kind": "Field",
+   "name": "EdiTorihikisakiEntity.koshinSha",
+   "file": "edi/src/main/java/jp/co/minato/kikan/edi/entity/EdiTorihikisakiEntity.java",
+   "line": 49
+  },
+  "to": {
+   "id": "col:m_edi_torihikisaki.koshin_sha",
+   "kind": "Column",
+   "name": "m_edi_torihikisaki.koshin_sha",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 19,
+  "props": {},
+  "n": 1100
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "MAPS_TO",
+  "via": "resultmap",
+  "group_size": 97,
+  "from": {
+   "id": "java:jp.co.minato.kikan.kaikei.entity.KamokuEntity.delFlg",
+   "kind": "Field",
+   "name": "KamokuEntity.delFlg",
+   "file": "kaikei/src/main/java/jp/co/minato/kikan/kaikei/entity/KamokuEntity.java",
+   "line": 31
+  },
+  "to": {
+   "id": "col:m_kamoku.del_flg",
+   "kind": "Column",
+   "name": "m_kamoku.del_flg",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 13,
+  "props": {},
+  "n": 1101
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "MAPS_TO",
+  "via": "resultmap",
+  "group_size": 97,
+  "from": {
+   "id": "java:jp.co.minato.kikan.zaiko.entity.LocationEntity.sokoCd",
+   "kind": "Field",
+   "name": "LocationEntity.sokoCd",
+   "file": "zaiko/src/main/java/jp/co/minato/kikan/zaiko/entity/LocationEntity.java",
+   "line": 13
+  },
+  "to": {
+   "id": "col:m_location.soko_cd",
+   "kind": "Column",
+   "name": "m_location.soko_cd",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 7,
+  "props": {},
+  "n": 1102
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "MAPS_TO",
+  "via": "resultmap",
+  "group_size": 97,
+  "from": {
+   "id": "java:jp.co.minato.kikan.edi.entity.EdiShohinHenkanEntity.aiteShohinCd",
+   "kind": "Field",
+   "name": "EdiShohinHenkanEntity.aiteShohinCd",
+   "file": "edi/src/main/java/jp/co/minato/kikan/edi/entity/EdiShohinHenkanEntity.java",
+   "line": 16
+  },
+  "to": {
+   "id": "col:m_edi_shohin_henkan.aite_shohin_cd",
+   "kind": "Column",
+   "name": "m_edi_shohin_henkan.aite_shohin_cd",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 8,
+  "props": {},
+  "n": 1103
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "POPULATES",
+  "via": "dml",
+  "group_size": 14,
+  "from": {
+   "id": "file:db/migration/20191001_KEIGEN_ZEIRITSU.sql",
+   "kind": "SqlFile",
+   "name": "20191001_KEIGEN_ZEIRITSU.sql",
+   "file": "db/migration/20191001_KEIGEN_ZEIRITSU.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:t_juchu_m",
+   "kind": "Table",
+   "name": "t_juchu_m",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 11,
+  "props": {
+   "ops": "RU"
+  },
+  "n": 1104
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "POPULATES",
+  "via": "dml",
+  "group_size": 14,
+  "from": {
+   "id": "file:master/sql/data/M_KBN.sql",
+   "kind": "SqlFile",
+   "name": "M_KBN.sql",
+   "file": "master/sql/data/M_KBN.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:m_kbn",
+   "kind": "Table",
+   "name": "m_kbn",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 1,
+  "props": {
+   "ops": "DR"
+  },
+  "n": 1105
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "POPULATES",
+  "via": "dml",
+  "group_size": 14,
+  "from": {
+   "id": "file:master/batch/sql/shiire_tanka_merge.sql",
+   "kind": "SqlFile",
+   "name": "shiire_tanka_merge.sql",
+   "file": "master/batch/sql/shiire_tanka_merge.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:w_shiire_tanka",
+   "kind": "Table",
+   "name": "w_shiire_tanka",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 1,
+  "props": {
+   "ops": "RU"
+  },
+  "n": 1106
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "POPULATES",
+  "via": "dml",
+  "group_size": 14,
+  "from": {
+   "id": "file:common/sql/data/M_JISHA.sql",
+   "kind": "SqlFile",
+   "name": "M_JISHA.sql",
+   "file": "common/sql/data/M_JISHA.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:m_jisha",
+   "kind": "Table",
+   "name": "m_jisha",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 1,
+  "props": {
+   "ops": "CR"
+  },
+  "n": 1107
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "POPULATES",
+  "via": "dml",
+  "group_size": 14,
+  "from": {
+   "id": "file:hanbai/sql/migration/20110901_KESHIKOMI.sql",
+   "kind": "SqlFile",
+   "name": "20110901_KESHIKOMI.sql",
+   "file": "hanbai/sql/migration/20110901_KESHIKOMI.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:t_nyukin",
+   "kind": "Table",
+   "name": "t_nyukin",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 4,
+  "props": {
+   "ops": "RU"
+  },
+  "n": 1108
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "POPULATES",
+  "via": "dml",
+  "group_size": 14,
+  "from": {
+   "id": "file:edi/sql/data/M_EDI_TORIHIKISAKI.sql",
+   "kind": "SqlFile",
+   "name": "M_EDI_TORIHIKISAKI.sql",
+   "file": "edi/sql/data/M_EDI_TORIHIKISAKI.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:m_edi_torihikisaki",
+   "kind": "Table",
+   "name": "m_edi_torihikisaki",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 1,
+  "props": {
+   "ops": "CR"
+  },
+  "n": 1109
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "POPULATES",
+  "via": "dml",
+  "group_size": 14,
+  "from": {
+   "id": "file:common/sql/data/T_SAIBAN.sql",
+   "kind": "SqlFile",
+   "name": "T_SAIBAN.sql",
+   "file": "common/sql/data/T_SAIBAN.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:t_saiban",
+   "kind": "Table",
+   "name": "t_saiban",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 1,
+  "props": {
+   "ops": "DR"
+  },
+  "n": 1110
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "POPULATES",
+  "via": "dml",
+  "group_size": 14,
+  "from": {
+   "id": "file:db/migration/20140401_ZEIRITSU_8PER.sql",
+   "kind": "SqlFile",
+   "name": "20140401_ZEIRITSU_8PER.sql",
+   "file": "db/migration/20140401_ZEIRITSU_8PER.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:m_zeiritsu",
+   "kind": "Table",
+   "name": "m_zeiritsu",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 1,
+  "props": {
+   "ops": "CR"
+  },
+  "n": 1111
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "REFERENCES",
+  "via": "parser",
+  "group_size": 1961,
+  "from": {
+   "id": "java:jp.co.minato.kikan.common.report.FormField#FormField(String,String,int,String)",
+   "kind": "Method",
+   "name": "FormField()",
+   "file": "common/src/main/java/jp/co/minato/kikan/common/report/FormField.java",
+   "line": 19
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.common.report.FormField.length",
+   "kind": "Field",
+   "name": "FormField.length",
+   "file": "common/src/main/java/jp/co/minato/kikan/common/report/FormField.java",
+   "line": 16
+  },
+  "edge_line": 22,
+  "props": {},
+  "n": 1112
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "REFERENCES",
+  "via": "parser",
+  "group_size": 1961,
+  "from": {
+   "id": "java:jp.co.minato.kikan.master.shohin.ShohinForm#getDelFlg()",
+   "kind": "Method",
+   "name": "ShohinForm.getDelFlg()",
+   "file": "master/src/main/java/jp/co/minato/kikan/master/shohin/ShohinForm.java",
+   "line": 227
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.master.shohin.ShohinForm.delFlg",
+   "kind": "Field",
+   "name": "ShohinForm.delFlg",
+   "file": "master/src/main/java/jp/co/minato/kikan/master/shohin/ShohinForm.java",
+   "line": 73
+  },
+  "edge_line": 228,
+  "props": {},
+  "n": 1113
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "REFERENCES",
+  "via": "parser",
+  "group_size": 1961,
+  "from": {
+   "id": "java:jp.co.minato.kikan.hanbai.uriage.UriageService#regist(UriageForm,UserInfo)",
+   "kind": "Method",
+   "name": "UriageService.regist()",
+   "file": "hanbai/src/main/java/jp/co/minato/kikan/hanbai/uriage/UriageService.java",
+   "line": 72
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.hanbai.uriage.UriageDao",
+   "kind": "Class",
+   "name": "UriageDao",
+   "file": "hanbai/src/main/java/jp/co/minato/kikan/hanbai/uriage/UriageDao.java",
+   "line": 24
+  },
+  "edge_line": 80,
+  "props": {},
+  "n": 1114
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "REFERENCES",
+  "via": "parser",
+  "group_size": 1961,
+  "from": {
+   "id": "java:jp.co.minato.kikan.kobai.bean.HacchuHeaderBean#setZeiGaku(long)",
+   "kind": "Method",
+   "name": "HacchuHeaderBean.setZeiGaku()",
+   "file": "kobai/src/main/java/jp/co/minato/kikan/kobai/bean/HacchuHeaderBean.java",
+   "line": 121
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.kobai.bean.HacchuHeaderBean.zeiGaku",
+   "kind": "Field",
+   "name": "HacchuHeaderBean.zeiGaku",
+   "file": "kobai/src/main/java/jp/co/minato/kikan/kobai/bean/HacchuHeaderBean.java",
+   "line": 24
+  },
+  "edge_line": 122,
+  "props": {},
+  "n": 1115
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "REFERENCES",
+  "via": "parser",
+  "group_size": 1961,
+  "from": {
+   "id": "java:jp.co.minato.kikan.hanbai.henpin.HenpinForm#clearMeisai()",
+   "kind": "Method",
+   "name": "HenpinForm.clearMeisai()",
+   "file": "hanbai/src/main/java/jp/co/minato/kikan/hanbai/henpin/HenpinForm.java",
+   "line": 316
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.hanbai.henpin.HenpinForm.meisaiZeiGaku",
+   "kind": "Field",
+   "name": "HenpinForm.meisaiZeiGaku",
+   "file": "hanbai/src/main/java/jp/co/minato/kikan/hanbai/henpin/HenpinForm.java",
+   "line": 91
+  },
+  "edge_line": 324,
+  "props": {},
+  "n": 1116
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "REFERENCES",
+  "via": "parser",
+  "group_size": 1961,
+  "from": {
+   "id": "java:jp.co.minato.kikan.common.util.TaxCalcUtilOld#calcZei(long)",
+   "kind": "Method",
+   "name": "TaxCalcUtilOld.calcZei()",
+   "file": "common/src/main/java/jp/co/minato/kikan/common/util/TaxCalcUtilOld.java",
+   "line": 11
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.common.util.TaxCalcUtilOld.ZEIRITSU",
+   "kind": "Field",
+   "name": "TaxCalcUtilOld.ZEIRITSU",
+   "file": "common/src/main/java/jp/co/minato/kikan/common/util/TaxCalcUtilOld.java",
+   "line": 9
+  },
+  "edge_line": 13,
+  "props": {},
+  "n": 1117
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "REFERENCES",
+  "via": "parser",
+  "group_size": 1961,
+  "from": {
+   "id": "java:jp.co.minato.kikan.edi.edishohinhenkan.EdiShohinHenkanListAction#doExecute(ActionMapping,ActionForm,HttpServletRequest,HttpServletResponse)",
+   "kind": "Method",
+   "name": "EdiShohinHenkanListAction.doExecute()",
+   "file": "edi/src/main/java/jp/co/minato/kikan/edi/edishohinhenkan/EdiShohinHenkanListAction.java",
+   "line": 28
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.edi.edishohinhenkan.EdiShohinHenkanService",
+   "kind": "Class",
+   "name": "EdiShohinHenkanService",
+   "file": "edi/src/main/java/jp/co/minato/kikan/edi/edishohinhenkan/EdiShohinHenkanService.java",
+   "line": 17
+  },
+  "edge_line": 33,
+  "props": {},
+  "n": 1118
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "REFERENCES",
+  "via": "parser",
+  "group_size": 1961,
+  "from": {
+   "id": "java:jp.co.minato.kikan.hanbai.mitsumori.MitsumoriForm#getTantoCd()",
+   "kind": "Method",
+   "name": "MitsumoriForm.getTantoCd()",
+   "file": "hanbai/src/main/java/jp/co/minato/kikan/hanbai/mitsumori/MitsumoriForm.java",
+   "line": 96
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.hanbai.mitsumori.MitsumoriForm.tantoCd",
+   "kind": "Field",
+   "name": "MitsumoriForm.tantoCd",
+   "file": "hanbai/src/main/java/jp/co/minato/kikan/hanbai/mitsumori/MitsumoriForm.java",
+   "line": 28
+  },
+  "edge_line": 97,
+  "props": {},
+  "n": 1119
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "REFERENCES",
+  "via": "xml-generic",
+  "group_size": 195,
+  "from": {
+   "id": "xml:kobai/report/form/R_KOB030.xml#8:field",
+   "kind": "XmlElement",
+   "name": "field SHIME_DATE",
+   "file": "kobai/report/form/R_KOB030.xml",
+   "line": 8
+  },
+  "to": {
+   "id": "col:t_shiharai_yotei.shime_date",
+   "kind": "Column",
+   "name": "t_shiharai_yotei.shime_date",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 8,
+  "props": {
+   "length": "10"
+  },
+  "n": 1120
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "REFERENCES",
+  "via": "xml-generic",
+  "group_size": 195,
+  "from": {
+   "id": "file:kobai/webapp/WEB-INF/web.xml",
+   "kind": "ConfigFile",
+   "name": "web.xml",
+   "file": "kobai/webapp/WEB-INF/web.xml",
+   "line": 1
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.kobai.servlet.NyukaJissekiListServlet",
+   "kind": "Class",
+   "name": "NyukaJissekiListServlet",
+   "file": "kobai/src/main/java/jp/co/minato/kikan/kobai/servlet/NyukaJissekiListServlet.java",
+   "line": 26
+  },
+  "edge_line": 44,
+  "props": {},
+  "n": 1121
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "REFERENCES",
+  "via": "xml-generic",
+  "group_size": 195,
+  "from": {
+   "id": "xml:hanbai/report/form/R_HAN050.xml#14:field",
+   "kind": "XmlElement",
+   "name": "field ZEINUKI_KINGAKU",
+   "file": "hanbai/report/form/R_HAN050.xml",
+   "line": 14
+  },
+  "to": {
+   "id": "col:t_uriage_h.zeinuki_kingaku",
+   "kind": "Column",
+   "name": "t_uriage_h.zeinuki_kingaku",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 14,
+  "props": {
+   "length": "12"
+  },
+  "n": 1122
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "REFERENCES",
+  "via": "xml-generic",
+  "group_size": 195,
+  "from": {
+   "id": "file:zaiko/webapp/WEB-INF/web.xml",
+   "kind": "ConfigFile",
+   "name": "web.xml",
+   "file": "zaiko/webapp/WEB-INF/web.xml",
+   "line": 1
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.common.web.EncodingFilter",
+   "kind": "Class",
+   "name": "EncodingFilter",
+   "file": "common/src/main/java/jp/co/minato/kikan/common/web/EncodingFilter.java",
+   "line": 15
+  },
+  "edge_line": 7,
+  "props": {},
+  "n": 1123
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "REFERENCES",
+  "via": "xml-generic",
+  "group_size": 195,
+  "from": {
+   "id": "xml:kobai/report/form/R_KOB020.xml#14:field",
+   "kind": "XmlElement",
+   "name": "field ZEI_GAKU",
+   "file": "kobai/report/form/R_KOB020.xml",
+   "line": 14
+  },
+  "to": {
+   "id": "col:t_shiire_h.zei_gaku",
+   "kind": "Column",
+   "name": "t_shiire_h.zei_gaku",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 14,
+  "props": {
+   "length": "11"
+  },
+  "n": 1124
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "REFERENCES",
+  "via": "xml-generic",
+  "group_size": 195,
+  "from": {
+   "id": "xml:hanbai/report/form/R_HAN090.xml#13:field",
+   "kind": "XmlElement",
+   "name": "field NYUKIN_GAKU",
+   "file": "hanbai/report/form/R_HAN090.xml",
+   "line": 13
+  },
+  "to": {
+   "id": "col:t_urikake_zan.nyukin_gaku",
+   "kind": "Column",
+   "name": "t_urikake_zan.nyukin_gaku",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 13,
+  "props": {
+   "length": "13"
+  },
+  "n": 1125
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "REFERENCES",
+  "via": "xml-generic",
+  "group_size": 195,
+  "from": {
+   "id": "xml:hanbai/report/form/R_HAN060.xml#8:field",
+   "kind": "XmlElement",
+   "name": "field TOKUI_CD",
+   "file": "hanbai/report/form/R_HAN060.xml",
+   "line": 8
+  },
+  "to": {
+   "id": "col:t_urikake_zan.tokui_cd",
+   "kind": "Column",
+   "name": "t_urikake_zan.tokui_cd",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 8,
+  "props": {
+   "length": "6"
+  },
+  "n": 1126
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "REFERENCES",
+  "via": "xml-generic",
+  "group_size": 195,
+  "from": {
+   "id": "xml:hanbai/report/form/R_HAN030.xml#12:field",
+   "kind": "XmlElement",
+   "name": "field NONYU_NM",
+   "file": "hanbai/report/form/R_HAN030.xml",
+   "line": 12
+  },
+  "to": {
+   "id": "col:m_nonyu.nonyu_nm",
+   "kind": "Column",
+   "name": "m_nonyu.nonyu_nm",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 12,
+  "props": {
+   "length": "80"
+  },
+  "n": 1127
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "RUNS",
+  "via": "shell",
+  "group_size": 50,
+  "from": {
+   "id": "file:edi/batch/shell/EDIB040.sh",
+   "kind": "Script",
+   "name": "EDIB040.sh",
+   "file": "edi/batch/shell/EDIB040.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.edi.batch.AsnSakuseiBatch",
+   "kind": "Class",
+   "name": "AsnSakuseiBatch",
+   "file": "edi/src/main/java/jp/co/minato/kikan/edi/batch/AsnSakuseiBatch.java",
+   "line": 18
+  },
+  "edge_line": 15,
+  "props": {},
+  "n": 1128
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "RUNS",
+  "via": "shell",
+  "group_size": 50,
+  "from": {
+   "id": "file:master/batch/shell/MSTB030.sh",
+   "kind": "Script",
+   "name": "MSTB030.sh",
+   "file": "master/batch/shell/MSTB030.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.master.batch.ShiireIchiranBatch",
+   "kind": "Class",
+   "name": "ShiireIchiranBatch",
+   "file": "master/src/main/java/jp/co/minato/kikan/master/batch/ShiireIchiranBatch.java",
+   "line": 9
+  },
+  "edge_line": 15,
+  "props": {},
+  "n": 1129
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "RUNS",
+  "via": "shell",
+  "group_size": 50,
+  "from": {
+   "id": "file:master/batch/shell/MSTB010.sh",
+   "kind": "Script",
+   "name": "MSTB010.sh",
+   "file": "master/batch/shell/MSTB010.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.master.batch.TokuiIchiranBatch",
+   "kind": "Class",
+   "name": "TokuiIchiranBatch",
+   "file": "master/src/main/java/jp/co/minato/kikan/master/batch/TokuiIchiranBatch.java",
+   "line": 9
+  },
+  "edge_line": 15,
+  "props": {},
+  "n": 1130
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "RUNS",
+  "via": "shell",
+  "group_size": 50,
+  "from": {
+   "id": "file:zaiko/batch/shell/ZAIB050.sh",
+   "kind": "Script",
+   "name": "ZAIB050.sh",
+   "file": "zaiko/batch/shell/ZAIB050.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.zaiko.batch.WmsNyukaYoteiOutBatch",
+   "kind": "Class",
+   "name": "WmsNyukaYoteiOutBatch",
+   "file": "zaiko/src/main/java/jp/co/minato/kikan/zaiko/batch/WmsNyukaYoteiOutBatch.java",
+   "line": 20
+  },
+  "edge_line": 21,
+  "props": {},
+  "n": 1131
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "RUNS",
+  "via": "shell",
+  "group_size": 50,
+  "from": {
+   "id": "file:hanbai/batch/shell/HANB060.sh",
+   "kind": "Script",
+   "name": "HANB060.sh",
+   "file": "hanbai/batch/shell/HANB060.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.hanbai.batch.NohinshoBatch",
+   "kind": "Class",
+   "name": "NohinshoBatch",
+   "file": "hanbai/src/main/java/jp/co/minato/kikan/hanbai/batch/NohinshoBatch.java",
+   "line": 9
+  },
+  "edge_line": 15,
+  "props": {},
+  "n": 1132
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "RUNS",
+  "via": "shell",
+  "group_size": 50,
+  "from": {
+   "id": "file:zaiko/batch/shell/ZAIB080.sh",
+   "kind": "Script",
+   "name": "ZAIB080.sh",
+   "file": "zaiko/batch/shell/ZAIB080.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "file:zaiko/batch/ctl/ZAIB080_WMS_ZAIKO.ctl",
+   "kind": "Script",
+   "name": "ZAIB080_WMS_ZAIKO.ctl",
+   "file": "zaiko/batch/ctl/ZAIB080_WMS_ZAIKO.ctl",
+   "line": 1
+  },
+  "edge_line": 26,
+  "props": {},
+  "n": 1133
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "RUNS",
+  "via": "shell",
+  "group_size": 50,
+  "from": {
+   "id": "file:master/batch/shell/MSTB020.sh",
+   "kind": "Script",
+   "name": "MSTB020.sh",
+   "file": "master/batch/shell/MSTB020.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.master.batch.ShohinIchiranBatch",
+   "kind": "Class",
+   "name": "ShohinIchiranBatch",
+   "file": "master/src/main/java/jp/co/minato/kikan/master/batch/ShohinIchiranBatch.java",
+   "line": 9
+  },
+  "edge_line": 15,
+  "props": {},
+  "n": 1134
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "RUNS",
+  "via": "shell",
+  "group_size": 50,
+  "from": {
+   "id": "file:zaiko/batch/shell/ZAIB140.sh",
+   "kind": "Script",
+   "name": "ZAIB140.sh",
+   "file": "zaiko/batch/shell/ZAIB140.sh",
+   "line": 1
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.zaiko.batch.UkeharaihyoBatch",
+   "kind": "Class",
+   "name": "UkeharaihyoBatch",
+   "file": "zaiko/src/main/java/jp/co/minato/kikan/zaiko/batch/UkeharaihyoBatch.java",
+   "line": 9
+  },
+  "edge_line": 15,
+  "props": {},
+  "n": 1135
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "TESTS",
+  "via": "naming",
+  "group_size": 5,
+  "from": {
+   "id": "java:jp.co.minato.kikan.common.util.StringUtilTest",
+   "kind": "TestClass",
+   "name": "StringUtilTest",
+   "file": "common/src/test/java/jp/co/minato/kikan/common/util/StringUtilTest.java",
+   "line": 7
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.common.util.StringUtil",
+   "kind": "Class",
+   "name": "StringUtil",
+   "file": "common/src/main/java/jp/co/minato/kikan/common/util/StringUtil.java",
+   "line": 8
+  },
+  "edge_line": null,
+  "props": {},
+  "n": 1136
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "TESTS",
+  "via": "naming",
+  "group_size": 5,
+  "from": {
+   "id": "java:jp.co.minato.kikan.common.util.TaxCalcUtilTest",
+   "kind": "TestClass",
+   "name": "TaxCalcUtilTest",
+   "file": "common/src/test/java/jp/co/minato/kikan/common/util/TaxCalcUtilTest.java",
+   "line": 7
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.common.util.TaxCalcUtil",
+   "kind": "Class",
+   "name": "TaxCalcUtil",
+   "file": "common/src/main/java/jp/co/minato/kikan/common/util/TaxCalcUtil.java",
+   "line": 15
+  },
+  "edge_line": null,
+  "props": {},
+  "n": 1137
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "TESTS",
+  "via": "naming",
+  "group_size": 5,
+  "from": {
+   "id": "java:jp.co.minato.kikan.common.util.DateUtilTest",
+   "kind": "TestClass",
+   "name": "DateUtilTest",
+   "file": "common/src/test/java/jp/co/minato/kikan/common/util/DateUtilTest.java",
+   "line": 9
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.common.util.DateUtil",
+   "kind": "Class",
+   "name": "DateUtil",
+   "file": "common/src/main/java/jp/co/minato/kikan/common/util/DateUtil.java",
+   "line": 13
+  },
+  "edge_line": null,
+  "props": {},
+  "n": 1138
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "TESTS",
+  "via": "naming",
+  "group_size": 5,
+  "from": {
+   "id": "java:jp.co.minato.kikan.kobai.common.KobaiCheckTest",
+   "kind": "TestClass",
+   "name": "KobaiCheckTest",
+   "file": "kobai/src/test/java/jp/co/minato/kikan/kobai/common/KobaiCheckTest.java",
+   "line": 11
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.kobai.common.KobaiCheck",
+   "kind": "Class",
+   "name": "KobaiCheck",
+   "file": "kobai/src/main/java/jp/co/minato/kikan/kobai/common/KobaiCheck.java",
+   "line": 11
+  },
+  "edge_line": null,
+  "props": {},
+  "n": 1139
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "TESTS",
+  "via": "naming",
+  "group_size": 5,
+  "from": {
+   "id": "java:jp.co.minato.kikan.edi.partner.T03HanamaruJuchuConverterTest",
+   "kind": "TestClass",
+   "name": "T03HanamaruJuchuConverterTest",
+   "file": "edi/src/test/java/jp/co/minato/kikan/edi/partner/T03HanamaruJuchuConverterTest.java",
+   "line": 15
+  },
+  "to": {
+   "id": "java:jp.co.minato.kikan.edi.partner.T03HanamaruJuchuConverter",
+   "kind": "Class",
+   "name": "T03HanamaruJuchuConverter",
+   "file": "edi/src/main/java/jp/co/minato/kikan/edi/partner/T03HanamaruJuchuConverter.java",
+   "line": 24
+  },
+  "edge_line": null,
+  "props": {},
+  "n": 1140
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "WRITES",
+  "via": "dml",
+  "group_size": 13,
+  "from": {
+   "id": "file:db/migration/20151001_ZAIKO_SASSHIN.sql",
+   "kind": "SqlFile",
+   "name": "20151001_ZAIKO_SASSHIN.sql",
+   "file": "db/migration/20151001_ZAIKO_SASSHIN.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:t_zaiko",
+   "kind": "Table",
+   "name": "t_zaiko",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 1,
+  "props": {
+   "ops": "CR"
+  },
+  "n": 1141
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "WRITES",
+  "via": "dml",
+  "group_size": 13,
+  "from": {
+   "id": "file:master/batch/sql/shiire_tanka_merge.sql",
+   "kind": "SqlFile",
+   "name": "shiire_tanka_merge.sql",
+   "file": "master/batch/sql/shiire_tanka_merge.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:w_shiire_tanka",
+   "kind": "Table",
+   "name": "w_shiire_tanka",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 5,
+  "props": {
+   "ops": "RU"
+  },
+  "n": 1142
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "WRITES",
+  "via": "dml",
+  "group_size": 13,
+  "from": {
+   "id": "file:kobai/sql/ope/fb_resend.sql",
+   "kind": "SqlFile",
+   "name": "fb_resend.sql",
+   "file": "kobai/sql/ope/fb_resend.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:t_shiharai_yotei",
+   "kind": "Table",
+   "name": "t_shiharai_yotei",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 1,
+  "props": {
+   "ops": "RU"
+  },
+  "n": 1143
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "WRITES",
+  "via": "dml",
+  "group_size": 13,
+  "from": {
+   "id": "file:master/batch/sql/hanbai_tanka_merge.sql",
+   "kind": "SqlFile",
+   "name": "hanbai_tanka_merge.sql",
+   "file": "master/batch/sql/hanbai_tanka_merge.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:w_hanbai_tanka",
+   "kind": "Table",
+   "name": "w_hanbai_tanka",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 1,
+  "props": {
+   "ops": "RU"
+  },
+  "n": 1144
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "WRITES",
+  "via": "dml",
+  "group_size": 13,
+  "from": {
+   "id": "file:hanbai/sql/ope/keshikomi_torikeshi.sql",
+   "kind": "SqlFile",
+   "name": "keshikomi_torikeshi.sql",
+   "file": "hanbai/sql/ope/keshikomi_torikeshi.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:t_nyukin",
+   "kind": "Table",
+   "name": "t_nyukin",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 6,
+  "props": {
+   "ops": "RU"
+  },
+  "n": 1145
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "WRITES",
+  "via": "dml",
+  "group_size": 13,
+  "from": {
+   "id": "file:zaiko/batch/sql/tana_sakusei.sql",
+   "kind": "SqlFile",
+   "name": "tana_sakusei.sql",
+   "file": "zaiko/batch/sql/tana_sakusei.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:t_tanaoroshi",
+   "kind": "Table",
+   "name": "t_tanaoroshi",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 1,
+  "props": {
+   "ops": "CR"
+  },
+  "n": 1146
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "WRITES",
+  "via": "dml",
+  "group_size": 13,
+  "from": {
+   "id": "file:zaiko/sql/ope/wms_shukka_resend.sql",
+   "kind": "SqlFile",
+   "name": "wms_shukka_resend.sql",
+   "file": "zaiko/sql/ope/wms_shukka_resend.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:t_shukka_h",
+   "kind": "Table",
+   "name": "t_shukka_h",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 1,
+  "props": {
+   "ops": "RU"
+  },
+  "n": 1147
+ },
+ {
+  "bench": "l",
+  "root": "/home/claude/work/judge-l",
+  "rel": "WRITES",
+  "via": "dml",
+  "group_size": 13,
+  "from": {
+   "id": "file:zaiko/batch/sql/zaib050_yotei.sql",
+   "kind": "SqlFile",
+   "name": "zaib050_yotei.sql",
+   "file": "zaiko/batch/sql/zaib050_yotei.sql",
+   "line": 1
+  },
+  "to": {
+   "id": "table:t_zaiko",
+   "kind": "Table",
+   "name": "t_zaiko",
+   "file": null,
+   "line": null
+  },
+  "edge_line": 8,
+  "props": {
+   "ops": "RU"
+  },
+  "n": 1148
+ }
+]
