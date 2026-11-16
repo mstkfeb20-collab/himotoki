@@ -1,0 +1,672 @@
+[
+ {
+  "n": 412,
+  "verdict": "partial",
+  "note": "IF-ZAI-001のSHUKKA_NOはv_wms_shukka_shiji経由でt_shukka_h.shukka_noから出力。t_edi_asn.shukka_noは同名の別テーブルの列"
+ },
+ {
+  "n": 413,
+  "verdict": "correct",
+  "note": "ZAIB060_WMS_NYUKA.ctlでPOSITION(55:62)をT_WMS_NYUKA_WK.NYUKA_DATEにロード"
+ },
+ {
+  "n": 414,
+  "verdict": "partial",
+  "note": "YUBIN_NOはv_wms_shukka_shiji経由でm_nonyu.yubin_no(n.yubin_no)から出力。m_soko.yubin_noは同名の別列"
+ },
+ {
+  "n": 415,
+  "verdict": "partial",
+  "note": "IF-ZAI-004のWMS倉庫コードはctlでM_SOKO.WMS_SOKO_CDを引いてT_WMS_NYUKA_WK.SOKO_CDに変換。t_wms_zaiko_wkは別IF(ZAIB080)のテーブル"
+ },
+ {
+  "n": 416,
+  "verdict": "partial",
+  "note": "IF-ZAI-004のLOT_NOはT_WMS_NYUKA_WK.LOT_NO(→t_nyuka_m.lot_no)に対応。t_shukka_m.lot_noは出荷側の同名列"
+ },
+ {
+  "n": 417,
+  "verdict": "partial",
+  "note": "直接の対応先はZAIB040 ctlのT_WMS_SHUKKA_WK.SHUKKA_NO。t_shukka_mへはWmsShukkaJissekiBatchのUPDATE条件(shukka_no=?)として間接的に使われるのみ"
+ },
+ {
+  "n": 418,
+  "verdict": "partial",
+  "note": "IF-ZAI-005のSHOHIN_CDはWmsShohinOutBatchでm_shohin.shohin_cdから出力。t_mitsumori_m.shohin_cdは同名の別列"
+ },
+ {
+  "n": 419,
+  "verdict": "partial",
+  "note": "GYO_NOはv_wms_shukka_shiji経由でt_shukka_m.gyo_noから出力。t_seikyu_m.gyo_noは同名の別列"
+ },
+ {
+  "n": 420,
+  "verdict": "correct",
+  "note": "BaseActionの抽象メソッドdoExecuteをサブクラスがextends BaseActionで実装"
+ },
+ {
+  "n": 421,
+  "verdict": "correct",
+  "note": "BaseActionの抽象メソッドdoExecuteをサブクラスがextends BaseActionで実装"
+ },
+ {
+  "n": 422,
+  "verdict": "correct",
+  "note": "BatchBaseの抽象メソッドexecute(String[])をサブクラスが実装（引数型表記はString[]）"
+ },
+ {
+  "n": 423,
+  "verdict": "correct",
+  "note": "BaseActionの抽象メソッドdoExecuteをサブクラスがextends BaseActionで実装"
+ },
+ {
+  "n": 424,
+  "verdict": "correct",
+  "note": "BatchBaseの抽象メソッドexecute(String[])をサブクラスが実装（引数型表記はString[]）"
+ },
+ {
+  "n": 425,
+  "verdict": "correct",
+  "note": "BaseActionの抽象メソッドdoExecuteをサブクラスがextends BaseActionで実装"
+ },
+ {
+  "n": 426,
+  "verdict": "correct",
+  "note": "BatchBaseの抽象メソッドexecute(String[])をサブクラスが実装（引数型表記はString[]）"
+ },
+ {
+  "n": 427,
+  "verdict": "correct",
+  "note": "BatchBaseの抽象メソッドexecute(String[])をサブクラスが実装（引数型表記はString[]）"
+ },
+ {
+  "n": 428,
+  "verdict": "correct",
+  "note": "struts-config-master.xmlのforward successがshiireTankaShokaiList.jsp、ファイル存在"
+ },
+ {
+  "n": 429,
+  "verdict": "correct",
+  "note": "forward inputがmitsumori/mitsumoriInput.jsp、ファイル存在"
+ },
+ {
+  "n": 430,
+  "verdict": "correct",
+  "note": "forward successがshukkaShiji.jsp、ファイル存在"
+ },
+ {
+  "n": 431,
+  "verdict": "correct",
+  "note": "forward successがnonyu/nonyuList.jsp、ファイル存在"
+ },
+ {
+  "n": 432,
+  "verdict": "correct",
+  "note": "forward confirmがediTorihikisakiConfirm.jsp、EditActionがfindForward(\"confirm\")"
+ },
+ {
+  "n": 433,
+  "verdict": "correct",
+  "note": "forward successがjushinJokyoList.jsp"
+ },
+ {
+  "n": 434,
+  "verdict": "correct",
+  "note": "forward input/inputがido/idoInput.jsp"
+ },
+ {
+  "n": 435,
+  "verdict": "correct",
+  "note": "forward successがhanbaiTankaShokaiList.jsp"
+ },
+ {
+  "n": 436,
+  "verdict": "correct",
+  "note": "action path=/master/zeiritsuEdit type=ZeiritsuEditAction"
+ },
+ {
+  "n": 437,
+  "verdict": "correct",
+  "note": "action path=/master/unsoList type=UnsoListAction"
+ },
+ {
+  "n": 438,
+  "verdict": "correct",
+  "note": "action path=/hanbai/shohinUriageList type=ShohinUriageListAction"
+ },
+ {
+  "n": 439,
+  "verdict": "correct",
+  "note": "action path=/master/bumonList type=BumonListAction"
+ },
+ {
+  "n": 440,
+  "verdict": "correct",
+  "note": "action path=/kaikei/shimeJokyoList type=ShimeJokyoListAction"
+ },
+ {
+  "n": 441,
+  "verdict": "correct",
+  "note": "action path=/master/nonyuDetail type=NonyuEditAction (parameter=edit)"
+ },
+ {
+  "n": 442,
+  "verdict": "correct",
+  "note": "action path=/master/shainEdit type=ShainEditAction"
+ },
+ {
+  "n": 443,
+  "verdict": "correct",
+  "note": "action path=/master/calendarEdit type=CalendarEditAction"
+ },
+ {
+  "n": 444,
+  "verdict": "correct",
+  "note": "selectByPkはFROM M_EDI_SHOHIN_HENKANのSELECT"
+ },
+ {
+  "n": 445,
+  "verdict": "correct",
+  "note": "searchはBase_Column_ListでLOCATION_CDを選択し、Search_WhereでLOCATION_CD条件も参照"
+ },
+ {
+  "n": 446,
+  "verdict": "correct",
+  "note": "selectByPkでAITE_SHOHIN_CDをSELECT列およびWHERE条件に使用"
+ },
+ {
+  "n": 447,
+  "verdict": "correct",
+  "note": "delete(論理削除UPDATE)のWHERE SOKO_CD = #{sokoCd}で読む"
+ },
+ {
+  "n": 448,
+  "verdict": "correct",
+  "note": "/master/ginkoListのname=ginkoForm"
+ },
+ {
+  "n": 449,
+  "verdict": "correct",
+  "note": "/master/nonyuEditのname=nonyuForm"
+ },
+ {
+  "n": 450,
+  "verdict": "correct",
+  "note": "/zaiko/hikiateJokyoListのname=hikiateJokyoListForm"
+ },
+ {
+  "n": 451,
+  "verdict": "correct",
+  "note": "/hanbai/mitsumoriListのname=mitsumoriListForm"
+ },
+ {
+  "n": 452,
+  "verdict": "correct",
+  "note": "/edi/ediHacchuListのname=ediHacchuListForm"
+ },
+ {
+  "n": 453,
+  "verdict": "correct",
+  "note": "/master/nonyuListのname=nonyuForm"
+ },
+ {
+  "n": 454,
+  "verdict": "correct",
+  "note": "/master/nonyuDetailのname=nonyuForm"
+ },
+ {
+  "n": 455,
+  "verdict": "correct",
+  "note": "/master/bunruiListのname=bunruiForm"
+ },
+ {
+  "n": 456,
+  "verdict": "correct",
+  "note": "ZAI_YAKAN.ajsのZAIB070 sc=/opt/kikan/zaiko/shell/ZAIB070.sh（配置先パス）"
+ },
+ {
+  "n": 457,
+  "verdict": "correct",
+  "note": "ZAI_ONDEMAND.ajsのZAIB110 sc=.../zaiko/shell/ZAIB110.sh"
+ },
+ {
+  "n": 458,
+  "verdict": "correct",
+  "note": "HAN_ASA.ajsのHANB170 sc=.../hanbai/shell/HANB170.sh"
+ },
+ {
+  "n": 459,
+  "verdict": "correct",
+  "note": "MST_ONDEMAND.ajsのMSTB010 sc=.../master/shell/MSTB010.sh"
+ },
+ {
+  "n": 460,
+  "verdict": "correct",
+  "note": "KAI_YAKAN.ajsのKAIB020 sc=.../kaikei/shell/KAIB020.sh"
+ },
+ {
+  "n": 461,
+  "verdict": "correct",
+  "note": "EDI_SOSHIN.ajsのEDIB040 sc=.../edi/shell/EDIB040.sh"
+ },
+ {
+  "n": 462,
+  "verdict": "correct",
+  "note": "EDI_JUSHIN.ajsのEDIB010_T03 sc=.../edi/shell/EDIB010_T03.sh"
+ },
+ {
+  "n": 463,
+  "verdict": "correct",
+  "note": "HAN_YAKAN.ajsのZAIB010 sc=.../zaiko/shell/ZAIB010.sh"
+ },
+ {
+  "n": 464,
+  "verdict": "correct",
+  "note": "form-bean shiwakePtnForm type=ShiwakePtnForm"
+ },
+ {
+  "n": 465,
+  "verdict": "correct",
+  "note": "form-bean shohinForm type=ShohinForm"
+ },
+ {
+  "n": 466,
+  "verdict": "correct",
+  "note": "form-bean nonyuForm type=NonyuForm"
+ },
+ {
+  "n": 467,
+  "verdict": "correct",
+  "note": "form-bean shohinUriageListForm type=ShohinUriageListForm"
+ },
+ {
+  "n": 468,
+  "verdict": "correct",
+  "note": "form-bean idoListForm type=IdoListForm"
+ },
+ {
+  "n": 469,
+  "verdict": "correct",
+  "note": "form-bean bunruiForm type=BunruiForm"
+ },
+ {
+  "n": 470,
+  "verdict": "correct",
+  "note": "form-bean locationZaikoListForm type=LocationZaikoListForm"
+ },
+ {
+  "n": 471,
+  "verdict": "correct",
+  "note": "form-bean shukkaJissekiListForm type=ShukkaJissekiListForm"
+ },
+ {
+  "n": 472,
+  "verdict": "correct",
+  "note": "validation.xml tokuiFormのfield tokuiCd(maxlength 6)、TokuiFormにtokuiCdフィールドあり"
+ },
+ {
+  "n": 473,
+  "verdict": "correct",
+  "note": "shohinFormのfield bunruiCd(maxlength 4)、ShohinFormにbunruiCdあり"
+ },
+ {
+  "n": 474,
+  "verdict": "correct",
+  "note": "sokoFormのfield jusho1、SokoFormにjusho1あり"
+ },
+ {
+  "n": 475,
+  "verdict": "correct",
+  "note": "sokoFormのfield yubinNo(maxlength 8)、SokoFormにyubinNoあり"
+ },
+ {
+  "n": 476,
+  "verdict": "correct",
+  "note": "MyBatis: EdiTorihikisakiMapper.insert ↔ XML insert id=insert（namespace一致）"
+ },
+ {
+  "n": 477,
+  "verdict": "correct",
+  "note": "HanbaiTankaMapper.insert ↔ XML insert id=insert"
+ },
+ {
+  "n": 478,
+  "verdict": "correct",
+  "note": "UnsoMapper.update ↔ XML update id=update"
+ },
+ {
+  "n": 479,
+  "verdict": "correct",
+  "note": "EdiTorihikisakiMapper.delete ↔ XML delete id=delete"
+ },
+ {
+  "n": 480,
+  "verdict": "correct",
+  "note": "HanbaiTankaMapper.delete ↔ XML delete id=delete"
+ },
+ {
+  "n": 481,
+  "verdict": "correct",
+  "note": "LocationMapper.delete ↔ XML update id=delete（論理削除）"
+ },
+ {
+  "n": 482,
+  "verdict": "correct",
+  "note": "ZeiritsuMapper.search ↔ XML select id=search"
+ },
+ {
+  "n": 483,
+  "verdict": "correct",
+  "note": "EdiTorihikisakiMapper.search ↔ XML select id=search"
+ },
+ {
+  "n": 484,
+  "verdict": "correct",
+  "note": "HAN_ASA.ajs ar=(f=ZAIB040,t=HANB050)"
+ },
+ {
+  "n": 485,
+  "verdict": "correct",
+  "note": "KOB_GETSUJI.ajs ar=(f=KOBB120,t=KOBB110)"
+ },
+ {
+  "n": 486,
+  "verdict": "correct",
+  "note": "HAN_ASA.ajs ar=(f=HANB100,t=HANB170)"
+ },
+ {
+  "n": 487,
+  "verdict": "correct",
+  "note": "KOB_YAKAN.ajs ar=(f=KOBB020,t=KOBB030)"
+ },
+ {
+  "n": 488,
+  "verdict": "correct",
+  "note": "HAN_GETSUJI.ajs ar=(f=HANB160,t=HANB130)"
+ },
+ {
+  "n": 489,
+  "verdict": "correct",
+  "note": "HAN_YAKAN.ajs ar=(f=HANB010,t=ZAIB020)"
+ },
+ {
+  "n": 490,
+  "verdict": "correct",
+  "note": "KOB_YAKAN.ajs ar=(f=KOBB010,t=KOBB020)"
+ },
+ {
+  "n": 491,
+  "verdict": "correct",
+  "note": "HAN_ASA.ajs ar=(f=HANB050,t=HANB120)"
+ },
+ {
+  "n": 492,
+  "verdict": "correct",
+  "note": "search内<include refid=\"Base_Column_List\"/>"
+ },
+ {
+  "n": 493,
+  "verdict": "correct",
+  "note": "selectByPk内<include refid=\"Base_Column_List\"/>"
+ },
+ {
+  "n": 494,
+  "verdict": "correct",
+  "note": "search内<include refid=\"Search_Where\"/>"
+ },
+ {
+  "n": 495,
+  "verdict": "correct",
+  "note": "search内<include refid=\"Base_Column_List\"/>"
+ },
+ {
+  "n": 496,
+  "verdict": "correct",
+  "note": "search内<include refid=\"Search_Where\"/>"
+ },
+ {
+  "n": 497,
+  "verdict": "correct",
+  "note": "search内<include refid=\"Search_Where\"/>"
+ },
+ {
+  "n": 498,
+  "verdict": "correct",
+  "note": "search内<include refid=\"Base_Column_List\"/>"
+ },
+ {
+  "n": 499,
+  "verdict": "correct",
+  "note": "search内<include refid=\"Base_Column_List\"/>"
+ },
+ {
+  "n": 500,
+  "verdict": "correct",
+  "note": "インボイス対応移行SQLでM_JISHAに列追加後UPDATEで登録番号を投入"
+ },
+ {
+  "n": 501,
+  "verdict": "partial",
+  "note": "運用の再取込SQLでt_edi_juchu_wkのshohin_cd/err_cdをUPDATEする処理。データ投入(初期データ)ではなく更新(WRITES)"
+ },
+ {
+  "n": 502,
+  "verdict": "correct",
+  "note": "M_ZEIRITSUへの初期データINSERT"
+ },
+ {
+  "n": 503,
+  "verdict": "correct",
+  "note": "INSERT INTO t_nyuka_yotei ... SELECTで発注明細から入荷予定を投入"
+ },
+ {
+  "n": 504,
+  "verdict": "correct",
+  "note": "INSERT INTO t_tanaoroshi ... SELECTで棚卸データを投入"
+ },
+ {
+  "n": 505,
+  "verdict": "correct",
+  "note": "DELETE FROM M_KBN後、区分マスタ初期データをINSERT"
+ },
+ {
+  "n": 506,
+  "verdict": "correct",
+  "note": "移行SQLでT_NYUKINに列追加後UPDATEで初期値を投入"
+ },
+ {
+  "n": 507,
+  "verdict": "partial",
+  "note": "W_HANBAI_TANKAはERR_MSGをUPDATEするのみで読込元。データを投入しているのはMERGE先のM_HANBAI_TANKA"
+ },
+ {
+  "n": 508,
+  "verdict": "correct",
+  "note": "testGetsumatsuがDateUtil.getGetsumatsuを呼んで検証"
+ },
+ {
+  "n": 509,
+  "verdict": "correct",
+  "note": "testSotoZeiShishagonyuがTaxCalcUtil.calcZeiを検証"
+ },
+ {
+  "n": 510,
+  "verdict": "correct",
+  "note": "testShimeDateがDateUtil.getShimeDateを検証"
+ },
+ {
+  "n": 511,
+  "verdict": "correct",
+  "note": "testShiireCdがKobaiCheck.isShiireCdを検証"
+ },
+ {
+  "n": 512,
+  "verdict": "correct",
+  "note": "testTankaがKobaiCheck.isTankaを検証"
+ },
+ {
+  "n": 513,
+  "verdict": "correct",
+  "note": "testUchiZeiがTaxCalcUtil.calcZeiを検証"
+ },
+ {
+  "n": 514,
+  "verdict": "partial",
+  "note": "testConvertのテスト対象はT03HanamaruJuchuConverter.convert。EdiJuchuRecordは戻り値の型として参照しgetterを呼ぶのみ"
+ },
+ {
+  "n": 515,
+  "verdict": "correct",
+  "note": "testValidがDateUtil.isValidDateを検証"
+ },
+ {
+  "n": 516,
+  "verdict": "correct",
+  "note": "mapper namespace=jp.co.minato.kikan.zaiko.mapper.LocationMapper、同名インタフェースあり"
+ },
+ {
+  "n": 517,
+  "verdict": "correct",
+  "note": "namespace=...ShiireTankaMapper、同名インタフェースあり"
+ },
+ {
+  "n": 518,
+  "verdict": "correct",
+  "note": "namespace=...ZeiritsuMapper、同名インタフェースあり"
+ },
+ {
+  "n": 519,
+  "verdict": "correct",
+  "note": "namespace=...ShiwakePtnMapper、同名インタフェースあり"
+ },
+ {
+  "n": 520,
+  "verdict": "correct",
+  "note": "namespace=...EdiShohinHenkanMapper、同名インタフェースあり"
+ },
+ {
+  "n": 521,
+  "verdict": "correct",
+  "note": "namespace=...UnsoMapper、同名インタフェースあり"
+ },
+ {
+  "n": 522,
+  "verdict": "correct",
+  "note": "namespace=...HanbaiTankaMapper、同名インタフェースあり"
+ },
+ {
+  "n": 523,
+  "verdict": "correct",
+  "note": "namespace=...EdiTorihikisakiMapper、同名インタフェースあり"
+ },
+ {
+  "n": 524,
+  "verdict": "correct",
+  "note": "TaxCalcUtilTestの各テストがTaxCalcUtil.calcZeiを検証"
+ },
+ {
+  "n": 525,
+  "verdict": "wrong",
+  "note": "UriageServiceTestはUriageServiceを一切参照せず、TaxCalcUtil.calcZeiのみ呼んでいる"
+ },
+ {
+  "n": 526,
+  "verdict": "correct",
+  "note": "DateUtilTestがDateUtilの各メソッドを検証"
+ },
+ {
+  "n": 527,
+  "verdict": "correct",
+  "note": "StringUtilTestがStringUtil.padRight/zeroPadを検証"
+ },
+ {
+  "n": 528,
+  "verdict": "correct",
+  "note": "KobaiCheckTestがKobaiCheck.isShiireCd/isTankaを検証"
+ },
+ {
+  "n": 529,
+  "verdict": "correct",
+  "note": "T03HanamaruJuchuConverterTestがnew T03HanamaruJuchuConverter().convertを検証"
+ },
+ {
+  "n": 530,
+  "verdict": "wrong",
+  "note": "HikiateLogicTestはassertTrue(true)のダミーのみでHikiateLogicを参照していない"
+ },
+ {
+  "n": 531,
+  "verdict": "correct",
+  "note": "ZAIKO内でPTN_INS('Z001',...)を呼出"
+ },
+ {
+  "n": 532,
+  "verdict": "correct",
+  "note": "PTN_INSのループ内でINS(...)を呼出"
+ },
+ {
+  "n": 533,
+  "verdict": "correct",
+  "note": "NYUKIN内でPTN_INSを呼出"
+ },
+ {
+  "n": 534,
+  "verdict": "correct",
+  "note": "SHIHARAI内でPTN_INSを呼出"
+ },
+ {
+  "n": 535,
+  "verdict": "correct",
+  "note": "SHIIRE内でPTN_INSを呼出"
+ },
+ {
+  "n": 536,
+  "verdict": "correct",
+  "note": "URIAGE内でPTN_INSを呼出"
+ },
+ {
+  "n": 537,
+  "verdict": "correct",
+  "note": "PTN_INS内でKINGAKU(P.KINGAKU_KBN,...)関数を呼出"
+ },
+ {
+  "n": 538,
+  "verdict": "correct",
+  "note": "crontab_edi 6行目で/opt/kikan/edi/shell/EDIB010_T01.shを実行"
+ },
+ {
+  "n": 539,
+  "verdict": "correct",
+  "note": "crontab_edi 12行目でEDIB010_T04.shを実行"
+ },
+ {
+  "n": 540,
+  "verdict": "correct",
+  "note": "crontab_kikan 9行目で/opt/kikan/tools/check_tablespace.shを実行（common/tools配下が該当）"
+ },
+ {
+  "n": 541,
+  "verdict": "correct",
+  "note": "crontab_edi 8行目でEDIB010_T02.shを実行"
+ },
+ {
+  "n": 542,
+  "verdict": "correct",
+  "note": "/kaikei/shiwakeShoninのinput=/WEB-INF/jsp/kaikei/shiwakeList.jsp（エラー時表示）、成功時もshiwakeList.doへリダイレクト"
+ },
+ {
+  "n": 543,
+  "verdict": "correct",
+  "note": "/hanbai/seikyushoSaihakkoのinput=seikyuList.jsp（エラー時表示）、成功時はseikyuList.doへリダイレクト"
+ },
+ {
+  "n": 544,
+  "verdict": "correct",
+  "note": "GetsujiShimeActionがprepareCall(\"{call PKG_GETSUJI_SHIME.SHIME(?, ?)}\")を実行"
+ },
+ {
+  "n": 545,
+  "verdict": "correct",
+  "note": "GetsujiShimeBatchがprepareCall(\"{call PKG_GETSUJI_SHIME.SHIME(?, ?)}\")を実行"
+ }
+]

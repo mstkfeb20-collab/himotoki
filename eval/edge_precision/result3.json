@@ -1,0 +1,687 @@
+[
+ {
+  "n": 275,
+  "verdict": "correct",
+  "note": "update()内で f.getHyojunGenka() を呼び出している（204行）"
+ },
+ {
+  "n": 276,
+  "verdict": "correct",
+  "note": "setTokuiCd() で this.tokuiCd に代入"
+ },
+ {
+  "n": 277,
+  "verdict": "correct",
+  "note": "setTantoCd() で this.tantoCd に代入"
+ },
+ {
+  "n": 278,
+  "verdict": "correct",
+  "note": "output() で prepareStatement(SQL) として定数SQLを参照"
+ },
+ {
+  "n": 279,
+  "verdict": "correct",
+  "note": "setJoiBunruiCd() で this.joiBunruiCd に代入"
+ },
+ {
+  "n": 280,
+  "verdict": "wrong",
+  "note": "doExecute() 本体で LocationListAction を名前で参照していない（所属クラスというだけ）"
+ },
+ {
+  "n": 281,
+  "verdict": "correct",
+  "note": "getShiireNo() が shiireNo を返す"
+ },
+ {
+  "n": 282,
+  "verdict": "correct",
+  "note": "doExecute() で new ShiireTankaShokaiListDao(con) を使用"
+ },
+ {
+  "n": 283,
+  "verdict": "correct",
+  "note": "getSakuseiSha() が sakuseiSha を返す"
+ },
+ {
+  "n": 284,
+  "verdict": "correct",
+  "note": "update() で f.getShohinCd() をWHERE条件にセット（getter経由でフィールド参照）"
+ },
+ {
+  "n": 285,
+  "verdict": "correct",
+  "note": "findHeader() で f.setGokeiKingaku() を呼ぶ（setter経由）"
+ },
+ {
+  "n": 286,
+  "verdict": "correct",
+  "note": "search() で cond.getShohinCd() を検索条件に使用（getter経由）"
+ },
+ {
+  "n": 287,
+  "verdict": "correct",
+  "note": "doExecute() で f.setTelNo() を呼ぶ（setter経由）"
+ },
+ {
+  "n": 288,
+  "verdict": "correct",
+  "note": "validateInput() で f.getMeisaiBiko() をチェック（getter経由）"
+ },
+ {
+  "n": 289,
+  "verdict": "correct",
+  "note": "load() で e.getVersionNo() を参照（getter経由）"
+ },
+ {
+  "n": 290,
+  "verdict": "correct",
+  "note": "findHeader() で f.setSeikyuNo() を呼ぶ（setter経由）"
+ },
+ {
+  "n": 291,
+  "verdict": "correct",
+  "note": "doExecute() で f.setBiko() を呼ぶ（setter経由）"
+ },
+ {
+  "n": 292,
+  "verdict": "correct",
+  "note": "T_UKEHARAI.sql で ukeharai_seq を定義"
+ },
+ {
+  "n": 293,
+  "verdict": "correct",
+  "note": "T_NYUKA_YOTEI.sql で UPD_USER を定義"
+ },
+ {
+  "n": 294,
+  "verdict": "correct",
+  "note": "T_TANAOROSHI.sql で version_no を定義"
+ },
+ {
+  "n": 295,
+  "verdict": "correct",
+  "note": "M_SHOHIN.sql で DEL_FLG を定義"
+ },
+ {
+  "n": 296,
+  "verdict": "correct",
+  "note": "W_HANBAI_TANKA.sql で CREATE TABLE W_HANBAI_TANKA"
+ },
+ {
+  "n": 297,
+  "verdict": "correct",
+  "note": "T_FB_NYUKIN_WK.sql で SHIMUKE_GINKO_NM を定義"
+ },
+ {
+  "n": 298,
+  "verdict": "correct",
+  "note": "T_HACCHU_H.sql で INS_USER を定義"
+ },
+ {
+  "n": 299,
+  "verdict": "correct",
+  "note": "M_KAMOKU.sql で kamoku_kbn を定義"
+ },
+ {
+  "n": 300,
+  "verdict": "correct",
+  "note": "SELECT句に H.HACCHU_DATE（T_HACCHU_H）"
+ },
+ {
+  "n": 301,
+  "verdict": "correct",
+  "note": "SQL定数で JOIN M_TOKUI T"
+ },
+ {
+  "n": 302,
+  "verdict": "correct",
+  "note": "FROM T_HACCHU_H H"
+ },
+ {
+  "n": 303,
+  "verdict": "correct",
+  "note": "SQL定数で JOIN T_NYUKIN N"
+ },
+ {
+  "n": 304,
+  "verdict": "correct",
+  "note": "LEFT JOIN M_SHOHIN S"
+ },
+ {
+  "n": 305,
+  "verdict": "correct",
+  "note": "SELECT CURRENT_NO ... FROM T_SAIBAN"
+ },
+ {
+  "n": 306,
+  "verdict": "correct",
+  "note": "SQL定数で B.BUNRUI_NM（M_SHOHIN_BUNRUI B）を取得"
+ },
+ {
+  "n": 307,
+  "verdict": "correct",
+  "note": "SELECT ... ZEIRITSU_KBN ... FROM M_SHOHIN"
+ },
+ {
+  "n": 308,
+  "verdict": "correct",
+  "note": "bean:write name=nonyuForm property=tokuiCd、nonyuForm=NonyuForm"
+ },
+ {
+  "n": 309,
+  "verdict": "correct",
+  "note": "bean:write property=hyojunBaika、shohinForm=ShohinForm"
+ },
+ {
+  "n": 310,
+  "verdict": "correct",
+  "note": "html:text property=shukkaYoteiDate maxlength=10、juchuForm=JuchuForm"
+ },
+ {
+  "n": 311,
+  "verdict": "correct",
+  "note": "html:text property=shiireRyakuNm maxlength=20、shiireForm=ShiireForm"
+ },
+ {
+  "n": 312,
+  "verdict": "correct",
+  "note": "html:text property=nokiDateTo maxlength=10、juchuZanListForm=JuchuZanListForm"
+ },
+ {
+  "n": 313,
+  "verdict": "correct",
+  "note": "html:text property=hanbaiKaishiDate maxlength=10、shohinForm=ShohinForm"
+ },
+ {
+  "n": 314,
+  "verdict": "correct",
+  "note": "html:text property=bumonCd maxlength=4、/master/shainList の name=shainForm=ShainForm"
+ },
+ {
+  "n": 315,
+  "verdict": "correct",
+  "note": "html:text property=bunruiNm maxlength=40、bunruiForm=BunruiForm"
+ },
+ {
+  "n": 316,
+  "verdict": "partial",
+  "note": "R_HAN040 の URIAGE_NO は SeikyushoReport の SQL で T_SEIKYU_M.URIAGE_NO（M.URIAGE_NO）から来る。t_uriage_h.uriage_no ではない（同名の別列）"
+ },
+ {
+  "n": 317,
+  "verdict": "partial",
+  "note": "R_HAN030 の JUSHO1 は NohinshoReport で NVL(M_NONYU.JUSHO1, M_TOKUI.JUSHO1)。M_JISHA は使われていない（同名の別列）"
+ },
+ {
+  "n": 318,
+  "verdict": "partial",
+  "note": "R_HAN090 の ZEI_GAKU は UrikakeZanListReport で T_URIKAKE_ZAN.ZEI_GAKU。t_juchu_m.zei_gaku ではない（同名の別列）"
+ },
+ {
+  "n": 319,
+  "verdict": "correct",
+  "note": "NohinshoReport で NVL(N.JUSHO1, T.JUSHO1)、T=M_TOKUI"
+ },
+ {
+  "n": 320,
+  "verdict": "correct",
+  "note": "INSERT INTO T_URIAGE_M (... TANKA ...)"
+ },
+ {
+  "n": 321,
+  "verdict": "correct",
+  "note": "INSERT INTO T_HACCHU_M (HACCHU_NO, ...)"
+ },
+ {
+  "n": 322,
+  "verdict": "correct",
+  "note": "UPDATE M_BUMON SET DEL_FLG = '1'"
+ },
+ {
+  "n": 323,
+  "verdict": "correct",
+  "note": "INSERT INTO T_EDI_HACCHU (... NOHIN_DATE ...)"
+ },
+ {
+  "n": 324,
+  "verdict": "correct",
+  "note": "UPDATE T_JUCHU_H SET JOTAI_KBN = '4'"
+ },
+ {
+  "n": 325,
+  "verdict": "correct",
+  "note": "INSERT INTO T_URIAGE_H (... BUMON_CD ...)"
+ },
+ {
+  "n": 326,
+  "verdict": "correct",
+  "note": "INSERT INTO T_SHUKKA_H (... WMS_SOSHIN_FLG ...)"
+ },
+ {
+  "n": 327,
+  "verdict": "correct",
+  "note": "update t_shiwake set ... koshin_nichiji = systimestamp"
+ },
+ {
+  "n": 328,
+  "verdict": "correct",
+  "note": "ジョブ一覧4行目 KOBB010 の入力に T_ZAIKO"
+ },
+ {
+  "n": 329,
+  "verdict": "correct",
+  "note": "ジョブ一覧6行目 EDIB010_T03 の入力が IF-EDI-T03"
+ },
+ {
+  "n": 330,
+  "verdict": "correct",
+  "note": "ジョブ一覧13行目 HANB080 請求書発行の出力が R_HAN040"
+ },
+ {
+  "n": 331,
+  "verdict": "wrong",
+  "note": "ジョブ一覧9行目は EDIB030_S02（東洋食品）で、別ファイル EDIB030_S02.sh が存在。EDIB030_S01 は8行目"
+ },
+ {
+  "n": 332,
+  "verdict": "correct",
+  "note": "ジョブ一覧8行目 ZAIB050 の出力に IF-ZAI-003"
+ },
+ {
+  "n": 333,
+  "verdict": "partial",
+  "note": "ジョブ一覧4行目 ZAIB010 は T_JUCHU_H（テーブル）を記載。シノニムについての記述ではない"
+ },
+ {
+  "n": 334,
+  "verdict": "correct",
+  "note": "ジョブ一覧12行目 ZAIB090 の入力に T_ZAIKO_IDO_M"
+ },
+ {
+  "n": 335,
+  "verdict": "partial",
+  "note": "テーブル一覧71行目は T_EDI_HACCHU テーブルの記載。シノニムについての記述ではない"
+ },
+ {
+  "n": 336,
+  "verdict": "partial",
+  "note": "HanbaiTankaEntity は M_HANBAI_TANKA 用（HanbaiTankaMapper）。torokuDate は m_hanbai_tanka.toroku_date に対応し、t_juchu_h ではない"
+ },
+ {
+  "n": 337,
+  "verdict": "correct",
+  "note": "EdiTorihikisakiEntity は M_EDI_TORIHIKISAKI 用、torihikisakiKbn⇔TORIHIKISAKI_KBN"
+ },
+ {
+  "n": 338,
+  "verdict": "partial",
+  "note": "LocationEntity は M_LOCATION 用。sakuseiNichiji は m_location.sakusei_nichiji に対応し、m_edi_torihikisaki ではない"
+ },
+ {
+  "n": 339,
+  "verdict": "partial",
+  "note": "ZeiritsuEntity は M_ZEIRITSU 用（ZeiritsuMapper）。koshinUser は m_zeiritsu.koshin_user に対応し、m_irainin ではない"
+ },
+ {
+  "n": 340,
+  "verdict": "partial",
+  "note": "UnsoEntity は M_UNSO 用（UnsoMapper）。koshinDate は m_unso.koshin_date に対応し、m_irainin ではない"
+ },
+ {
+  "n": 341,
+  "verdict": "partial",
+  "note": "UnsoEntity.delFlg は UnsoMapper で M_UNSO.DEL_FLG に対応。m_kbn ではない"
+ },
+ {
+  "n": 342,
+  "verdict": "partial",
+  "note": "ZeiritsuEntity.koshinPg は M_ZEIRITSU.KOSHIN_PG に対応。t_juchu_m ではない"
+ },
+ {
+  "n": 343,
+  "verdict": "correct",
+  "note": "LocationEntity は M_LOCATION 用、locationCd⇔LOCATION_CD"
+ },
+ {
+  "n": 344,
+  "verdict": "correct",
+  "note": "HacchuDAO.insertMeisai で ps.setInt(2, m.getGyoNo()) → T_HACCHU_M.GYO_NO"
+ },
+ {
+  "n": 345,
+  "verdict": "correct",
+  "note": "HacchuDAO.insertHeader で ps.setString(6, h.getNyukaYoteiDate()) → T_HACCHU_H.NYUKA_YOTEI_DATE"
+ },
+ {
+  "n": 346,
+  "verdict": "correct",
+  "note": "suryo→kingaku→calcZei→meisaiZeiGaku→UriageDao.insertMeisai で T_URIAGE_M.ZEI_GAKU に登録される。ただし props.path の UriageKeijoBatch 経由は誤り（共通ユーティリティを跨いだ偽経路）"
+ },
+ {
+  "n": 347,
+  "verdict": "wrong",
+  "note": "UriageForm.suryo は TaxCalcUtil.calcZei を共有するだけで JuchuTorikomiBatch へは流れない。売上入力系で T_JUCHU_H を更新する箇所もない"
+ },
+ {
+  "n": 348,
+  "verdict": "correct",
+  "note": "TokuiDao.insert で 14番目に f.getKaishuTsukiKbn() → KAISHU_TSUKI_KBN"
+ },
+ {
+  "n": 349,
+  "verdict": "correct",
+  "note": "GinkoDao.insert で 2番目に f.getShitenCd() → SHITEN_CD（update/delete では WHERE 条件）"
+ },
+ {
+  "n": 350,
+  "verdict": "correct",
+  "note": "ShiireDao.insert で 6番目に f.getJusho1() → JUSHO1"
+ },
+ {
+  "n": 351,
+  "verdict": "correct",
+  "note": "GinkoDao.insert で 5番目に f.getGinkoKana() → GINKO_KANA"
+ },
+ {
+  "n": 352,
+  "verdict": "correct",
+  "note": "SELECT ... SHIIRE_CD ... FROM T_SHIIRE_H"
+ },
+ {
+  "n": 353,
+  "verdict": "partial",
+  "note": "KOSHIN は T_URIKAKE_ZAN.ZEI_GAKU に INSERT（書く）だけで読んでいない（Z からは TOGETSU_ZAN のみ読む）"
+ },
+ {
+  "n": 354,
+  "verdict": "correct",
+  "note": "FROM T_SHIHARAI P"
+ },
+ {
+  "n": 355,
+  "verdict": "correct",
+  "note": "LEFT JOIN T_KAIKAKE_ZAN Z ON Z.SHIIRE_CD = S.SHIIRE_CD で読む"
+ },
+ {
+  "n": 356,
+  "verdict": "correct",
+  "note": "view定義で z.zaiko_suryo を SELECT"
+ },
+ {
+  "n": 357,
+  "verdict": "correct",
+  "note": "SELECT COUNT(*) FROM T_SHIWAKE WHERE ... SHONIN_KBN = '1'"
+ },
+ {
+  "n": 358,
+  "verdict": "correct",
+  "note": "SELECT P.SHIHARAI_DATE ... WHERE P.SHIHARAI_DATE <= P_DATE_TO"
+ },
+ {
+  "n": 359,
+  "verdict": "correct",
+  "note": "FROM T_URIAGE_H WHERE ... URIAGE_DATE <= P_SHIME_DATE"
+ },
+ {
+  "n": 360,
+  "verdict": "correct",
+  "note": "CRUD表 A20 MSTB050 の M_SHIIRE 列が R"
+ },
+ {
+  "n": 361,
+  "verdict": "correct",
+  "note": "CRUD表 A4 HAN011 の T_MITSUMORI_H 列が R"
+ },
+ {
+  "n": 362,
+  "verdict": "correct",
+  "note": "CRUD表 A20 KOBB100 の T_SHIIRE_H 列が R"
+ },
+ {
+  "n": 363,
+  "verdict": "correct",
+  "note": "CRUD表 A11 KAIB010 の T_SHIWAKE 列が C"
+ },
+ {
+  "n": 364,
+  "verdict": "correct",
+  "note": "CRUD表 A14 ZAIB010 の T_HIKIATE 列が C"
+ },
+ {
+  "n": 365,
+  "verdict": "correct",
+  "note": "CRUD表 A16 ZAIB040 の T_SHUKKA_M 列が U"
+ },
+ {
+  "n": 366,
+  "verdict": "correct",
+  "note": "CRUD表 A7 KOB021 の T_NYUKA_H 列が R"
+ },
+ {
+  "n": 367,
+  "verdict": "correct",
+  "note": "CRUD表 A14 KOB041 の T_SHIHARAI 列が C"
+ },
+ {
+  "n": 368,
+  "verdict": "correct",
+  "note": "ZaikoIchiranBatch extends BatchBase"
+ },
+ {
+  "n": 369,
+  "verdict": "correct",
+  "note": "UrikakeZanListReport extends ReportBase"
+ },
+ {
+  "n": 370,
+  "verdict": "correct",
+  "note": "TokuiListAction extends BaseAction"
+ },
+ {
+  "n": 371,
+  "verdict": "correct",
+  "note": "ShiwakeNikkichoBatch extends BatchBase"
+ },
+ {
+  "n": 372,
+  "verdict": "correct",
+  "note": "TokuiMotochoListDao extends BaseDao"
+ },
+ {
+  "n": 373,
+  "verdict": "correct",
+  "note": "UrikakeZanListForm extends BaseForm"
+ },
+ {
+  "n": 374,
+  "verdict": "correct",
+  "note": "NonyuEditAction extends BaseAction"
+ },
+ {
+  "n": 375,
+  "verdict": "correct",
+  "note": "UriageForm extends BaseForm"
+ },
+ {
+  "n": 376,
+  "verdict": "correct",
+  "note": "findHeader() 内で SELECT H.*, T.TOKUI_NM FROM T_URIAGE_H ... を実行"
+ },
+ {
+  "n": 377,
+  "verdict": "correct",
+  "note": "execute() 内（97行）で update t_wms_nyuka_wk を実行"
+ },
+ {
+  "n": 378,
+  "verdict": "correct",
+  "note": "insert() で INSERT INTO M_NONYU を組み立て実行"
+ },
+ {
+  "n": 379,
+  "verdict": "correct",
+  "note": "kaijo() 内で select ... from t_hikiate ... for update を実行"
+ },
+ {
+  "n": 380,
+  "verdict": "correct",
+  "note": "execute() 内で select ... from v_shiwake_renkei を実行"
+ },
+ {
+  "n": 381,
+  "verdict": "correct",
+  "note": "execute() 内で insert into t_edi_soshin_rireki を実行"
+ },
+ {
+  "n": 382,
+  "verdict": "correct",
+  "note": "insertHeader() で INSERT INTO T_HACCHU_H を実行"
+ },
+ {
+  "n": 383,
+  "verdict": "correct",
+  "note": "insert() で INSERT INTO M_SHAIN を組み立て実行"
+ },
+ {
+  "n": 384,
+  "verdict": "correct",
+  "note": "jsp:include page=/WEB-INF/jsp/common/header.jsp"
+ },
+ {
+  "n": 385,
+  "verdict": "correct",
+  "note": "jsp:include page=/WEB-INF/jsp/common/header.jsp"
+ },
+ {
+  "n": 386,
+  "verdict": "correct",
+  "note": "jsp:include page=/WEB-INF/jsp/common/header.jsp"
+ },
+ {
+  "n": 387,
+  "verdict": "correct",
+  "note": "jsp:include page=/WEB-INF/jsp/common/header.jsp"
+ },
+ {
+  "n": 388,
+  "verdict": "correct",
+  "note": "jsp:include page=/WEB-INF/jsp/common/message.jsp"
+ },
+ {
+  "n": 389,
+  "verdict": "correct",
+  "note": "jsp:include page=/WEB-INF/jsp/common/message.jsp"
+ },
+ {
+  "n": 390,
+  "verdict": "correct",
+  "note": "jsp:include page=/WEB-INF/jsp/common/message.jsp"
+ },
+ {
+  "n": 391,
+  "verdict": "correct",
+  "note": "jsp:include page=/WEB-INF/jsp/common/header.jsp"
+ },
+ {
+  "n": 392,
+  "verdict": "correct",
+  "note": "delete from t_zaiko_getsuji ... と INSERT で書き込み"
+ },
+ {
+  "n": 393,
+  "verdict": "correct",
+  "note": "UPDATE T_SHIIRE_H SET ... UPD_USER = 'PKG_SHIWAKE'"
+ },
+ {
+  "n": 394,
+  "verdict": "correct",
+  "note": "update t_zaiko set hyoka_tanka ... で更新"
+ },
+ {
+  "n": 395,
+  "verdict": "correct",
+  "note": "INSERT INTO T_SEIKYU_H の列に HAKKO_DATE（値は NULL）"
+ },
+ {
+  "n": 396,
+  "verdict": "correct",
+  "note": "INSERT INTO T_SEIKYU_H の列に KOSHIN_USER"
+ },
+ {
+  "n": 397,
+  "verdict": "correct",
+  "note": "UPDATE T_SHIME_KANRI SET ... KOSHIN_NICHIJI = SYSTIMESTAMP"
+ },
+ {
+  "n": 398,
+  "verdict": "correct",
+  "note": "SELECT ... FROM T_URIAGE_H と UPDATE T_URIAGE_H SET SHIWAKE_FLG"
+ },
+ {
+  "n": 399,
+  "verdict": "correct",
+  "note": "INSERT INTO T_SHIWAKE の列に RENKEI_FLG"
+ },
+ {
+  "n": 400,
+  "verdict": "correct",
+  "note": "UPDATE M_KAMOKU SET ... TAISHAKU_KBN = #{taishakuKbn}"
+ },
+ {
+  "n": 401,
+  "verdict": "correct",
+  "note": "INSERT INTO M_LOCATION の列に KOSHIN_NICHIJI"
+ },
+ {
+  "n": 402,
+  "verdict": "correct",
+  "note": "INSERT INTO M_HANBAI_TANKA の列に KOSHIN_PG"
+ },
+ {
+  "n": 403,
+  "verdict": "correct",
+  "note": "INSERT INTO M_HANBAI_TANKA の列に TEKIYO_KAISHI_DATE"
+ },
+ {
+  "n": 404,
+  "verdict": "correct",
+  "note": ". /opt/kikan/shell/common_func.sh で source 実行"
+ },
+ {
+  "n": 405,
+  "verdict": "correct",
+  "note": ". /opt/kikan/shell/kikan_env.sh で source 実行"
+ },
+ {
+  "n": 406,
+  "verdict": "correct",
+  "note": ". /opt/kikan/shell/kikan_env.sh で source 実行"
+ },
+ {
+  "n": 407,
+  "verdict": "correct",
+  "note": "run_java jp.co.minato.kikan.kobai.batch.JidoHacchuBatch"
+ },
+ {
+  "n": 408,
+  "verdict": "correct",
+  "note": "run_java jp.co.minato.kikan.kobai.batch.ShiharaiYoteiHyoBatch"
+ },
+ {
+  "n": 409,
+  "verdict": "correct",
+  "note": ". /opt/kikan/shell/kikan_env.sh で source 実行"
+ },
+ {
+  "n": 410,
+  "verdict": "correct",
+  "note": "run_java jp.co.minato.kikan.hanbai.batch.JidoKeshikomiBatch"
+ },
+ {
+  "n": 411,
+  "verdict": "correct",
+  "note": ". /opt/kikan/shell/common_func.sh で source 実行"
+ }
+]

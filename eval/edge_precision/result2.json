@@ -1,0 +1,687 @@
+[
+ {
+  "n": 138,
+  "verdict": "correct",
+  "note": "KeiyakuDaoIbatisImplがKeiyakuDaoをimplementsしinsertKeiyakuを実装"
+ },
+ {
+  "n": 139,
+  "verdict": "correct",
+  "note": "LogoutActionがAbstractActionを継承し抽象メソッドdoExecuteを実装"
+ },
+ {
+  "n": 140,
+  "verdict": "correct",
+  "note": "KokyakuServiceImplがKokyakuServiceをimplementsしregistを実装"
+ },
+ {
+  "n": 141,
+  "verdict": "correct",
+  "note": "Kyk0201ConfirmActionがAbstractActionを継承しdoExecuteを実装"
+ },
+ {
+  "n": 142,
+  "verdict": "correct",
+  "note": "KYKB040ShokenHakkoがBatchBaseを継承し抽象execute(String[])を実装"
+ },
+ {
+  "n": 143,
+  "verdict": "correct",
+  "note": "KeiyakuServiceImplがKeiyakuServiceをimplementsしtorokuKeiyakuを実装"
+ },
+ {
+  "n": 144,
+  "verdict": "correct",
+  "note": "Kyk0203InitActionがAbstractActionを継承しdoExecuteを実装"
+ },
+ {
+  "n": 145,
+  "verdict": "correct",
+  "note": "PRC_KAIYAKU_TOROKUのSELECT(31行)でKYK_KEIYAKU.HOKEN_SHIKI_YMDを読む"
+ },
+ {
+  "n": 146,
+  "verdict": "correct",
+  "note": "FNC_GET_CODE_NMのWHERE CODE = p_code(20行)で読む"
+ },
+ {
+  "n": 147,
+  "verdict": "correct",
+  "note": "UPDATE文(55-60行)のVERSION_NO = VERSION_NO + 1で現在値を読んでいる（主操作は更新）"
+ },
+ {
+  "n": 148,
+  "verdict": "partial",
+  "note": "PRC_MANKI_CHUSHUTSUでKYK_KEIYAKU_MANKI_WK.DAIRITEN_CDはINSERT先(書く)。読んでいるのはKYK_KEIYAKU.DAIRITEN_CD"
+ },
+ {
+  "n": 149,
+  "verdict": "correct",
+  "note": "PRC_KAIYAKU_TOROKUのSELECT(31行)でHOKEN_SHUKI_YMDを読む"
+ },
+ {
+  "n": 150,
+  "verdict": "correct",
+  "note": "FNC_GET_CODE_NMがSELECT ... FROM KYK_CODE_MST(20行)"
+ },
+ {
+  "n": 151,
+  "verdict": "correct",
+  "note": "FNC_GET_CODE_NMがSELECT CODE_NM(20行)"
+ },
+ {
+  "n": 152,
+  "verdict": "correct",
+  "note": "PRC_MANKI_CHUSHUTSUのINSERT...SELECT FROM KYK_KEIYAKU(16-19行)で読む"
+ },
+ {
+  "n": 153,
+  "verdict": "partial",
+  "note": "6行目で '. kyk_func.sh' として関数定義をsource（取り込み）しているだけで、起動(RUNS)ではなくINCLUDESに近い"
+ },
+ {
+  "n": 154,
+  "verdict": "partial",
+  "note": "6行目で '. kyk_func.sh' として関数定義をsource（取り込み）しているだけで、起動(RUNS)ではなくINCLUDESに近い"
+ },
+ {
+  "n": 155,
+  "verdict": "partial",
+  "note": "5行目で '. kyk_env.sh' として環境変数設定をsource（取り込み）しているだけで、起動(RUNS)ではなくINCLUDESに近い"
+ },
+ {
+  "n": 156,
+  "verdict": "partial",
+  "note": "5行目でsqlplus @KYKB900_purge.sql を実行。関係はあるがSQLファイルの実行はEXECUTESが適切"
+ },
+ {
+  "n": 157,
+  "verdict": "partial",
+  "note": "5行目で '. kyk_env.sh' として環境変数設定をsource（取り込み）しているだけで、起動(RUNS)ではなくINCLUDESに近い"
+ },
+ {
+  "n": 158,
+  "verdict": "correct",
+  "note": "9行目 run_java jp.co.tsubame.kyk.batch.KYKB110TesuryoKeisan で起動"
+ },
+ {
+  "n": 159,
+  "verdict": "partial",
+  "note": "5行目で '. kyk_env.sh' として環境変数設定をsource（取り込み）しているだけで、起動(RUNS)ではなくINCLUDESに近い"
+ },
+ {
+  "n": 160,
+  "verdict": "partial",
+  "note": "6行目で '. kyk_func.sh' として関数定義をsource（取り込み）しているだけで、起動(RUNS)ではなくINCLUDESに近い"
+ },
+ {
+  "n": 161,
+  "verdict": "correct",
+  "note": "@Autowired private ShokenHakkoRepository repository（20-21行）"
+ },
+ {
+  "n": 162,
+  "verdict": "correct",
+  "note": "@ActionForm @Resource protected JushoHenkoForm jushoHenkoForm（20-22行）"
+ },
+ {
+  "n": 163,
+  "verdict": "correct",
+  "note": "@Autowired private CodeListHelper codeListHelper（42-43行）"
+ },
+ {
+  "n": 164,
+  "verdict": "correct",
+  "note": "@Autowired private CodeListHelper codeListHelper（36-37行）"
+ },
+ {
+  "n": 165,
+  "verdict": "correct",
+  "note": "@Resource protected JushoHenkoService jushoHenkoService（24-25行）"
+ },
+ {
+  "n": 166,
+  "verdict": "correct",
+  "note": "@Autowired private ShokenHakkoService shokenHakkoService（36-37行）"
+ },
+ {
+  "n": 167,
+  "verdict": "correct",
+  "note": "@Autowired private SeikyuMapper seikyuMapper（21-22行）"
+ },
+ {
+  "n": 168,
+  "verdict": "correct",
+  "note": "@Resource protected DairitenService dairitenService"
+ },
+ {
+  "n": 169,
+  "verdict": "partial",
+  "note": "sqlSessionFactoryはref=dataSourceだが、参照先はkyk-web2自身のapplicationContext.xml 17行のjee:jndi-lookup dataSourceで、kyk-onlineのdataSource Beanではない（同名の別Bean）"
+ },
+ {
+  "n": 170,
+  "verdict": "correct",
+  "note": "keiyakuServiceのproperty transactionManager ref（44行）は同一ファイル13行のBean"
+ },
+ {
+  "n": 171,
+  "verdict": "partial",
+  "note": "jdbcTemplateのref=dataSourceはkyk-web2自身の17行のdataSourceで、kyk-onlineのdataSourceではない（同名の別Bean）"
+ },
+ {
+  "n": 172,
+  "verdict": "partial",
+  "note": "keiyakuService(kyk-online)が注入されるのは同一ファイル13行のtransactionManagerで、kyk-web2のtransactionManagerではない（同名の別Bean）"
+ },
+ {
+  "n": 173,
+  "verdict": "correct",
+  "note": "kokyakuServiceTargetにproperty saibanDao ref=saibanDao（55行）"
+ },
+ {
+  "n": 174,
+  "verdict": "correct",
+  "note": "validatorにproperty validationMessageSource ref=messageSource（19行）"
+ },
+ {
+  "n": 175,
+  "verdict": "correct",
+  "note": "keiyakuDaoにproperty sqlMapClient ref=sqlMapClient（24行）"
+ },
+ {
+  "n": 176,
+  "verdict": "correct",
+  "note": "kokyakuServiceにproperty target ref=kokyakuServiceTarget（59行）"
+ },
+ {
+  "n": 177,
+  "verdict": "correct",
+  "note": "fromWhereでLEFT OUTER JOIN KYK_NYUKIN（9行）"
+ },
+ {
+  "n": 178,
+  "verdict": "correct",
+  "note": "fromWhereのJOIN条件 KK.KOKYAKU_ID = K.KEIYAKUSHA_ID（8行）で読む"
+ },
+ {
+  "n": 179,
+  "verdict": "correct",
+  "note": "fromWhereのJOIN条件 N.SEIKYU_NO = S.SEIKYU_NO（9行）で読む"
+ },
+ {
+  "n": 180,
+  "verdict": "correct",
+  "note": "fromWhereのWHERE S.SEIKYU_YM >= / <=（18,21行）で読む"
+ },
+ {
+  "n": 181,
+  "verdict": "correct",
+  "note": "2行目 <%@include file=\"/WEB-INF/view/common/common.jsp\"%>"
+ },
+ {
+  "n": 182,
+  "verdict": "correct",
+  "note": "2行目 <%@ include file=\"/WEB-INF/views/common/include.jsp\" %>"
+ },
+ {
+  "n": 183,
+  "verdict": "correct",
+  "note": "2行目 <%@include file=\"/WEB-INF/view/common/common.jsp\"%>"
+ },
+ {
+  "n": 184,
+  "verdict": "correct",
+  "note": "2行目 <%@ include file=\"/WEB-INF/views/common/include.jsp\" %>"
+ },
+ {
+  "n": 185,
+  "verdict": "correct",
+  "note": "2行目 <%@ include file=\"/WEB-INF/views/common/include.jsp\" %>"
+ },
+ {
+  "n": 186,
+  "verdict": "correct",
+  "note": "2行目 <%@ include file=\"/WEB-INF/views/common/include.jsp\" %>"
+ },
+ {
+  "n": 187,
+  "verdict": "correct",
+  "note": "2行目 <%@include file=\"/WEB-INF/view/common/common.jsp\"%>"
+ },
+ {
+  "n": 188,
+  "verdict": "correct",
+  "note": "2行目 <%@ include file=\"/WEB-INF/views/common/include.jsp\" %>"
+ },
+ {
+  "n": 189,
+  "verdict": "correct",
+  "note": "struts-config 118行 /kyk0301/regist の type=KokyakuTorokuAction"
+ },
+ {
+  "n": 190,
+  "verdict": "correct",
+  "note": "struts-config 134行 /kyk0401/kaiyaku の type=KaiyakuAction"
+ },
+ {
+  "n": 191,
+  "verdict": "correct",
+  "note": "struts-config 111行 /kyk0203/init の type=Kyk0203InitAction"
+ },
+ {
+  "n": 192,
+  "verdict": "correct",
+  "note": "struts-config 72行 /kyk0101/csv の type=KeiyakuCsvAction"
+ },
+ {
+  "n": 193,
+  "verdict": "correct",
+  "note": "struts-config 103行 /kyk0202/regist の type=Kyk0202RegistAction"
+ },
+ {
+  "n": 194,
+  "verdict": "correct",
+  "note": "struts-config 147行 /logout の type=LogoutAction"
+ },
+ {
+  "n": 195,
+  "verdict": "correct",
+  "note": "struts-config 143行 /menu の type=MenuAction"
+ },
+ {
+  "n": 196,
+  "verdict": "correct",
+  "note": "struts-config 96行 /kyk0202/back の type=Kyk0202BackAction"
+ },
+ {
+  "n": 197,
+  "verdict": "correct",
+  "note": "search内 result.rejectValue(\"keiyakuNo\", \"errors.notfound\")（65行）"
+ },
+ {
+  "n": 198,
+  "verdict": "correct",
+  "note": "doExecute内 new ActionMessage(\"warn.overmax\", ...)（59行）"
+ },
+ {
+  "n": 199,
+  "verdict": "correct",
+  "note": "validate内 errors.rejectValue(\"sofusakiYubinNo\", \"errors.invalid\", ...)（28行）"
+ },
+ {
+  "n": 200,
+  "verdict": "correct",
+  "note": "validate内 errors.rejectValue(..., \"errors.maxlength\", ...)（23,31,34,37,40行）"
+ },
+ {
+  "n": 201,
+  "verdict": "correct",
+  "note": "update内 throw new BusinessException(\"errors.notfound\")（44行）"
+ },
+ {
+  "n": 202,
+  "verdict": "correct",
+  "note": "irai内 throw new BusinessException(\"errors.kyk0801.already\")（30行）"
+ },
+ {
+  "n": 203,
+  "verdict": "correct",
+  "note": "init内 new ActionMessage(\"errors.notfound\")（37行）"
+ },
+ {
+  "n": 204,
+  "verdict": "correct",
+  "note": "validate内 ValidationUtils.rejectIfEmptyOrWhitespace(..., \"errors.required\", ...)（21,25,26,43,47-49行）"
+ },
+ {
+  "n": 205,
+  "verdict": "correct",
+  "note": "/kyk0201/confirm の name=keiyakuTorokuForm（90行）"
+ },
+ {
+  "n": 206,
+  "verdict": "correct",
+  "note": "/kyk0101/csv の name=keiyakuKensakuForm（74行）"
+ },
+ {
+  "n": 207,
+  "verdict": "correct",
+  "note": "/kyk0101/init の name=keiyakuKensakuForm（59行）"
+ },
+ {
+  "n": 208,
+  "verdict": "correct",
+  "note": "/kyk0203/init の name=keiyakuTorokuForm（113行）"
+ },
+ {
+  "n": 209,
+  "verdict": "correct",
+  "note": "search は return \"kyk0801/input\"（70行）、ViewResolverで/WEB-INF/views/kyk0801/input.jsp"
+ },
+ {
+  "n": 210,
+  "verdict": "correct",
+  "note": "finish は return \"kyk0801/complete\"（102行）"
+ },
+ {
+  "n": 211,
+  "verdict": "correct",
+  "note": "regist はエラー時 return \"kyk0901/input\"（52行）"
+ },
+ {
+  "n": 212,
+  "verdict": "correct",
+  "note": "input は return \"kyk0901/input\"（45行）"
+ },
+ {
+  "n": 213,
+  "verdict": "correct",
+  "note": "complete は return \"kyk0901/complete\"（62行）"
+ },
+ {
+  "n": 214,
+  "verdict": "correct",
+  "note": "confirm はエラー時 return \"kyk0801/input\"（76行）"
+ },
+ {
+  "n": 215,
+  "verdict": "correct",
+  "note": "input は return \"kyk0801/input\"（58行）"
+ },
+ {
+  "n": 216,
+  "verdict": "correct",
+  "note": "search は return \"kyk1001/search\"（45,58行）"
+ },
+ {
+  "n": 217,
+  "verdict": "correct",
+  "note": "@RequestMapping(\"/kyk0901\")+(value=\"/input\", GET) が input(Model)"
+ },
+ {
+  "n": 218,
+  "verdict": "correct",
+  "note": "@RequestMapping(\"/kyk0901\")+(value=\"/regist\", POST) が regist(...)"
+ },
+ {
+  "n": 219,
+  "verdict": "correct",
+  "note": "@RequestMapping(\"/kyk1001\")+(\"/search\") メソッド指定なし(ANY) が search(...)"
+ },
+ {
+  "n": 220,
+  "verdict": "correct",
+  "note": "@RequestMapping(\"/kyk0801\")+(value=\"/search\", POST) が search(...)"
+ },
+ {
+  "n": 221,
+  "verdict": "correct",
+  "note": "@RequestMapping(\"/kyk0901\")+(value=\"/complete\", GET) が complete()"
+ },
+ {
+  "n": 222,
+  "verdict": "correct",
+  "note": "@RequestMapping(\"/kyk0801\")+(value=\"/complete\", POST) が complete(...)"
+ },
+ {
+  "n": 223,
+  "verdict": "correct",
+  "note": "@RequestMapping(\"/kyk0801\")+(value=\"/finish\", GET) が finish()"
+ },
+ {
+  "n": 224,
+  "verdict": "correct",
+  "note": "@RequestMapping(\"/kyk0801\")+(value=\"/input\", GET) が input(Model)"
+ },
+ {
+  "n": 225,
+  "verdict": "partial",
+  "note": "INSERT INTO KYK_DAIRITENだが、DairitenServiceが実行時に使う2way SQLで初期データ投入ではない。WRITESが適切"
+ },
+ {
+  "n": 226,
+  "verdict": "partial",
+  "note": "INSERT INTO KYK_IDO_RIREKIだが、DAOが実行時に使う業務SQLで初期データ投入ではない。WRITESが適切"
+ },
+ {
+  "n": 227,
+  "verdict": "correct",
+  "note": "db/data の初期データ INSERT INTO KYK_SAIBAN"
+ },
+ {
+  "n": 228,
+  "verdict": "partial",
+  "note": "DELETE FROM KYK_SOSA_LOG（ログ削除バッチ）でデータを入れてはいない。WRITES(削除)が適切"
+ },
+ {
+  "n": 229,
+  "verdict": "correct",
+  "note": "db/data の初期データ INSERT INTO KYK_CODE_MST"
+ },
+ {
+  "n": 230,
+  "verdict": "partial",
+  "note": "UPDATE KYK_SHARYO の実行時業務SQLで初期データ投入ではない。WRITES(更新)が適切"
+ },
+ {
+  "n": 231,
+  "verdict": "correct",
+  "note": "bean keiyakuDao class=...dao.impl.KeiyakuDaoIbatisImpl（23行）"
+ },
+ {
+  "n": 232,
+  "verdict": "correct",
+  "note": "bean jushoHenkoRirekiDao class=...dao.JushoHenkoRirekiDao（28行）"
+ },
+ {
+  "n": 233,
+  "verdict": "correct",
+  "note": "bean kokyakuServiceTarget class=...service.impl.KokyakuServiceImpl（52行）"
+ },
+ {
+  "n": 234,
+  "verdict": "correct",
+  "note": "bean kokyakuDao class=...dao.KokyakuDao（27行）"
+ },
+ {
+  "n": 235,
+  "verdict": "correct",
+  "note": "bean keiyakuServiceTarget class=...service.impl.KeiyakuServiceImpl（39行）"
+ },
+ {
+  "n": 236,
+  "verdict": "correct",
+  "note": "bean saibanDao class=jp.co.tsubame.kyk.common.dao.SaibanDao（26行）"
+ },
+ {
+  "n": 237,
+  "verdict": "correct",
+  "note": "KYK_MONTHLY.ajs KYKB110ユニット sc=\"/opt/kyk/shell/KYKB110.sh\""
+ },
+ {
+  "n": 238,
+  "verdict": "correct",
+  "note": "KYK_DAILY.ajs KYKB040ユニット sc=\"/opt/kyk/shell/KYKB040.sh\""
+ },
+ {
+  "n": 239,
+  "verdict": "correct",
+  "note": "KYK_DAILY.ajs KYKB030ユニット sc=\"/opt/kyk/shell/KYKB030.sh\""
+ },
+ {
+  "n": 240,
+  "verdict": "correct",
+  "note": "KYK_MONTHLY.ajs KYKB010ユニット sc=\"/opt/kyk/shell/KYKB010.sh\""
+ },
+ {
+  "n": 241,
+  "verdict": "correct",
+  "note": "KYK_DAILY.ajs KYKB020ユニット sc=\"/opt/kyk/shell/KYKB020.sh\""
+ },
+ {
+  "n": 242,
+  "verdict": "correct",
+  "note": "form-bean keiyakuHenkoForm type=...form.KeiyakuHenkoForm（44行）"
+ },
+ {
+  "n": 243,
+  "verdict": "correct",
+  "note": "form-bean keiyakuTorokuForm type=...form.KeiyakuTorokuForm（13行）"
+ },
+ {
+  "n": 244,
+  "verdict": "correct",
+  "note": "form-bean keiyakuKensakuForm type=...form.KeiyakuKensakuForm（12行）"
+ },
+ {
+  "n": 245,
+  "verdict": "correct",
+  "note": "form-bean kaiyakuForm type=...form.KaiyakuForm（43行）"
+ },
+ {
+  "n": 246,
+  "verdict": "correct",
+  "note": "MyBatis Mapper IF nextOtaiNo() ↔ OtaiRirekiMapper.xml select id=nextOtaiNo"
+ },
+ {
+  "n": 247,
+  "verdict": "correct",
+  "note": "MyBatis Mapper IF countSeikyu ↔ SeikyuMapper.xml select id=countSeikyu"
+ },
+ {
+  "n": 248,
+  "verdict": "correct",
+  "note": "MyBatis Mapper IF selectSeikyuList ↔ SeikyuMapper.xml select id=selectSeikyuList"
+ },
+ {
+  "n": 249,
+  "verdict": "correct",
+  "note": "MyBatis Mapper IF insert ↔ OtaiRirekiMapper.xml insert id=insert"
+ },
+ {
+  "n": 250,
+  "verdict": "correct",
+  "note": "KYK_DAILY.ajs ar=(f=KYKB030,t=KYKB040,seq)"
+ },
+ {
+  "n": 251,
+  "verdict": "correct",
+  "note": "KYK_MONTHLY.ajs ar=(f=KYKB010,t=KYKB110,seq)"
+ },
+ {
+  "n": 252,
+  "verdict": "correct",
+  "note": "KYK_DAILY.ajs ar=(f=KYKB020,t=KYKB030,seq)"
+ },
+ {
+  "n": 253,
+  "verdict": "correct",
+  "note": "mapper namespace=jp.co.tsubame.kyk.web2.mapper.SeikyuMapper がIFに対応"
+ },
+ {
+  "n": 254,
+  "verdict": "correct",
+  "note": "mapper namespace=jp.co.tsubame.kyk.web2.mapper.OtaiRirekiMapper がIFに対応"
+ },
+ {
+  "n": 255,
+  "verdict": "correct",
+  "note": "countSeikyu内 <include refid=\"fromWhere\"/>（37行）"
+ },
+ {
+  "n": 256,
+  "verdict": "correct",
+  "note": "selectSeikyuList内 <include refid=\"fromWhere\"/>（54行）"
+ },
+ {
+  "n": 257,
+  "verdict": "correct",
+  "note": "PRC_KAIYAKU_TOROKU 43行で PKG_KYK_COMMON.FNC_CALC_HENREI(...) を呼ぶ"
+ },
+ {
+  "n": 258,
+  "verdict": "correct",
+  "note": "kyk.crontab 3行目 30 2 * * * /opt/kyk/shell/KYKB900_log_purge.sh"
+ },
+ {
+  "n": 259,
+  "verdict": "correct",
+  "note": "KaiyakuDao 65行 prepareCall(CALL_KAIYAKU)、CALL_KAIYAKU=\"{call PKG_KYK_KAIYAKU.PRC_KAIYAKU_TOROKU(...)}\""
+ },
+ {
+  "n": 260,
+  "verdict": "partial",
+  "note": "T_JUCHU_H_受注ヘッダ定義書の24行目はT_JUCHU_H.ZEI_GAKU（消費税額）。T_SEIKYU_Hの同名列ではない"
+ },
+ {
+  "n": 261,
+  "verdict": "partial",
+  "note": "T_JUCHU_H定義書の13行目はT_JUCHU_H.NONYU_CD（納入先コード）。M_NONYUの同名列ではない"
+ },
+ {
+  "n": 262,
+  "verdict": "partial",
+  "note": "M_SHIIRE_仕入先マスタ定義書の13行目はM_SHIIRE.SHIIRE_KANA。M_SHIIRE_RIREKIの同名列ではない"
+ },
+ {
+  "n": 263,
+  "verdict": "correct",
+  "note": "T_KAIKAKE_ZANシート19行目 No11 更新者 UPD_USER VARCHAR2(10)"
+ },
+ {
+  "n": 264,
+  "verdict": "partial",
+  "note": "T_SEIKYU_M_請求明細定義書の14行目はT_SEIKYU_M.KINGAKU。T_SHIIRE_Mの同名列ではない"
+ },
+ {
+  "n": 265,
+  "verdict": "partial",
+  "note": "MST060登録5行目 商品コード SHOHIN_CDだが画面の主テーブルはM_HANBAI_TANKA。T_MITSUMORI_Mの同名列ではない"
+ },
+ {
+  "n": 266,
+  "verdict": "partial",
+  "note": "M_LOCATION定義4行目はM_LOCATION.SOKO_CD（倉庫コード）。T_HACCHU_Hの同名列ではない"
+ },
+ {
+  "n": 267,
+  "verdict": "partial",
+  "note": "R_HAN010見積書13行目 TANKAの出所はMitsumorishoReportのT_MITSUMORI_M.TANKA。T_JUCHU_Mではない"
+ },
+ {
+  "n": 268,
+  "verdict": "correct",
+  "note": "calc内 f.getShohinCd()[i]（36,39行）"
+ },
+ {
+  "n": 269,
+  "verdict": "correct",
+  "note": "execute内 new KobaiMasterDAO(con)（48行）"
+ },
+ {
+  "n": 270,
+  "verdict": "partial",
+  "note": "doExecute内で呼んでいるのはDBUtil.close(con)＝close(Connection)（46行）。close(ResultSet)ではない（別オーバーロード）"
+ },
+ {
+  "n": 271,
+  "verdict": "correct",
+  "note": "validateInput内 new GinkoDao(con).find(f.getGinkoCd(), f.getShitenCd())（113行）"
+ },
+ {
+  "n": 272,
+  "verdict": "correct",
+  "note": "calc内 f.setSeikyuSakiCd(tokui.get(\"SEIKYU_SAKI_CD\"))（37行）"
+ },
+ {
+  "n": 273,
+  "verdict": "correct",
+  "note": "doExecute内 f.setMode(CommonConst.MODE_UPDATE)（37,63行）、UnsoFormはBaseFormを継承しsetMode未オーバーライド"
+ },
+ {
+  "n": 274,
+  "verdict": "correct",
+  "note": "validateInput内 CheckUtil.isHankakuEisu(...)（83,88行）"
+ }
+]

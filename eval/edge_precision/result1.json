@@ -1,0 +1,687 @@
+[
+ {
+  "n": 1,
+  "verdict": "correct",
+  "note": "該当行でtoのフィールド/クラスを参照している"
+ },
+ {
+  "n": 2,
+  "verdict": "correct",
+  "note": "該当行でtoのフィールド/クラスを参照している"
+ },
+ {
+  "n": 3,
+  "verdict": "correct",
+  "note": "該当行でtoのフィールド/クラスを参照している"
+ },
+ {
+  "n": 4,
+  "verdict": "correct",
+  "note": "該当行でtoのフィールド/クラスを参照している"
+ },
+ {
+  "n": 5,
+  "verdict": "correct",
+  "note": "該当行でtoのフィールド/クラスを参照している"
+ },
+ {
+  "n": 6,
+  "verdict": "correct",
+  "note": "該当行でtoのフィールド/クラスを参照している"
+ },
+ {
+  "n": 7,
+  "verdict": "correct",
+  "note": "該当行でtoのフィールド/クラスを参照している"
+ },
+ {
+  "n": 8,
+  "verdict": "correct",
+  "note": "該当行でtoのフィールド/クラスを参照している"
+ },
+ {
+  "n": 9,
+  "verdict": "correct",
+  "note": "該当行でtoのメソッドを呼び出している（宣言を確認）"
+ },
+ {
+  "n": 10,
+  "verdict": "correct",
+  "note": "該当行でtoのメソッドを呼び出している（宣言を確認）"
+ },
+ {
+  "n": 11,
+  "verdict": "correct",
+  "note": "該当行でtoのメソッドを呼び出している（宣言を確認）"
+ },
+ {
+  "n": 12,
+  "verdict": "correct",
+  "note": "該当行でtoのメソッドを呼び出している（宣言を確認）"
+ },
+ {
+  "n": 13,
+  "verdict": "correct",
+  "note": "該当行でtoのメソッドを呼び出している（宣言を確認）"
+ },
+ {
+  "n": 14,
+  "verdict": "correct",
+  "note": "該当行でtoのメソッドを呼び出している（宣言を確認）"
+ },
+ {
+  "n": 15,
+  "verdict": "correct",
+  "note": "該当行でtoのメソッドを呼び出している（宣言を確認）"
+ },
+ {
+  "n": 16,
+  "verdict": "correct",
+  "note": "該当行でtoのメソッドを呼び出している（宣言を確認）"
+ },
+ {
+  "n": 17,
+  "verdict": "wrong",
+  "note": "Kyk0201Helperはプルダウン用コードリスト設定のみ。B29(被保険者生年月日hihokenshaSeinengappi、文字列入力)とは無関係"
+ },
+ {
+  "n": 18,
+  "verdict": "wrong",
+  "note": "Kyk0201Helperはプルダウン設定のみ。B43(築年数chikuNensu、文字列入力)は扱わない"
+ },
+ {
+  "n": 19,
+  "verdict": "partial",
+  "note": "画面一覧はKYK0901応対履歴登録という画面を記載しているが、画面項目定義CSVファイル自体には言及していない"
+ },
+ {
+  "n": 20,
+  "verdict": "partial",
+  "note": "B20は初度登録年月shodoTorokuYm(KYK_SHARYO.SHODO_TOROKU_YM)の行。Kyk0601Actionは同画面のActionだが、この項目はSharyoIrekaeLogicで処理され行はActionを記述していない"
+ },
+ {
+  "n": 21,
+  "verdict": "correct",
+  "note": "設計書の該当行/節がtoを記載している"
+ },
+ {
+  "n": 22,
+  "verdict": "partial",
+  "note": "画面一覧はKYK0202契約登録（確認）画面を記載(URLは/kyk0201/confirm.do)。Kyk0202RegistActionは/kyk0202/registの処理で、クラス自体の記述ではない"
+ },
+ {
+  "n": 23,
+  "verdict": "wrong",
+  "note": "B8は保険種別hokenShubetsuCdの行。Kyk0201ConfirmActionOldは@deprecatedでstruts-configからも外されており、この項目を明示的に扱っていない"
+ },
+ {
+  "n": 24,
+  "verdict": "correct",
+  "note": "設計書の該当行/節がtoを記載している"
+ },
+ {
+  "n": 25,
+  "verdict": "correct",
+  "note": "該当行でtoのフィールド/クラスを参照している"
+ },
+ {
+  "n": 26,
+  "verdict": "correct",
+  "note": "該当行でtoのフィールド/クラスを参照している"
+ },
+ {
+  "n": 27,
+  "verdict": "correct",
+  "note": "該当行でtoのフィールド/クラスを参照している"
+ },
+ {
+  "n": 28,
+  "verdict": "correct",
+  "note": "該当行でtoのフィールド/クラスを参照している"
+ },
+ {
+  "n": 29,
+  "verdict": "correct",
+  "note": "該当行でtoのフィールド/クラスを参照している"
+ },
+ {
+  "n": 30,
+  "verdict": "correct",
+  "note": "該当行でtoのフィールド/クラスを参照している"
+ },
+ {
+  "n": 31,
+  "verdict": "correct",
+  "note": "該当行でtoのフィールド/クラスを参照している"
+ },
+ {
+  "n": 32,
+  "verdict": "correct",
+  "note": "該当行でtoのフィールド/クラスを参照している"
+ },
+ {
+  "n": 33,
+  "verdict": "correct",
+  "note": "経路どおりに値がtoの列へ登録される（SQL/マッパ確認）"
+ },
+ {
+  "n": 34,
+  "verdict": "correct",
+  "note": "経路どおりに値がtoの列へ登録される（SQL/マッパ確認）"
+ },
+ {
+  "n": 35,
+  "verdict": "correct",
+  "note": "経路どおりに値がtoの列へ登録される（SQL/マッパ確認）"
+ },
+ {
+  "n": 36,
+  "verdict": "partial",
+  "note": "フォームのjusho2はnewJusho経由でNEW_JUSHO(?6)に入る。OLD_JUSHO(?4)はDBから取得した旧住所(old.getJusho2)で、フォーム値ではない"
+ },
+ {
+  "n": 37,
+  "verdict": "correct",
+  "note": "経路どおりに値がtoの列へ登録される（SQL/マッパ確認）"
+ },
+ {
+  "n": 38,
+  "verdict": "correct",
+  "note": "経路どおりに値がtoの列へ登録される（SQL/マッパ確認）"
+ },
+ {
+  "n": 39,
+  "verdict": "correct",
+  "note": "経路どおりに値がtoの列へ登録される（SQL/マッパ確認）"
+ },
+ {
+  "n": 40,
+  "verdict": "correct",
+  "note": "経路どおりに値がtoの列へ登録される（SQL/マッパ確認）"
+ },
+ {
+  "n": 41,
+  "verdict": "correct",
+  "note": "DDLに該当テーブル/列の定義あり"
+ },
+ {
+  "n": 42,
+  "verdict": "correct",
+  "note": "DDLに該当テーブル/列の定義あり"
+ },
+ {
+  "n": 43,
+  "verdict": "correct",
+  "note": "DDLに該当テーブル/列の定義あり"
+ },
+ {
+  "n": 44,
+  "verdict": "correct",
+  "note": "DDLに該当テーブル/列の定義あり"
+ },
+ {
+  "n": 45,
+  "verdict": "correct",
+  "note": "DDLに該当テーブル/列の定義あり"
+ },
+ {
+  "n": 46,
+  "verdict": "correct",
+  "note": "DDLに該当テーブル/列の定義あり"
+ },
+ {
+  "n": 47,
+  "verdict": "correct",
+  "note": "DDLに該当テーブル/列の定義あり"
+ },
+ {
+  "n": 48,
+  "verdict": "correct",
+  "note": "DDLに該当テーブル/列の定義あり"
+ },
+ {
+  "n": 49,
+  "verdict": "correct",
+  "note": "設計書の該当行/節がtoを記載している"
+ },
+ {
+  "n": 50,
+  "verdict": "correct",
+  "note": "設計書の該当行/節がtoを記載している"
+ },
+ {
+  "n": 51,
+  "verdict": "correct",
+  "note": "設計書の該当行/節がtoを記載している"
+ },
+ {
+  "n": 52,
+  "verdict": "correct",
+  "note": "設計書の該当行/節がtoを記載している"
+ },
+ {
+  "n": 53,
+  "verdict": "correct",
+  "note": "設計書の該当行/節がtoを記載している"
+ },
+ {
+  "n": 54,
+  "verdict": "partial",
+  "note": "B5はKYK0202(URL /kyk0201/confirm.do)。このURLは現行のKyk0201ConfirmActionが処理し、Old版(struts-configでコメントアウト)ではない"
+ },
+ {
+  "n": 55,
+  "verdict": "correct",
+  "note": "設計書の該当行/節がtoを記載している"
+ },
+ {
+  "n": 56,
+  "verdict": "correct",
+  "note": "設計書の該当行/節がtoを記載している"
+ },
+ {
+  "n": 57,
+  "verdict": "correct",
+  "note": "INSERT/UPDATEの対象列/テーブルとして書き込んでいる"
+ },
+ {
+  "n": 58,
+  "verdict": "correct",
+  "note": "INSERT/UPDATEの対象列/テーブルとして書き込んでいる"
+ },
+ {
+  "n": 59,
+  "verdict": "correct",
+  "note": "INSERT/UPDATEの対象列/テーブルとして書き込んでいる"
+ },
+ {
+  "n": 60,
+  "verdict": "correct",
+  "note": "INSERT/UPDATEの対象列/テーブルとして書き込んでいる"
+ },
+ {
+  "n": 61,
+  "verdict": "correct",
+  "note": "INSERT/UPDATEの対象列/テーブルとして書き込んでいる"
+ },
+ {
+  "n": 62,
+  "verdict": "correct",
+  "note": "INSERT/UPDATEの対象列/テーブルとして書き込んでいる"
+ },
+ {
+  "n": 63,
+  "verdict": "correct",
+  "note": "INSERT/UPDATEの対象列/テーブルとして書き込んでいる"
+ },
+ {
+  "n": 64,
+  "verdict": "correct",
+  "note": "INSERT/UPDATEの対象列/テーブルとして書き込んでいる"
+ },
+ {
+  "n": 65,
+  "verdict": "correct",
+  "note": "旧JSPだが/kyk0201/confirm→keiyakuTorokuForm(KeiyakuTorokuForm)のkeiyakushaIdに結びつく"
+ },
+ {
+  "n": 66,
+  "verdict": "correct",
+  "note": "該当項目がフォーム(form-bean)のプロパティに結びついている"
+ },
+ {
+  "n": 67,
+  "verdict": "correct",
+  "note": "該当項目がフォーム(form-bean)のプロパティに結びついている"
+ },
+ {
+  "n": 68,
+  "verdict": "correct",
+  "note": "該当項目がフォーム(form-bean)のプロパティに結びついている"
+ },
+ {
+  "n": 69,
+  "verdict": "correct",
+  "note": "該当項目がフォーム(form-bean)のプロパティに結びついている"
+ },
+ {
+  "n": 70,
+  "verdict": "correct",
+  "note": "該当項目がフォーム(form-bean)のプロパティに結びついている"
+ },
+ {
+  "n": 71,
+  "verdict": "correct",
+  "note": "該当項目がフォーム(form-bean)のプロパティに結びついている"
+ },
+ {
+  "n": 72,
+  "verdict": "correct",
+  "note": "該当項目がフォーム(form-bean)のプロパティに結びついている"
+ },
+ {
+  "n": 73,
+  "verdict": "correct",
+  "note": "SELECT句/WHERE句で該当列を読んでいる"
+ },
+ {
+  "n": 74,
+  "verdict": "correct",
+  "note": "SELECT句/WHERE句で該当列を読んでいる"
+ },
+ {
+  "n": 75,
+  "verdict": "correct",
+  "note": "SELECT句/WHERE句で該当列を読んでいる"
+ },
+ {
+  "n": 76,
+  "verdict": "correct",
+  "note": "SELECT句/WHERE句で該当列を読んでいる"
+ },
+ {
+  "n": 77,
+  "verdict": "correct",
+  "note": "SELECT句/WHERE句で該当列を読んでいる"
+ },
+ {
+  "n": 78,
+  "verdict": "correct",
+  "note": "SELECT句/WHERE句で該当列を読んでいる"
+ },
+ {
+  "n": 79,
+  "verdict": "correct",
+  "note": "SELECT句/WHERE句で該当列を読んでいる"
+ },
+ {
+  "n": 80,
+  "verdict": "correct",
+  "note": "SELECT句/WHERE句で該当列を読んでいる"
+ },
+ {
+  "n": 81,
+  "verdict": "correct",
+  "note": "@Table/命名規約によりフィールドが該当列(テーブル)に対応、DDLにも存在"
+ },
+ {
+  "n": 82,
+  "verdict": "correct",
+  "note": "@Table/命名規約によりフィールドが該当列(テーブル)に対応、DDLにも存在"
+ },
+ {
+  "n": 83,
+  "verdict": "correct",
+  "note": "@Table/命名規約によりフィールドが該当列(テーブル)に対応、DDLにも存在"
+ },
+ {
+  "n": 84,
+  "verdict": "correct",
+  "note": "@Table/命名規約によりフィールドが該当列(テーブル)に対応、DDLにも存在"
+ },
+ {
+  "n": 85,
+  "verdict": "correct",
+  "note": "@Table/命名規約によりフィールドが該当列(テーブル)に対応、DDLにも存在"
+ },
+ {
+  "n": 86,
+  "verdict": "correct",
+  "note": "@Table/命名規約によりフィールドが該当列(テーブル)に対応、DDLにも存在"
+ },
+ {
+  "n": 87,
+  "verdict": "correct",
+  "note": "@Table/命名規約によりフィールドが該当列(テーブル)に対応、DDLにも存在"
+ },
+ {
+  "n": 88,
+  "verdict": "correct",
+  "note": "@Table/命名規約によりフィールドが該当列(テーブル)に対応、DDLにも存在"
+ },
+ {
+  "n": 89,
+  "verdict": "correct",
+  "note": "INSERT/UPDATEの対象列/テーブルとして書き込んでいる"
+ },
+ {
+  "n": 90,
+  "verdict": "correct",
+  "note": "INSERT/UPDATEの対象列/テーブルとして書き込んでいる"
+ },
+ {
+  "n": 91,
+  "verdict": "correct",
+  "note": "INSERT/UPDATEの対象列/テーブルとして書き込んでいる"
+ },
+ {
+  "n": 92,
+  "verdict": "correct",
+  "note": "INSERT/UPDATEの対象列/テーブルとして書き込んでいる"
+ },
+ {
+  "n": 93,
+  "verdict": "correct",
+  "note": "INSERT/UPDATEの対象列/テーブルとして書き込んでいる"
+ },
+ {
+  "n": 94,
+  "verdict": "correct",
+  "note": "INSERT/UPDATEの対象列/テーブルとして書き込んでいる"
+ },
+ {
+  "n": 95,
+  "verdict": "correct",
+  "note": "INSERT/UPDATEの対象列/テーブルとして書き込んでいる"
+ },
+ {
+  "n": 96,
+  "verdict": "correct",
+  "note": "INSERT/UPDATEの対象列/テーブルとして書き込んでいる"
+ },
+ {
+  "n": 97,
+  "verdict": "correct",
+  "note": "validation.xmlのarg0 keyで使用、MessageResourcesにキーあり"
+ },
+ {
+  "n": 98,
+  "verdict": "correct",
+  "note": "validation.xmlのarg0 keyで使用、MessageResourcesにキーあり"
+ },
+ {
+  "n": 99,
+  "verdict": "correct",
+  "note": "validation.xmlのarg0 keyで使用、MessageResourcesにキーあり"
+ },
+ {
+  "n": 100,
+  "verdict": "correct",
+  "note": "validation.xmlのarg0 keyで使用、MessageResourcesにキーあり"
+ },
+ {
+  "n": 101,
+  "verdict": "correct",
+  "note": "validation.xmlのarg0 keyで使用、MessageResourcesにキーあり"
+ },
+ {
+  "n": 102,
+  "verdict": "correct",
+  "note": "validation.xmlのarg0 keyで使用、MessageResourcesにキーあり"
+ },
+ {
+  "n": 103,
+  "verdict": "correct",
+  "note": "validation.xmlのarg0 keyで使用、MessageResourcesにキーあり"
+ },
+ {
+  "n": 104,
+  "verdict": "correct",
+  "note": "validation.xmlのarg0 keyで使用、MessageResourcesにキーあり"
+ },
+ {
+  "n": 105,
+  "verdict": "correct",
+  "note": "該当項目がフォーム(form-bean)のプロパティに結びついている"
+ },
+ {
+  "n": 106,
+  "verdict": "correct",
+  "note": "該当項目がフォーム(form-bean)のプロパティに結びついている"
+ },
+ {
+  "n": 107,
+  "verdict": "correct",
+  "note": "該当項目がフォーム(form-bean)のプロパティに結びついている"
+ },
+ {
+  "n": 108,
+  "verdict": "correct",
+  "note": "該当項目がフォーム(form-bean)のプロパティに結びついている"
+ },
+ {
+  "n": 109,
+  "verdict": "correct",
+  "note": "該当項目がフォーム(form-bean)のプロパティに結びついている"
+ },
+ {
+  "n": 110,
+  "verdict": "correct",
+  "note": "該当項目がフォーム(form-bean)のプロパティに結びついている"
+ },
+ {
+  "n": 111,
+  "verdict": "correct",
+  "note": "該当項目がフォーム(form-bean)のプロパティに結びついている"
+ },
+ {
+  "n": 112,
+  "verdict": "correct",
+  "note": "dairitenCdはKeiyakuTorokuFormの親BaseKeiyakuFormのフィールド"
+ },
+ {
+  "n": 113,
+  "verdict": "correct",
+  "note": "メソッド内で該当SQLを実行している"
+ },
+ {
+  "n": 114,
+  "verdict": "correct",
+  "note": "メソッド内で該当SQLを実行している"
+ },
+ {
+  "n": 115,
+  "verdict": "correct",
+  "note": "メソッド内で該当SQLを実行している"
+ },
+ {
+  "n": 116,
+  "verdict": "correct",
+  "note": "execute(String[] args)内でKYK_NYUKINへのINSERTを実行"
+ },
+ {
+  "n": 117,
+  "verdict": "correct",
+  "note": "メソッド内で該当SQLを実行している"
+ },
+ {
+  "n": 118,
+  "verdict": "correct",
+  "note": "メソッド内で該当SQLを実行している"
+ },
+ {
+  "n": 119,
+  "verdict": "correct",
+  "note": "メソッド内で該当SQLを実行している"
+ },
+ {
+  "n": 120,
+  "verdict": "correct",
+  "note": "メソッド内で該当SQLを実行している"
+ },
+ {
+  "n": 121,
+  "verdict": "correct",
+  "note": "該当行でtoのフィールド/クラスを参照している"
+ },
+ {
+  "n": 122,
+  "verdict": "correct",
+  "note": "該当行でtoのフィールド/クラスを参照している"
+ },
+ {
+  "n": 123,
+  "verdict": "wrong",
+  "note": "validate()はメール一致チェックのみでkyk0301_complete.jspを参照しない。completeへの遷移はregist/update＋struts-configのforward"
+ },
+ {
+  "n": 124,
+  "verdict": "correct",
+  "note": "該当行でtoのフィールド/クラスを参照している"
+ },
+ {
+  "n": 125,
+  "verdict": "correct",
+  "note": "クラス宣言でextends/implementsしている"
+ },
+ {
+  "n": 126,
+  "verdict": "correct",
+  "note": "クラス宣言でextends/implementsしている"
+ },
+ {
+  "n": 127,
+  "verdict": "correct",
+  "note": "クラス宣言でextends/implementsしている"
+ },
+ {
+  "n": 128,
+  "verdict": "correct",
+  "note": "クラス宣言でextends/implementsしている"
+ },
+ {
+  "n": 129,
+  "verdict": "correct",
+  "note": "クラス宣言でextends/implementsしている"
+ },
+ {
+  "n": 130,
+  "verdict": "correct",
+  "note": "クラス宣言でextends/implementsしている"
+ },
+ {
+  "n": 131,
+  "verdict": "correct",
+  "note": "クラス宣言でextends/implementsしている"
+ },
+ {
+  "n": 132,
+  "verdict": "correct",
+  "note": "クラス宣言でextends/implementsしている"
+ },
+ {
+  "n": 133,
+  "verdict": "correct",
+  "note": "INSERT INTO KYK_KAIYAKUで書き込み（読み取りは無いがWRITESとしては正しい）"
+ },
+ {
+  "n": 134,
+  "verdict": "correct",
+  "note": "INSERT/UPDATEの対象列/テーブルとして書き込んでいる"
+ },
+ {
+  "n": 135,
+  "verdict": "correct",
+  "note": "INSERT/UPDATEの対象列/テーブルとして書き込んでいる"
+ },
+ {
+  "n": 136,
+  "verdict": "correct",
+  "note": "INSERT/UPDATEの対象列/テーブルとして書き込んでいる"
+ },
+ {
+  "n": 137,
+  "verdict": "correct",
+  "note": "MenuActionがAbstractActionを継承しdoExecuteを実装"
+ }
+]
