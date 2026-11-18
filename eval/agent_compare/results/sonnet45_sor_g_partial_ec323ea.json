@@ -1,0 +1,1132 @@
+[
+{
+"run": "/home/claude/compare/s-g-r1",
+"task": "cr01",
+"cond": "A",
+"truth": 3,
+"listed": 5,
+"hit": 3,
+"missed": [],
+"extra": [
+"doc/画面設計/KYK0401_解約受付_画面項目定義.md",
+"doc/改修履歴.md"
+],
+"input": 306,
+"cache_write": 81817,
+"cache_read": 2262113,
+"output": 12901,
+"cost": 1.3639689000000002,
+"turns": 78,
+"tools": {
+"Bash": 27,
+"Grep": 13,
+"Glob": 14,
+"Read": 22,
+"StructuredOutput": 1
+},
+"seconds": 219
+},
+{
+"run": "/home/claude/compare/s-g-r1",
+"task": "cr01",
+"cond": "C",
+"truth": 3,
+"listed": 3,
+"hit": 3,
+"missed": [],
+"extra": [],
+"input": 228,
+"cache_write": 54555,
+"cache_read": 1713896,
+"output": 10337,
+"cost": 0.9972378,
+"turns": 60,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"mcp__himotoki__get_element": 4,
+"mcp__himotoki__search_elements": 2,
+"Grep": 9,
+"Read": 16,
+"Glob": 22,
+"Bash": 2,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 206
+},
+{
+"run": "/home/claude/compare/s-g-r1",
+"task": "cr02",
+"cond": "A",
+"truth": 1,
+"listed": 3,
+"hit": 1,
+"missed": [],
+"extra": [
+"doc/コード定義.csv",
+"doc/画面設計/KYK0401_解約受付_画面項目定義.md"
+],
+"input": 162,
+"cache_write": 50068,
+"cache_read": 1084551,
+"output": 11127,
+"cost": 0.7931643,
+"turns": 56,
+"tools": {
+"Bash": 28,
+"Read": 19,
+"Grep": 5,
+"Glob": 2,
+"StructuredOutput": 1
+},
+"seconds": 218
+},
+{
+"run": "/home/claude/compare/s-g-r1",
+"task": "cr02",
+"cond": "C",
+"truth": 1,
+"listed": 3,
+"hit": 1,
+"missed": [],
+"extra": [
+"doc/画面設計/KYK0401_解約受付_画面項目定義.md",
+"doc/コード定義.csv"
+],
+"input": 364,
+"cache_write": 46467,
+"cache_read": 2632958,
+"output": 12147,
+"cost": 1.2519863999999998,
+"turns": 46,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"mcp__himotoki__impact_files": 1,
+"mcp__himotoki__get_element": 2,
+"Grep": 9,
+"Read": 12,
+"Glob": 14,
+"Bash": 3,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 277
+},
+{
+"run": "/home/claude/compare/s-g-r1",
+"task": "cr03",
+"cond": "A",
+"truth": 12,
+"listed": 16,
+"hit": 11,
+"missed": [
+"kyk-online/src/jp/co/tsubame/kyk/online/form/KeiyakuTorokuForm.java"
+],
+"extra": [
+"db/data/KYK_CODE_MST.sql",
+"doc/コード定義.csv",
+"kyk-online/src/jp/co/tsubame/kyk/online/dao/KeiyakuShosaiDao.java",
+"doc/改修履歴.md",
+"kyk-online/WebContent/js/kyk0201.js"
+],
+"input": 418,
+"cache_write": 102664,
+"cache_read": 3569693,
+"output": 11254,
+"cost": 1.8569558999999993,
+"turns": 53,
+"tools": {
+"Bash": 6,
+"Glob": 18,
+"Read": 27,
+"StructuredOutput": 1
+},
+"seconds": 217
+},
+{
+"run": "/home/claude/compare/s-g-r1",
+"task": "cr03",
+"cond": "C",
+"truth": 12,
+"listed": 16,
+"hit": 12,
+"missed": [],
+"extra": [
+"kyk-online/WebContent/jsp/kyk02/kyk0201.jsp",
+"kyk-online/WebContent/jsp/kyk02/kyk0202.jsp",
+"kyk-online/WebContent/js/kyk0201.js",
+"doc/コード定義.csv"
+],
+"input": 236,
+"cache_write": 66001,
+"cache_read": 2030615,
+"output": 12236,
+"cost": 1.1894384999999998,
+"turns": 53,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"mcp__himotoki__get_element": 10,
+"mcp__himotoki__neighbors": 1,
+"mcp__himotoki__search_elements": 6,
+"Grep": 5,
+"Read": 12,
+"Glob": 11,
+"mcp__himotoki__audit_scope": 1,
+"Bash": 3,
+"StructuredOutput": 1
+},
+"seconds": 203
+},
+{
+"run": "/home/claude/compare/s-g-r1",
+"task": "cr04",
+"cond": "A",
+"truth": 19,
+"listed": 29,
+"hit": 19,
+"missed": [],
+"extra": [
+"db/ddl/table/KYK_SHOKEN_HAKKO.sql",
+"kyk-ido/src/main/java/jp/co/tsubame/kyk/ido/entity/KykDairiten.java",
+"kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/model/ShokenHakkoParam.java",
+"kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/repository/ShokenHakkoRepository.java",
+"kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/service/impl/ShokenHakkoServiceImpl.java",
+"kyk-ido/src/main/webapp/WEB-INF/view/kyk0501/confirm.jsp",
+"kyk-web2/src/main/webapp/WEB-INF/views/kyk0801/confirm.jsp",
+"kyk-online/src/MessageResources.properties",
+"kyk-ido/src/main/resources/application_ja.properties",
+"kyk-web2/src/main/resources/messages_ja.properties"
+],
+"input": 186,
+"cache_write": 108147,
+"cache_read": 1548841,
+"output": 16978,
+"cost": 1.3687623000000002,
+"turns": 68,
+"tools": {
+"Bash": 21,
+"Grep": 12,
+"Read": 30,
+"Glob": 3,
+"StructuredOutput": 1
+},
+"seconds": 249
+},
+{
+"run": "/home/claude/compare/s-g-r1",
+"task": "cr04",
+"cond": "C",
+"truth": 19,
+"listed": 20,
+"hit": 19,
+"missed": [],
+"extra": [
+"kyk-ido/src/main/java/jp/co/tsubame/kyk/ido/entity/KykDairiten.java"
+],
+"input": 156,
+"cache_write": 69354,
+"cache_read": 1225943,
+"output": 13245,
+"cost": 0.9830498999999997,
+"turns": 48,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"mcp__himotoki__get_element": 16,
+"mcp__himotoki__search_elements": 3,
+"Grep": 5,
+"Read": 11,
+"Glob": 8,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 193
+},
+{
+"run": "/home/claude/compare/s-g-r1",
+"task": "cr05",
+"cond": "A",
+"truth": 10,
+"listed": 11,
+"hit": 10,
+"missed": [],
+"extra": [
+"doc/改修履歴.md"
+],
+"input": 242,
+"cache_write": 38532,
+"cache_read": 1544743,
+"output": 8535,
+"cost": 0.8233658999999999,
+"turns": 31,
+"tools": {
+"Bash": 9,
+"Grep": 8,
+"Read": 12,
+"StructuredOutput": 1
+},
+"seconds": 146
+},
+{
+"run": "/home/claude/compare/s-g-r1",
+"task": "cr05",
+"cond": "C",
+"truth": 10,
+"listed": 11,
+"hit": 10,
+"missed": [],
+"extra": [
+"doc/改修履歴.md"
+],
+"input": 156,
+"cache_write": 49909,
+"cache_read": 1137311,
+"output": 9735,
+"cost": 0.7871403000000001,
+"turns": 35,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__impact_files": 1,
+"Read": 15,
+"Grep": 12,
+"Glob": 3,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 155
+},
+{
+"run": "/home/claude/compare/s-g-r1",
+"task": "cr06",
+"cond": "A",
+"truth": 5,
+"listed": 8,
+"hit": 4,
+"missed": [
+"db/plsql/PKG_KYK_BATCH.pks"
+],
+"extra": [
+"db/data/KYK_CODE_MST.sql",
+"doc/コード定義.csv",
+"doc/改修履歴.md",
+"kyk-batch/jp1/KYK_DAILY.ajs"
+],
+"input": 202,
+"cache_write": 64831,
+"cache_read": 1194359,
+"output": 10833,
+"cost": 0.9103947,
+"turns": 64,
+"tools": {
+"Bash": 20,
+"Glob": 5,
+"Read": 23,
+"Grep": 14,
+"StructuredOutput": 1
+},
+"seconds": 180
+},
+{
+"run": "/home/claude/compare/s-g-r1",
+"task": "cr06",
+"cond": "C",
+"truth": 5,
+"listed": 7,
+"hit": 5,
+"missed": [],
+"extra": [
+"doc/改修履歴.md",
+"doc/コード定義.csv"
+],
+"input": 220,
+"cache_write": 41502,
+"cache_read": 1445551,
+"output": 10386,
+"cost": 0.8391273000000001,
+"turns": 35,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"mcp__himotoki__get_element": 1,
+"mcp__himotoki__neighbors": 1,
+"mcp__himotoki__search_elements": 1,
+"Grep": 5,
+"Read": 10,
+"Glob": 11,
+"mcp__himotoki__impact_files": 1,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 197
+},
+{
+"run": "/home/claude/compare/s-g-r2",
+"task": "cr01",
+"cond": "A",
+"truth": 3,
+"listed": 5,
+"hit": 3,
+"missed": [],
+"extra": [
+"doc/画面設計/KYK0401_解約受付_画面項目定義.md",
+"doc/改修履歴.md"
+],
+"input": 346,
+"cache_write": 80585,
+"cache_read": 2585544,
+"output": 11240,
+"cost": 1.4288112,
+"turns": 44,
+"tools": {
+"Bash": 18,
+"Grep": 7,
+"Read": 17,
+"StructuredOutput": 1
+},
+"seconds": 211
+},
+{
+"run": "/home/claude/compare/s-g-r2",
+"task": "cr01",
+"cond": "C",
+"truth": 3,
+"listed": 3,
+"hit": 3,
+"missed": [],
+"extra": [],
+"input": 268,
+"cache_write": 48328,
+"cache_read": 1909827,
+"output": 11275,
+"cost": 1.0328450999999998,
+"turns": 87,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"mcp__himotoki__get_element": 5,
+"mcp__himotoki__search_elements": 1,
+"Grep": 25,
+"Glob": 38,
+"Read": 12,
+"mcp__himotoki__neighbors": 1,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 226
+},
+{
+"run": "/home/claude/compare/s-g-r2",
+"task": "cr02",
+"cond": "A",
+"truth": 1,
+"listed": 3,
+"hit": 1,
+"missed": [],
+"extra": [
+"doc/コード定義.csv",
+"doc/画面設計/KYK0401_解約受付_画面項目定義.md"
+],
+"input": 146,
+"cache_write": 58420,
+"cache_read": 993993,
+"output": 9635,
+"cost": 0.7936808999999998,
+"turns": 50,
+"tools": {
+"Bash": 15,
+"Read": 20,
+"Grep": 6,
+"Glob": 7,
+"StructuredOutput": 1
+},
+"seconds": 189
+},
+{
+"run": "/home/claude/compare/s-g-r2",
+"task": "cr02",
+"cond": "C",
+"truth": 1,
+"listed": 4,
+"hit": 1,
+"missed": [],
+"extra": [
+"doc/コード定義.csv",
+"doc/改修履歴.md",
+"doc/画面設計/KYK0401_解約受付_画面項目定義.md"
+],
+"input": 260,
+"cache_write": 54938,
+"cache_read": 1988245,
+"output": 11701,
+"cost": 1.1023965,
+"turns": 59,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"mcp__himotoki__impact_files": 1,
+"mcp__himotoki__get_element": 1,
+"mcp__himotoki__search_elements": 1,
+"Read": 15,
+"Grep": 19,
+"Bash": 1,
+"Glob": 15,
+"mcp__himotoki__neighbors": 1,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 234
+},
+{
+"run": "/home/claude/compare/s-g-r2",
+"task": "cr03",
+"cond": "A",
+"truth": 12,
+"listed": 12,
+"hit": 11,
+"missed": [
+"kyk-online/src/jp/co/tsubame/kyk/online/form/KeiyakuTorokuForm.java"
+],
+"extra": [
+"doc/改修履歴.md"
+],
+"input": 242,
+"cache_write": 93134,
+"cache_read": 1861858,
+"output": 12041,
+"cost": 1.2987023999999998,
+"turns": 67,
+"tools": {
+"Bash": 13,
+"Read": 25,
+"Glob": 17,
+"Grep": 10,
+"StructuredOutput": 1
+},
+"seconds": 196
+},
+{
+"run": "/home/claude/compare/s-g-r2",
+"task": "cr03",
+"cond": "C",
+"truth": 12,
+"listed": 15,
+"hit": 11,
+"missed": [
+"kyk-online/src/MessageResources_src.properties"
+],
+"extra": [
+"kyk-online/WebContent/jsp/kyk02/kyk0201.jsp",
+"kyk-online/WebContent/jsp/kyk02/kyk0202.jsp",
+"kyk-online/src/jp/co/tsubame/kyk/online/dao/KeiyakuShosaiDao.java",
+"kyk-online/WebContent/WEB-INF/validation.xml"
+],
+"input": 244,
+"cache_write": 53948,
+"cache_read": 1906029,
+"output": 8452,
+"cost": 1.0230086999999999,
+"turns": 31,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"mcp__himotoki__get_element": 10,
+"mcp__himotoki__search_elements": 6,
+"Glob": 9,
+"Read": 1,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 153
+},
+{
+"run": "/home/claude/compare/s-g-r2",
+"task": "cr04",
+"cond": "A",
+"truth": 19,
+"listed": 21,
+"hit": 19,
+"missed": [],
+"extra": [
+"db/ddl/table/KYK_SHOKEN_HAKKO.sql",
+"kyk-batch/src/jp/co/tsubame/kyk/batch/KYKB040ShokenHakko.java"
+],
+"input": 242,
+"cache_write": 69335,
+"cache_read": 2095947,
+"output": 13191,
+"cost": 1.2433851,
+"turns": 71,
+"tools": {
+"Bash": 12,
+"Grep": 10,
+"Read": 32,
+"Glob": 15,
+"StructuredOutput": 1
+},
+"seconds": 222
+},
+{
+"run": "/home/claude/compare/s-g-r2",
+"task": "cr04",
+"cond": "C",
+"truth": 19,
+"listed": 24,
+"hit": 19,
+"missed": [],
+"extra": [
+"kyk-ido/src/main/java/jp/co/tsubame/kyk/ido/entity/KykDairiten.java",
+"kyk-online/src/jp/co/tsubame/kyk/online/form/KeiyakuKensakuForm.java",
+"kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/command/ShokenSaihakkoCommand.java",
+"db/ddl/table/KYK_SHOKEN_HAKKO.sql",
+"kyk-ido/src/main/resources/META-INF/sql/jp/co/tsubame/kyk/ido/service/DairitenService/insertDairiten.sql"
+],
+"input": 164,
+"cache_write": 58724,
+"cache_read": 1218682,
+"output": 13938,
+"cost": 0.9275105999999999,
+"turns": 51,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"mcp__himotoki__impact_files": 1,
+"mcp__himotoki__search_elements": 3,
+"mcp__himotoki__get_element": 3,
+"Glob": 9,
+"Bash": 10,
+"Grep": 6,
+"Read": 14,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 206
+},
+{
+"run": "/home/claude/compare/s-g-r2",
+"task": "cr05",
+"cond": "A",
+"truth": 10,
+"listed": 11,
+"hit": 10,
+"missed": [],
+"extra": [
+"doc/改修履歴.md"
+],
+"input": 274,
+"cache_write": 75295,
+"cache_read": 1817071,
+"output": 10717,
+"cost": 1.1584682999999998,
+"turns": 55,
+"tools": {
+"Bash": 6,
+"Grep": 9,
+"Glob": 24,
+"Read": 14,
+"StructuredOutput": 1
+},
+"seconds": 180
+},
+{
+"run": "/home/claude/compare/s-g-r2",
+"task": "cr05",
+"cond": "C",
+"truth": 10,
+"listed": 10,
+"hit": 10,
+"missed": [],
+"extra": [],
+"input": 140,
+"cache_write": 58750,
+"cache_read": 1090720,
+"output": 9711,
+"cost": 0.8258010000000002,
+"turns": 33,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"mcp__himotoki__get_element": 7,
+"Read": 9,
+"Grep": 5,
+"Glob": 5,
+"mcp__himotoki__search_elements": 1,
+"mcp__himotoki__audit_scope": 1,
+"Bash": 1,
+"StructuredOutput": 1
+},
+"seconds": 150
+},
+{
+"run": "/home/claude/compare/s-g-r2",
+"task": "cr06",
+"cond": "A",
+"truth": 5,
+"listed": 4,
+"hit": 2,
+"missed": [
+"db/plsql/PKG_KYK_BATCH.pks",
+"kyk-batch/shell/KYKB030.sh",
+"kyk-batch/sql/KYKB030_manki.sql"
+],
+"extra": [
+"doc/改修履歴.md",
+"kyk-batch/conf/batch.properties"
+],
+"input": 298,
+"cache_write": 35556,
+"cache_read": 1772974,
+"output": 8594,
+"cost": 0.8750321999999999,
+"turns": 38,
+"tools": {
+"Bash": 2,
+"Grep": 6,
+"Glob": 9,
+"Read": 19,
+"StructuredOutput": 1
+},
+"seconds": 175
+},
+{
+"run": "/home/claude/compare/s-g-r2",
+"task": "cr06",
+"cond": "C",
+"truth": 5,
+"listed": 8,
+"hit": 3,
+"missed": [
+"kyk-batch/shell/KYKB030.sh",
+"kyk-batch/sql/KYKB030_manki.sql"
+],
+"extra": [
+"db/ddl/table/KYK_BATCH_PARAM.sql",
+"db/data/KYK_BATCH_PARAM.sql",
+"doc/改修履歴.md",
+"kyk-batch/jp1/KYK_DAILY.ajs",
+"doc/テーブル定義/KYK_BATCH_PARAM_バッチパラメータ.csv"
+],
+"input": 276,
+"cache_write": 37077,
+"cache_read": 1767977,
+"output": 9354,
+"cost": 0.8939931,
+"turns": 35,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"mcp__himotoki__get_element": 4,
+"mcp__himotoki__search_elements": 1,
+"Grep": 6,
+"Glob": 1,
+"Bash": 9,
+"Read": 8,
+"mcp__himotoki__neighbors": 1,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 169
+},
+{
+"run": "/home/claude/compare/s-g-r2",
+"task": "cr07",
+"cond": "A",
+"truth": 1,
+"listed": 5,
+"hit": 1,
+"missed": [],
+"extra": [
+"kyk-batch/sql/KYKB010_fix_ichijibara_cancel.sql",
+"kyk-batch/sql/KYKB010_fix_ichijibara_paid_list.sql",
+"doc/改修履歴.md",
+"doc/バッチ一覧.md"
+],
+"input": 170,
+"cache_write": 69566,
+"cache_read": 1070390,
+"output": 8928,
+"cost": 0.8729429999999998,
+"turns": 59,
+"tools": {
+"Bash": 30,
+"Read": 23,
+"Glob": 1,
+"Grep": 3,
+"StructuredOutput": 1
+},
+"seconds": 157
+},
+{
+"run": "/home/claude/compare/s-g-r3",
+"task": "cr01",
+"cond": "A",
+"truth": 3,
+"listed": 4,
+"hit": 3,
+"missed": [],
+"extra": [
+"doc/画面設計/KYK0401_解約受付_画面項目定義.md"
+],
+"input": 274,
+"cache_write": 79594,
+"cache_read": 1848694,
+"output": 9918,
+"cost": 1.1817642000000002,
+"turns": 67,
+"tools": {
+"Bash": 13,
+"Grep": 12,
+"Read": 24,
+"Glob": 16,
+"StructuredOutput": 1
+},
+"seconds": 187
+},
+{
+"run": "/home/claude/compare/s-g-r3",
+"task": "cr01",
+"cond": "C",
+"truth": 3,
+"listed": 3,
+"hit": 3,
+"missed": [],
+"extra": [],
+"input": 212,
+"cache_write": 54543,
+"cache_read": 1574064,
+"output": 12317,
+"cost": 0.9848682,
+"turns": 83,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"mcp__himotoki__get_element": 3,
+"mcp__himotoki__search_elements": 2,
+"Grep": 21,
+"Glob": 28,
+"Read": 21,
+"mcp__himotoki__neighbors": 1,
+"mcp__himotoki__audit_scope": 1,
+"Bash": 2,
+"StructuredOutput": 1
+},
+"seconds": 218
+},
+{
+"run": "/home/claude/compare/s-g-r3",
+"task": "cr02",
+"cond": "A",
+"truth": 1,
+"listed": 3,
+"hit": 1,
+"missed": [],
+"extra": [
+"doc/コード定義.csv",
+"doc/画面設計/KYK0401_解約受付_画面項目定義.md"
+],
+"input": 154,
+"cache_write": 56200,
+"cache_read": 1085305,
+"output": 10325,
+"cost": 0.8181284999999998,
+"turns": 62,
+"tools": {
+"Bash": 9,
+"Glob": 20,
+"Read": 21,
+"Grep": 10,
+"StructuredOutput": 1
+},
+"seconds": 210
+},
+{
+"run": "/home/claude/compare/s-g-r3",
+"task": "cr02",
+"cond": "C",
+"truth": 1,
+"listed": 4,
+"hit": 1,
+"missed": [],
+"extra": [
+"doc/画面設計/KYK0401_解約受付_画面項目定義.md",
+"doc/コード定義.csv",
+"doc/改修履歴.md"
+],
+"input": 212,
+"cache_write": 55061,
+"cache_read": 1657161,
+"output": 11455,
+"cost": 0.9999752999999999,
+"turns": 54,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"mcp__himotoki__impact_files": 1,
+"Read": 17,
+"Grep": 10,
+"mcp__himotoki__get_element": 1,
+"Glob": 10,
+"mcp__himotoki__neighbors": 1,
+"Bash": 9,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 234
+},
+{
+"run": "/home/claude/compare/s-g-r3",
+"task": "cr03",
+"cond": "A",
+"truth": 12,
+"listed": 14,
+"hit": 11,
+"missed": [
+"kyk-online/src/jp/co/tsubame/kyk/online/form/KeiyakuTorokuForm.java"
+],
+"extra": [
+"kyk-online/WebContent/js/kyk0201.js",
+"doc/改修履歴.md",
+"doc/コード定義.csv"
+],
+"input": 442,
+"cache_write": 82926,
+"cache_read": 3351508,
+"output": 10104,
+"cost": 1.6558944,
+"turns": 56,
+"tools": {
+"Bash": 15,
+"Glob": 17,
+"Grep": 4,
+"Read": 18,
+"StructuredOutput": 1
+},
+"seconds": 201
+},
+{
+"run": "/home/claude/compare/s-g-r3",
+"task": "cr03",
+"cond": "C",
+"truth": 12,
+"listed": 13,
+"hit": 11,
+"missed": [
+"kyk-online/src/jp/co/tsubame/kyk/online/form/KeiyakuTorokuForm.java"
+],
+"extra": [
+"kyk-online/WebContent/jsp/kyk02/kyk0201.jsp",
+"db/data/KYK_CODE_MST.sql"
+],
+"input": 188,
+"cache_write": 72631,
+"cache_read": 1643034,
+"output": 11723,
+"cost": 1.1051052000000003,
+"turns": 58,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"mcp__himotoki__get_element": 9,
+"mcp__himotoki__neighbors": 1,
+"mcp__himotoki__search_elements": 12,
+"Read": 11,
+"Grep": 3,
+"Glob": 15,
+"mcp__himotoki__impact_files": 1,
+"mcp__himotoki__audit_scope": 1,
+"Bash": 1,
+"StructuredOutput": 1
+},
+"seconds": 194
+},
+{
+"run": "/home/claude/compare/s-g-r3",
+"task": "cr04",
+"cond": "A",
+"truth": 19,
+"listed": 23,
+"hit": 19,
+"missed": [],
+"extra": [
+"kyk-online/src/jp/co/tsubame/kyk/online/form/KeiyakuKensakuForm.java",
+"kyk-online/src/jp/co/tsubame/kyk/online/dto/KokyakuDto.java",
+"kyk-ido/src/main/java/jp/co/tsubame/kyk/ido/entity/KykDairiten.java",
+"kyk-web2/src/main/java/jp/co/tsubame/kyk/web2/command/ShokenSaihakkoCommand.java"
+],
+"input": 250,
+"cache_write": 95177,
+"cache_read": 2029563,
+"output": 15646,
+"cost": 1.4153709,
+"turns": 81,
+"tools": {
+"Bash": 42,
+"Read": 21,
+"Grep": 14,
+"Glob": 2,
+"StructuredOutput": 1
+},
+"seconds": 236
+},
+{
+"run": "/home/claude/compare/s-g-r3",
+"task": "cr04",
+"cond": "C",
+"truth": 19,
+"listed": 21,
+"hit": 19,
+"missed": [],
+"extra": [
+"db/ddl/table/KYK_SHOKEN_HAKKO.sql",
+"kyk-ido/src/main/java/jp/co/tsubame/kyk/ido/entity/KykDairiten.java"
+],
+"input": 164,
+"cache_write": 73218,
+"cache_read": 1395251,
+"output": 18324,
+"cost": 1.1332353000000002,
+"turns": 66,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"mcp__himotoki__impact_files": 1,
+"mcp__himotoki__get_element": 5,
+"mcp__himotoki__search_elements": 8,
+"mcp__himotoki__neighbors": 1,
+"Grep": 18,
+"Glob": 10,
+"Read": 18,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 256
+},
+{
+"run": "/home/claude/compare/s-g-r3",
+"task": "cr05",
+"cond": "A",
+"truth": 10,
+"listed": 11,
+"hit": 10,
+"missed": [],
+"extra": [
+"doc/改修履歴.md"
+],
+"input": 322,
+"cache_write": 47828,
+"cache_read": 2278211,
+"output": 10406,
+"cost": 1.1274872999999999,
+"turns": 41,
+"tools": {
+"Bash": 12,
+"Read": 17,
+"Grep": 7,
+"Glob": 3,
+"StructuredOutput": 1
+},
+"seconds": 182
+},
+{
+"run": "/home/claude/compare/s-g-r3",
+"task": "cr05",
+"cond": "C",
+"truth": 10,
+"listed": 10,
+"hit": 10,
+"missed": [],
+"extra": [],
+"input": 148,
+"cache_write": 62940,
+"cache_read": 1157534,
+"output": 9326,
+"cost": 0.8652341999999997,
+"turns": 33,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"mcp__himotoki__get_element": 10,
+"mcp__himotoki__neighbors": 1,
+"Glob": 7,
+"mcp__himotoki__search_elements": 3,
+"Read": 5,
+"Grep": 2,
+"mcp__himotoki__audit_scope": 1,
+"StructuredOutput": 1
+},
+"seconds": 149
+},
+{
+"run": "/home/claude/compare/s-g-r3",
+"task": "cr06",
+"cond": "A",
+"truth": 5,
+"listed": 5,
+"hit": 2,
+"missed": [
+"db/plsql/PKG_KYK_BATCH.pks",
+"kyk-batch/shell/KYKB030.sh",
+"kyk-batch/sql/KYKB030_manki.sql"
+],
+"extra": [
+"db/plsql/PKG_KYK_COMMON.pkb",
+"db/plsql/PKG_KYK_COMMON.pks",
+"doc/改修履歴.md"
+],
+"input": 186,
+"cache_write": 64442,
+"cache_read": 1074326,
+"output": 9436,
+"cost": 0.8510478,
+"turns": 51,
+"tools": {
+"Glob": 19,
+"Read": 20,
+"Grep": 5,
+"Bash": 4,
+"StructuredOutput": 2
+},
+"seconds": 160
+},
+{
+"run": "/home/claude/compare/s-g-r3",
+"task": "cr06",
+"cond": "C",
+"truth": 5,
+"listed": 6,
+"hit": 2,
+"missed": [
+"db/plsql/PKG_KYK_BATCH.pks",
+"kyk-batch/shell/KYKB030.sh",
+"kyk-batch/sql/KYKB030_manki.sql"
+],
+"extra": [
+"db/plsql/PKG_KYK_COMMON.pks",
+"db/plsql/PKG_KYK_COMMON.pkb",
+"kyk-online/src/kyk.properties",
+"doc/改修履歴.md"
+],
+"input": 292,
+"cache_write": 48475,
+"cache_read": 2063681,
+"output": 9081,
+"cost": 1.0470452999999997,
+"turns": 37,
+"tools": {
+"ToolSearch": 1,
+"mcp__himotoki__start_points": 1,
+"mcp__himotoki__get_element": 5,
+"mcp__himotoki__neighbors": 1,
+"mcp__himotoki__search_elements": 3,
+"Glob": 8,
+"Grep": 3,
+"Read": 10,
+"mcp__himotoki__impact_files": 1,
+"mcp__himotoki__audit_scope": 2,
+"StructuredOutput": 1
+},
+"seconds": 184
+}
+]
