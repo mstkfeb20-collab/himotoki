@@ -159,7 +159,7 @@ class Linker:
         return pkg not in self.repo_pkgs
 
     def _resolve_ref(self, r):
-        targets = self.resolve_key(r["key"], dict(r.get("props") or {}, _src=r["src"]))
+        targets = self.resolve_key(r["key"], dict(r.get("props") or {}, _src=r["src"], _via=r.get("via")))
         if not targets:
             if self._is_external(r["key"]) or self._ts_external(r):
                 self.external[r["key"].split(":", 1)[0]] += 1
@@ -625,8 +625,10 @@ class Linker:
     def _ns_sysid(self, v, props):
         """A screen / job / program / interface ID (HZK-G010, KOBB090, IF_ZAI_005) names the
         files and jobs that carry it in their name, whatever the spelling of separators."""
-        if "!" in str((props or {}).get("_src", "")).split("#", 1)[-1]:
-            return []          # a row of a sheet is about one item, not every file of the screen ID it repeats
+        if (props or {}).get("_via") == "mention" and "!" in str((props or {}).get("_src", "")).split("#", 1)[-1]:
+            # an ID repeated in the free text of a sheet row is not what the row is about; an ID in
+            # the row's own screen / job / program column (a ledger such as 画面一覧) is
+            return []
         ids = system_ids(v)
         if len(ids) != 1:
             return []
