@@ -30,7 +30,7 @@ python samples/spec-extraction/make_docs.py                 # 設計書を生成
 python eval/spec_extraction/score.py result.json --detail   # 正解と照合する
 ```
 
-正解は [eval/spec_extraction/ground_truth.json](../../eval/spec_extraction/ground_truth.json)（ルール21件、質問4件）にあります。採点は語のゆるい一致なので、最終的な判断は `--detail` の対応表を人が見て行ってください。
+正解は [eval/spec_extraction/ground_truth.json](../../eval/spec_extraction/ground_truth.json)（ルール20件、質問7件。うち質問3件は初回の評価でエージェントが見つけた、題材作成時に意図せず入った矛盾・定義漏れ）にあります。採点は語のゆるい一致なので、最終的な判断は `--detail` の対応表を人が見て行ってください。
 
 ## 注意
 

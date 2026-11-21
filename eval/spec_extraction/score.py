@@ -53,6 +53,8 @@ def main() -> int:
     r_found = match(truth["rules"], rules)
     q_found = match(truth["questions"], questions)
     n_found = match(truth["procedure_examples"]["items"], rules)
+    c_found = match(truth.get("contested_values", {}).get("items", []), rules)
+    contested = [k for k, v in c_found.items() if v]
 
     r_ok = [k for k, v in r_found.items() if v]
     q_ok = [k for k, v in q_found.items() if v]
@@ -72,6 +74,7 @@ def main() -> int:
         ok, n = by_pat[p]
         print(f"  {p} {truth['patterns'][p].split('：')[0]}: {ok}/{n}")
     print(f"質問の検出: {len(q_ok)}/{len(truth['questions'])}")
+    print(f"矛盾した値の断定（確認させるべきもの）: {len(contested)} 件")
     print(f"手順の転記（ルールではないもの）: {len(noise)} 件")
     print(f"正解に対応しない抽出: {len(extra)} 件（妥当な追加ルールの可能性もあるので目視で確認）")
 
@@ -86,6 +89,11 @@ def main() -> int:
         for t in truth["questions"]:
             mark = "○" if q_found[t["id"]] else "×"
             print(f"{mark} {t['id']}（{t['type']}）{t['statement']}")
+        if contested:
+            print("\n--- 矛盾した値の断定 ---")
+            for k in contested:
+                for i in c_found[k]:
+                    print(f"  {k} ← [{i}] {rules[i].get('statement')}")
         if noise:
             print("\n--- 手順の転記 ---")
             for k in noise:
